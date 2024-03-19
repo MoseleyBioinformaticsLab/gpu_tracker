@@ -3,13 +3,13 @@ import time
 import multiprocessing as mproc
 import os
 import psutil
-import subprocess as sproc
+import subprocess as subp
 
 
 class Tracker:
     def __init__(
             self, sleep_time: float = 1.0, include_children: bool = True, ram_unit: str = 'gigabyte', gpu_unit: str = 'gigabyte',
-            time_unit: str = 'hour'):
+            time_unit: str = 'hour', n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False):
         Tracker._validate_mem_unit(ram_unit)
         Tracker._validate_mem_unit(gpu_unit)
         valid_time_units = {'second', 'minute', 'hour', 'day'}
@@ -39,13 +39,15 @@ class Tracker:
             'hour': 1 / (60 * 60),
             'day': 1 / (60 * 60 * 24)
         }[time_unit]
-        self.event = mproc.Event()
-        self.queue = mproc.Queue()
-        self.subprocess = mproc.Process(target=self._profile)
+        self.stop_event = thrd.Event()
+        self.thread = thrd.Thread(target=self._profile)
         self.max_ram = None
         self.max_gpu = None
         self.compute_time = None
-        self._time1 = time.time()
+        self._time1 = None
+        self.n_join_attempts = n_join_attempts
+        self.join_timeout = join_timeout
+        self.kill_if_join_fails = kill_if_join_fails
 
     @staticmethod
     def _validate_mem_unit(unit: str):
@@ -60,7 +62,7 @@ class Tracker:
     def _profile(self):
         max_ram = 0
         max_gpu = 0
-        while True:
+        while not self.stop_event.is_set():
             parent_process_id = os.getppid()
             parent_process = psutil.Process(os.getppid())
             # Get the current RAM usage.
@@ -75,7 +77,7 @@ class Tracker:
             # Get the current GPU memory usage.
             curr_gpu_usage = 0
             memory_used_command = 'nvidia-smi --query-compute-apps=pid,used_gpu_memory --format=csv,noheader'
-            nvidia_smi_output = sproc.check_output(memory_used_command.split(), stderr=sproc.STDOUT).decode()
+            nvidia_smi_output = subp.check_output(memory_used_command.split(), stderr=subp.STDOUT).decode()
             if nvidia_smi_output:
                 nvidia_smi_output = nvidia_smi_output.strip().split('\n')
                 for process_info in nvidia_smi_output:
@@ -90,18 +92,30 @@ class Tracker:
             if curr_gpu_usage > max_gpu:
                 max_gpu = curr_gpu_usage
             time.sleep(self.sleep_time)
-            if self.event.is_set():
-                break
-        max_ram, max_gpu, compute_time = (
-            max_ram * self._ram_coefficient, max_gpu * self._gpu_coefficient, (time.time() - self._time1) * self._time_coefficient)
-        self.queue.put((max_ram, max_gpu, compute_time))
+            self.max_ram, self.max_gpu, self.compute_time = (
+                max_ram * self._ram_coefficient, max_gpu * self._gpu_coefficient, (time.time() - self._time1) * self._time_coefficient)
 
+    # TODO create start() and stop() methods that respectively call __enter__ and __exit__
     def __enter__(self) -> Tracker:
-        self.subprocess.start()
+        self._time1 = time.time()
+        self.thread.start()
         return self
 
     def __exit__(self, *_):
-        self.event.set()
-        self.max_ram, self.max_gpu, self.compute_time = self.queue.get()
-        self.subprocess.join()
-        self.subprocess.close()
+        n_join_attempts = 0
+        while n_join_attempts < self.n_join_attempts:
+            self.stop_event.set()
+            self.thread.join(timeout=self.join_timeout)
+            n_join_attempts += 1
+            if self.thread.is_alive():
+                log.warning('Thread is still alive after join timout. Attempting to join again...')
+            else:
+                break
+        if self.thread.is_alive():
+            log.warning(
+                f'Thread is still alive after {self.n_join_attempts} attempts to join. '
+                f'The thread will likely not end until the parent process ends.')
+            if self.kill_if_join_fails:
+                log.warning('The thread failed to join and kill_if_join_fails is set. Exiting ...')
+                import sys
+                sys.exit(1)
