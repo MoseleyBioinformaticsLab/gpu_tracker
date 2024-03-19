@@ -95,7 +95,6 @@ class Tracker:
             self.max_ram, self.max_gpu, self.compute_time = (
                 max_ram * self._ram_coefficient, max_gpu * self._gpu_coefficient, (time.time() - self._time1) * self._time_coefficient)
 
-    # TODO create start() and stop() methods that respectively call __enter__ and __exit__
     def __enter__(self) -> Tracker:
         self._time1 = time.time()
         self.thread.start()
@@ -119,3 +118,13 @@ class Tracker:
                 log.warning('The thread failed to join and kill_if_join_fails is set. Exiting ...')
                 import sys
                 sys.exit(1)
+        self.max_ram = None
+        self.max_gpu = None
+        self.compute_time = None
+        self._time1 = None
+
+    def start(self):
+        self.__enter__()
+
+    def stop(self):
+        self.__exit__()
