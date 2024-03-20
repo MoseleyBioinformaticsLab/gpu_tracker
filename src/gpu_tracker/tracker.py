@@ -1,75 +1,74 @@
 from __future__ import annotations
 import time
-import multiprocessing as mproc
+import threading as thrd
 import os
 import psutil
 import subprocess as subp
-
+import logging as log
+import sys
 
 class Tracker:
     def __init__(
-            self, sleep_time: float = 1.0, include_children: bool = True, ram_unit: str = 'gigabyte', gpu_unit: str = 'gigabyte',
-            time_unit: str = 'hour', n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False):
+            self, sleep_time: float = 1.0, include_children: bool = True, ram_unit: str = 'gigabytes', gpu_unit: str = 'gigabytes',
+            time_unit: str = 'hours', n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False):
         Tracker._validate_mem_unit(ram_unit)
         Tracker._validate_mem_unit(gpu_unit)
-        valid_time_units = {'second', 'minute', 'hour', 'day'}
-        Tracker._validate_unit(time_unit, valid_time_units, unit_type='time')
+        Tracker._validate_unit(time_unit, valid_units={'seconds', 'minutes', 'hours', 'days'}, unit_type='time')
         self.sleep_time = sleep_time
         self.include_children = include_children
         self.ram_unit = ram_unit
         self.gpu_unit = gpu_unit
         self.time_unit = time_unit
-        self._ram_coefficient = {
-            'byte': 1.0,
-            'kilobyte': 1 / 1e3,
-            'megabyte': 1 / 1e6,
-            'gigabyte': 1 / 1e9,
-            'terabyte': 1 / 1e12
+        self._ram_coefficient: float = {
+            'bytes': 1.0,
+            'kilobytes': 1 / 1e3,
+            'megabytes': 1 / 1e6,
+            'gigabytes': 1 / 1e9,
+            'terabytes': 1 / 1e12
         }[ram_unit]
-        self._gpu_coefficient = {
-            'byte': 1e6,
-            'kilobyte': 1e3,
-            'megabyte': 1.0,
-            'gigabyte': 1 / 1e3,
-            'terabyte': 1 / 1e6
+        self._gpu_coefficient: float = {
+            'bytes': 1e6,
+            'kilobytes': 1e3,
+            'megabytes': 1.0,
+            'gigabytes': 1 / 1e3,
+            'terabytes': 1 / 1e6
         }[gpu_unit]
-        self._time_coefficient = {
-            'second': 1.0,
-            'minute': 1 / 60,
-            'hour': 1 / (60 * 60),
-            'day': 1 / (60 * 60 * 24)
+        self._time_coefficient: float = {
+            'seconds': 1.0,
+            'minutes': 1 / 60,
+            'hours': 1 / (60 * 60),
+            'days': 1 / (60 * 60 * 24)
         }[time_unit]
         self.stop_event = thrd.Event()
         self.thread = thrd.Thread(target=self._profile)
         self.max_ram = None
         self.max_gpu = None
         self.compute_time = None
-        self._time1 = None
         self.n_join_attempts = n_join_attempts
         self.join_timeout = join_timeout
         self.kill_if_join_fails = kill_if_join_fails
 
     @staticmethod
     def _validate_mem_unit(unit: str):
-        valid_units = {'byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte'}
-        Tracker._validate_unit(unit, valid_units, unit_type='memory')
+        Tracker._validate_unit(unit, valid_units={'bytes', 'kilobytes', 'megabytes', 'gigabytes', 'terabytes'}, unit_type='memory')
 
     @staticmethod
     def _validate_unit(unit: str, valid_units: set[str], unit_type: str):
         if unit not in valid_units:
-            raise ValueError(f'"{unit}" is not a valid {unit_type} unit. Valid values are {", ".join(valid_units)}')
+            raise ValueError(f'"{unit}" is not a valid {unit_type} unit. Valid values are {", ".join(sorted(valid_units))}')
 
     def _profile(self):
         max_ram = 0
         max_gpu = 0
+        start_time = time.time()
         while not self.stop_event.is_set():
-            parent_process_id = os.getppid()
-            parent_process = psutil.Process(os.getppid())
+            process_id = os.getpid()
+            process = psutil.Process(process_id)
             # Get the current RAM usage.
-            curr_mem_usage = parent_process.memory_info().rss
-            process_ids = {parent_process_id}
+            curr_mem_usage = process.memory_info().rss
+            process_ids = {process_id}
             if self.include_children:
-                child_processes = parent_process.children()
+                child_processes = process.children()
                 process_ids.update(process.pid for process in child_processes)
                 for child_process in child_processes:
                     child_proc_usage = child_process.memory_info().rss
@@ -91,12 +90,11 @@ class Tracker:
                 max_ram = curr_mem_usage
             if curr_gpu_usage > max_gpu:
                 max_gpu = curr_gpu_usage
-            time.sleep(self.sleep_time)
+            _testable_sleep(self.sleep_time)
             self.max_ram, self.max_gpu, self.compute_time = (
-                max_ram * self._ram_coefficient, max_gpu * self._gpu_coefficient, (time.time() - self._time1) * self._time_coefficient)
+                max_ram * self._ram_coefficient, max_gpu * self._gpu_coefficient, (time.time() - start_time) * self._time_coefficient)
 
     def __enter__(self) -> Tracker:
-        self._time1 = time.time()
         self.thread.start()
         return self
 
@@ -116,15 +114,26 @@ class Tracker:
                 f'The thread will likely not end until the parent process ends.')
             if self.kill_if_join_fails:
                 log.warning('The thread failed to join and kill_if_join_fails is set. Exiting ...')
-                import sys
                 sys.exit(1)
-        self.max_ram = None
-        self.max_gpu = None
-        self.compute_time = None
-        self._time1 = None
 
     def start(self):
         self.__enter__()
 
     def stop(self):
         self.__exit__()
+
+    def __str__(self):
+        return f'Max RAM: {self.max_ram:.3f} {self.ram_unit}\n' \
+               f'Max GPU: {self.max_gpu:.3f} {self.gpu_unit}\n' \
+               f'Compute time: {self.compute_time:.3f} {self.time_unit}'
+
+    def __repr__(self):
+        return str(self)  # pragma: no cover
+
+
+def _testable_sleep(sleep_time: float) -> float:
+    """ The time.sleep() function causes issues when mocked in tests, so we create this wrapper that can be safely mocked.
+
+    :return: The result of time.sleep()
+    """
+    return time.sleep(sleep_time)  # pragma: no cover

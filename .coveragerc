@@ -1,0 +1,3 @@
+[run]
+omit = src/gpu_tracker/__init__.py,src/gpu_tracker/_version.py
+
