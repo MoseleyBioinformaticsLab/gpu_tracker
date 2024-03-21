@@ -94,8 +94,8 @@ def test_tracker(
         tracker.stop()
     EventMock.assert_called_once_with()
     ThreadMock.assert_called_once_with(target=tracker._profile)
-    tracker.thread.start.assert_called_once_with()
-    _assert_args_list(mock=tracker.stop_event.is_set, expected_args_list=[()] * 4)
+    tracker._thread.start.assert_called_once_with()
+    _assert_args_list(mock=tracker._stop_event.is_set, expected_args_list=[()] * 4)
     _assert_args_list(mock=getpid_mock, expected_args_list=[()] * 3)
     _assert_args_list(mock=ProcessMock, expected_args_list=[(process_id,)] * 3)
     _assert_args_list(mock=process_mock.memory_info, expected_args_list=[()] * 3)
@@ -109,9 +109,9 @@ def test_tracker(
     assert tracker.max_gpu == expected_gpu
     assert tracker.compute_time == expected_time
     assert str(tracker) == tracker_str
-    tracker.stop_event.set.assert_called_once_with()
-    tracker.thread.join.assert_called_once_with(timeout=join_timeout)
-    _assert_args_list(mock=tracker.thread.is_alive, expected_args_list=[()] * 2)
+    tracker._stop_event.set.assert_called_once_with()
+    tracker._thread.join.assert_called_once_with(timeout=join_timeout)
+    _assert_args_list(mock=tracker._thread.is_alive, expected_args_list=[()] * 2)
 
 
 def _assert_args_list(mock, expected_args_list: list[tuple | dict], use_kwargs: bool = False):
@@ -131,9 +131,9 @@ def test_warnings(mocker, kill_if_join_fails: bool, caplog):
     exit_mock = mocker.patch('gpu_tracker.tracker.sys.exit')
     with track.Tracker(kill_if_join_fails=kill_if_join_fails, n_join_attempts=n_join_attempts, join_timeout=join_timeout) as tracker:
         pass
-    _assert_args_list(mock=tracker.stop_event.set, expected_args_list=[()] * n_join_attempts)
-    _assert_args_list(mock=tracker.thread.join, expected_args_list=[{'timeout': join_timeout}] * n_join_attempts, use_kwargs=True)
-    _assert_args_list(mock=tracker.thread.is_alive, expected_args_list=[()] * (n_join_attempts + 1))
+    _assert_args_list(mock=tracker._stop_event.set, expected_args_list=[()] * n_join_attempts)
+    _assert_args_list(mock=tracker._thread.join, expected_args_list=[{'timeout': join_timeout}] * n_join_attempts, use_kwargs=True)
+    _assert_args_list(mock=tracker._thread.is_alive, expected_args_list=[()] * (n_join_attempts + 1))
     expected_warnings = ['Thread is still alive after join timout. Attempting to join again...'] * n_join_attempts
     expected_warnings.append(
         'Thread is still alive after 3 attempts to join. The thread will likely not end until the parent process ends.')
