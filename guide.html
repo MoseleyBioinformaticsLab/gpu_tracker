@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>User Guide &mdash; gpu_tracker 0.1.dev1+g9dad2c8 documentation</title>
+  <title>User Guide &mdash; gpu_tracker 0.1.dev1+gf675352 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=d4cae0e0"></script>
+        <script src="_static/documentation_options.js?v=71a7a7bf"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -37,7 +37,7 @@
             gpu_tracker
           </a>
               <div class="version">
-                0.1.dev1+g9dad2c8
+                0.1.dev1+gf675352
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -100,7 +100,8 @@
 <h2>gpu_tracker<a class="headerlink" href="#gpu-tracker" title="Link to this heading"></a></h2>
 <section id="description">
 <h3>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">gpu_tracker</span></code> package provides a <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class that tracks the compute time, maximum RAM, and maximum GPU memory usage.
+<p>The <code class="docutils literal notranslate"><span class="pre">gpu_tracker</span></code> package provides a <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class that tracks (profiles) the usage of compute time, maximum RAM, and maximum GPU RAM.
+The compute time is a measurement of the real time taken by the task as opposed to the CPU-utilization time.
 The GPU tracking is for Nvidia GPUs and uses the <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code> command, assuming the Nvidia drivers have been installed.
 Computational resources are tracked throughout the duration of a context manager or the duration of explicit calls to the <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code> methods of the <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class.</p>
 </section>

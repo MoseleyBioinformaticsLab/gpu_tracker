@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gpu_tracker.tracker &mdash; gpu_tracker 0.1.dev1+g9dad2c8 documentation</title>
+  <title>gpu_tracker.tracker &mdash; gpu_tracker 0.1.dev1+gf675352 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=d4cae0e0"></script>
+        <script src="../../_static/documentation_options.js?v=71a7a7bf"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -34,7 +34,7 @@
             gpu_tracker
           </a>
               <div class="version">
-                0.1.dev1+g9dad2c8
+                0.1.dev1+gf675352
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -86,15 +86,16 @@
 <span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">log</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 
+
 <div class="viewcode-block" id="Tracker">
 <a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.Tracker">[docs]</a>
 <span class="k">class</span> <span class="nc">Tracker</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Runs a thread in the background that tracks the compute time, maximum RAM, and and maximum GPU memory usage within a conext manager or explicit ``start()`` and ``stop()`` methods.</span>
+<span class="sd">    Runs a thread in the background that tracks the compute time, maximum RAM, and maximum GPU RAM usage within a context manager or explicit ``start()`` and ``stop()`` methods.</span>
 <span class="sd">    Calculated quantities are scaled depending on the unit chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).</span>
 
 <span class="sd">    :ivar float max_ram: The highest RAM observed while tracking.</span>
-<span class="sd">    :ivar float max_gpu: The highest GPU memory observed while tracking.</span>
+<span class="sd">    :ivar float max_gpu: The highest GPU RAM observed while tracking.</span>
 <span class="sd">    :ivar float compute_time: The amount of time spent tracking.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -102,7 +103,7 @@
             <span class="n">time_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;hours&#39;</span><span class="p">,</span> <span class="n">n_join_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">join_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span> <span class="n">kill_if_join_fails</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param sleep_time: The number of seconds to sleep in between usage-collection iterations.</span>
-<span class="sd">        :param include_children: Whether to add the usage (RAM and GPU) of child processes. Otherwise only collects usage of the main process.</span>
+<span class="sd">        :param include_children: Whether to add the usage (RAM and GPU RAM) of child processes. Otherwise, only collects usage of the main process.</span>
 <span class="sd">        :param ram_unit: One of &#39;bytes&#39;, &#39;kilobytes&#39;, &#39;megabytes&#39;, &#39;gigabytes&#39;, or &#39;terabytes&#39;.</span>
 <span class="sd">        :param gpu_unit: One of &#39;bytes&#39;, &#39;kilobytes&#39;, &#39;megabytes&#39;, &#39;gigabytes&#39;, or &#39;terabytes&#39;.</span>
 <span class="sd">        :param time_unit: One of &#39;seconds&#39;, &#39;minutes&#39;, &#39;hours&#39;, or &#39;days&#39;.</span>
@@ -176,7 +177,7 @@
                 <span class="k">for</span> <span class="n">child_process</span> <span class="ow">in</span> <span class="n">child_processes</span><span class="p">:</span>
                     <span class="n">child_proc_usage</span> <span class="o">=</span> <span class="n">child_process</span><span class="o">.</span><span class="n">memory_info</span><span class="p">()</span><span class="o">.</span><span class="n">rss</span>
                     <span class="n">curr_mem_usage</span> <span class="o">+=</span> <span class="n">child_proc_usage</span>
-            <span class="c1"># Get the current GPU memory usage.</span>
+            <span class="c1"># Get the current GPU RAM usage.</span>
             <span class="n">curr_gpu_usage</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">memory_used_command</span> <span class="o">=</span> <span class="s1">&#39;nvidia-smi --query-compute-apps=pid,used_gpu_memory --format=csv,noheader&#39;</span>
             <span class="n">nvidia_smi_output</span> <span class="o">=</span> <span class="n">subp</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">memory_used_command</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subp</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
@@ -237,17 +238,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;Max RAM: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_ram</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ram_unit</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span> \
                <span class="sa">f</span><span class="s1">&#39;Max GPU: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_gpu</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">gpu_unit</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span> \
                <span class="sa">f</span><span class="s1">&#39;Compute time: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time_unit</span><span class="si">}</span><span class="s1">&#39;</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>  <span class="c1"># pragma: no cover</span></div>
 
 
 
-<span class="k">def</span> <span class="nf">_testable_sleep</span><span class="p">(</span><span class="n">sleep_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_testable_sleep</span><span class="p">(</span><span class="n">sleep_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; The time.sleep() function causes issues when mocked in tests, so we create this wrapper that can be safely mocked.</span>
 
 <span class="sd">    :return: The result of time.sleep()</span>
