@@ -8,9 +8,28 @@ import logging as log
 import sys
 
 class Tracker:
+    """
+    Runs a thread in the background that tracks the compute time, maximum RAM, and and maximum GPU memory usage within a conext manager or explicit ``start()`` and ``stop()`` methods.
+    Calculated quantities are scaled depending on the unit chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).
+
+    :ivar float max_ram: The highest RAM observed while tracking.
+    :ivar float max_gpu: The highest GPU memory observed while tracking.
+    :ivar float compute_time: The amount of time spent tracking.
+    """
     def __init__(
             self, sleep_time: float = 1.0, include_children: bool = True, ram_unit: str = 'gigabytes', gpu_unit: str = 'gigabytes',
             time_unit: str = 'hours', n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False):
+        """
+        :param sleep_time: The number of seconds to sleep in between usage-collection iterations.
+        :param include_children: Whether to add the usage (RAM and GPU) of child processes. Otherwise only collects usage of the main process.
+        :param ram_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
+        :param gpu_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
+        :param time_unit: One of 'seconds', 'minutes', 'hours', or 'days'.
+        :param n_join_attempts: The number of times the tracker attempts to join its underlying thread.
+        :param join_timeout: The amount of time the tracker waits for its underlying thread to join.
+        :param kill_if_join_fails: If true, kill the process if the underlying thread fails to join.
+        :raises ValueError: Raised if invalid units are provided.
+        """
         Tracker._validate_mem_unit(ram_unit)
         Tracker._validate_mem_unit(gpu_unit)
         Tracker._validate_unit(time_unit, valid_units={'seconds', 'minutes', 'hours', 'days'}, unit_type='time')
@@ -39,8 +58,8 @@ class Tracker:
             'hours': 1 / (60 * 60),
             'days': 1 / (60 * 60 * 24)
         }[time_unit]
-        self.stop_event = thrd.Event()
-        self.thread = thrd.Thread(target=self._profile)
+        self._stop_event = thrd.Event()
+        self._thread = thrd.Thread(target=self._profile)
         self.max_ram = None
         self.max_gpu = None
         self.compute_time = None
@@ -58,10 +77,13 @@ class Tracker:
             raise ValueError(f'"{unit}" is not a valid {unit_type} unit. Valid values are {", ".join(sorted(valid_units))}')
 
     def _profile(self):
+        """
+        Continuously tracks computational resource usage until the end of tracking is triggered, either by exiting the context manager or by a call to stop()
+        """
         max_ram = 0
         max_gpu = 0
         start_time = time.time()
-        while not self.stop_event.is_set():
+        while not self._stop_event.is_set():
             process_id = os.getpid()
             process = psutil.Process(process_id)
             # Get the current RAM usage.
@@ -95,20 +117,20 @@ class Tracker:
                 max_ram * self._ram_coefficient, max_gpu * self._gpu_coefficient, (time.time() - start_time) * self._time_coefficient)
 
     def __enter__(self) -> Tracker:
-        self.thread.start()
+        self._thread.start()
         return self
 
     def __exit__(self, *_):
         n_join_attempts = 0
         while n_join_attempts < self.n_join_attempts:
-            self.stop_event.set()
-            self.thread.join(timeout=self.join_timeout)
+            self._stop_event.set()
+            self._thread.join(timeout=self.join_timeout)
             n_join_attempts += 1
-            if self.thread.is_alive():
+            if self._thread.is_alive():
                 log.warning('Thread is still alive after join timout. Attempting to join again...')
             else:
                 break
-        if self.thread.is_alive():
+        if self._thread.is_alive():
             log.warning(
                 f'Thread is still alive after {self.n_join_attempts} attempts to join. '
                 f'The thread will likely not end until the parent process ends.')
@@ -117,9 +139,15 @@ class Tracker:
                 sys.exit(1)
 
     def start(self):
+        """
+        Begins tracking for the duration of time until stop() is called. Equivalent to entering the context manager.
+        """
         self.__enter__()
 
     def stop(self):
+        """
+        Stop tracking. Equivalent to exiting the context manager.
+        """
         self.__exit__()
 
     def __str__(self):
