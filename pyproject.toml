@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gpu-tracker"
-description = "Tracks computational resources of a process and its child processes, most prominently GPU memory, as well as RAM and compute time."
+description = "Tracks computational resources of a process and its child processes, most prominently GPU RAM, as well as RAM and compute time."
 readme = "README.rst"
 requires-python = ">=3.10"
 keywords = ["gpu", "ram", "time", "memory", "profile", "track", "resource", "usage"]

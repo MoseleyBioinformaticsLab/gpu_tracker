@@ -4,17 +4,16 @@ Tutorial
 .. code:: python3
 
     import gpu_tracker.tracker as track
-    import time
 
 The ``gpu_tracker.tracker`` module provides the ``Tracker`` class which
 uses an underlying thread to measure computational resource usage,
-namely the compute time, maximum RAM used, and maximum GPU memory used.
-The ``start()`` method starts this thread which tracks usage in the
+namely the compute time, maximum RAM used, and maximum GPU RAM used. The
+``start()`` method starts this thread which tracks usage in the
 background. After calling ``start()``, write the code to measure
 resource usage, followed by calling the ``stop()`` method. The compute
 time will be the time from the call to ``start()`` to the call to
-``stop()`` and the RAM and GPU quantities will be the amount of memory
-used by the code that’s in between ``start()`` and ``stop()``. The
+``stop()`` and the RAM and GPU quantities will be the amount of RAM used
+by the code that’s in between ``start()`` and ``stop()``. The
 ``Tracker`` class additionally has a ``__str__`` method so it can be
 printed as a string that formats the values and units of each
 computational resource.
@@ -24,7 +23,6 @@ computational resource.
     tracker = track.Tracker()
     tracker.start()
     # Perform expensive operations
-    time.sleep(5)
     tracker.stop()
     print(tracker)
 
@@ -33,7 +31,7 @@ computational resource.
 
     Max RAM: 0.068 gigabytes
     Max GPU: 0.000 gigabytes
-    Compute time: 0.001 hours
+    Compute time: 0.000 hours
 
 
 The equivalent can be accomplished using ``Tracker`` as a context
@@ -43,7 +41,7 @@ manager rather than explicitly calling ``start()`` and ``stop()``.
 
     with track.Tracker() as tracker:
         # Perform expensive operations
-        time.sleep(5)
+        pass
     print(tracker)
 
 
@@ -51,18 +49,18 @@ manager rather than explicitly calling ``start()`` and ``stop()``.
 
     Max RAM: 0.068 gigabytes
     Max GPU: 0.000 gigabytes
-    Compute time: 0.001 hours
+    Compute time: 0.000 hours
 
 
 The units of the computational resources can be modified as desired. For
-example, to measure the RAM in megabytes, the GPU memory in kilobytes,
-and the compute time in seconds:
+example, to measure the RAM in megabytes, the GPU RAM in kilobytes, and
+the compute time in seconds:
 
 .. code:: python3
 
     with track.Tracker(ram_unit='megabytes', gpu_unit='kilobytes', time_unit='seconds') as tracker:
         # Perform expensive operations
-        time.sleep(3)
+        pass
     print(tracker)
 
 
@@ -70,7 +68,7 @@ and the compute time in seconds:
 
     Max RAM: 67.662 megabytes
     Max GPU: 0.000 kilobytes
-    Compute time: 3.112 seconds
+    Compute time: 1.043 seconds
 
 
 Additionally, the individual measurements and units are available as
