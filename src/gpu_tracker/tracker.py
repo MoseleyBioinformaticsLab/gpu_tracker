@@ -7,13 +7,14 @@ import subprocess as subp
 import logging as log
 import sys
 
+
 class Tracker:
     """
-    Runs a thread in the background that tracks the compute time, maximum RAM, and and maximum GPU memory usage within a conext manager or explicit ``start()`` and ``stop()`` methods.
+    Runs a thread in the background that tracks the compute time, maximum RAM, and maximum GPU RAM usage within a context manager or explicit ``start()`` and ``stop()`` methods.
     Calculated quantities are scaled depending on the unit chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).
 
     :ivar float max_ram: The highest RAM observed while tracking.
-    :ivar float max_gpu: The highest GPU memory observed while tracking.
+    :ivar float max_gpu: The highest GPU RAM observed while tracking.
     :ivar float compute_time: The amount of time spent tracking.
     """
     def __init__(
@@ -21,7 +22,7 @@ class Tracker:
             time_unit: str = 'hours', n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False):
         """
         :param sleep_time: The number of seconds to sleep in between usage-collection iterations.
-        :param include_children: Whether to add the usage (RAM and GPU) of child processes. Otherwise only collects usage of the main process.
+        :param include_children: Whether to add the usage (RAM and GPU RAM) of child processes. Otherwise, only collects usage of the main process.
         :param ram_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
         :param gpu_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
         :param time_unit: One of 'seconds', 'minutes', 'hours', or 'days'.
@@ -95,7 +96,7 @@ class Tracker:
                 for child_process in child_processes:
                     child_proc_usage = child_process.memory_info().rss
                     curr_mem_usage += child_proc_usage
-            # Get the current GPU memory usage.
+            # Get the current GPU RAM usage.
             curr_gpu_usage = 0
             memory_used_command = 'nvidia-smi --query-compute-apps=pid,used_gpu_memory --format=csv,noheader'
             nvidia_smi_output = subp.check_output(memory_used_command.split(), stderr=subp.STDOUT).decode()
@@ -150,16 +151,16 @@ class Tracker:
         """
         self.__exit__()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'Max RAM: {self.max_ram:.3f} {self.ram_unit}\n' \
                f'Max GPU: {self.max_gpu:.3f} {self.gpu_unit}\n' \
                f'Compute time: {self.compute_time:.3f} {self.time_unit}'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)  # pragma: no cover
 
 
-def _testable_sleep(sleep_time: float) -> float:
+def _testable_sleep(sleep_time: float):
     """ The time.sleep() function causes issues when mocked in tests, so we create this wrapper that can be safely mocked.
 
     :return: The result of time.sleep()
