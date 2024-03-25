@@ -35,3 +35,6 @@ dependencies = {file = "requirements.txt"}
 
 [tool.setuptools_scm]
 write_to = "src/gpu_tracker/_version.py"
+
+[project.scripts]
+gpu-tracker = "gpu_tracker.__main__:main"

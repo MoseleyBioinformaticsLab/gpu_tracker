@@ -19,7 +19,8 @@ class Tracker:
     """
     def __init__(
             self, sleep_time: float = 1.0, include_children: bool = True, ram_unit: str = 'gigabytes', gpu_unit: str = 'gigabytes',
-            time_unit: str = 'hours', n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False):
+            time_unit: str = 'hours', n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False,
+            process_id: int = os.getpid()):
         """
         :param sleep_time: The number of seconds to sleep in between usage-collection iterations.
         :param include_children: Whether to add the usage (RAM and GPU RAM) of child processes. Otherwise, only collects usage of the main process.
@@ -29,6 +30,7 @@ class Tracker:
         :param n_join_attempts: The number of times the tracker attempts to join its underlying thread.
         :param join_timeout: The amount of time the tracker waits for its underlying thread to join.
         :param kill_if_join_fails: If true, kill the process if the underlying thread fails to join.
+        :param process_id: The ID of the main process (and its children if include_children is True) to track. Defaults to the current process.
         :raises ValueError: Raised if invalid units are provided.
         """
         Tracker._validate_mem_unit(ram_unit)
@@ -67,6 +69,7 @@ class Tracker:
         self.n_join_attempts = n_join_attempts
         self.join_timeout = join_timeout
         self.kill_if_join_fails = kill_if_join_fails
+        self.process_id = process_id
 
     @staticmethod
     def _validate_mem_unit(unit: str):
@@ -85,11 +88,10 @@ class Tracker:
         max_gpu = 0
         start_time = time.time()
         while not self._stop_event.is_set():
-            process_id = os.getpid()
-            process = psutil.Process(process_id)
+            process = psutil.Process(self.process_id)
             # Get the current RAM usage.
             curr_mem_usage = process.memory_info().rss
-            process_ids = {process_id}
+            process_ids = {self.process_id}
             if self.include_children:
                 child_processes = process.children()
                 process_ids.update(process.pid for process in child_processes)
