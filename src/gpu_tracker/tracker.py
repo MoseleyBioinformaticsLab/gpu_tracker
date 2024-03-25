@@ -85,37 +85,45 @@ class Tracker:
         max_gpu = 0
         start_time = time.time()
         while not self._stop_event.is_set():
-            process_id = os.getpid()
-            process = psutil.Process(process_id)
-            # Get the current RAM usage.
-            curr_mem_usage = process.memory_info().rss
-            process_ids = {process_id}
-            if self.include_children:
-                child_processes = process.children()
-                process_ids.update(process.pid for process in child_processes)
-                for child_process in child_processes:
-                    child_proc_usage = child_process.memory_info().rss
-                    curr_mem_usage += child_proc_usage
-            # Get the current GPU RAM usage.
-            curr_gpu_usage = 0
-            memory_used_command = 'nvidia-smi --query-compute-apps=pid,used_gpu_memory --format=csv,noheader'
-            nvidia_smi_output = subp.check_output(memory_used_command.split(), stderr=subp.STDOUT).decode()
-            if nvidia_smi_output:
-                nvidia_smi_output = nvidia_smi_output.strip().split('\n')
-                for process_info in nvidia_smi_output:
-                    pid, megabytes_used = process_info.strip().split(',')
-                    pid = int(pid.strip())
-                    if pid in process_ids:
-                        megabytes_used = int(megabytes_used.replace('MiB', '').strip())
-                        curr_gpu_usage += megabytes_used
-            # Update maximum resource usage.
-            if curr_mem_usage > max_ram:
-                max_ram = curr_mem_usage
-            if curr_gpu_usage > max_gpu:
-                max_gpu = curr_gpu_usage
-            _testable_sleep(self.sleep_time)
-            self.max_ram, self.max_gpu, self.compute_time = (
-                max_ram * self._ram_coefficient, max_gpu * self._gpu_coefficient, (time.time() - start_time) * self._time_coefficient)
+            try:
+                process_id = os.getpid()
+                process = psutil.Process(process_id)
+                # Get the current RAM usage.
+                curr_mem_usage = process.memory_info().rss
+                process_ids = {process_id}
+                if self.include_children:
+                    child_processes = process.children()
+                    process_ids.update(process.pid for process in child_processes)
+                    for child_process in child_processes:
+                        try:
+                            child_proc_usage = child_process.memory_info().rss
+                            curr_mem_usage += child_proc_usage
+                        except psutil.NoSuchProcess:
+                            # Race condition: The previously detected child process no longer exists.
+                            pass
+                # Get the current GPU RAM usage.
+                curr_gpu_usage = 0
+                memory_used_command = 'nvidia-smi --query-compute-apps=pid,used_gpu_memory --format=csv,noheader'
+                nvidia_smi_output = subp.check_output(memory_used_command.split(), stderr=subp.STDOUT).decode()
+                if nvidia_smi_output:
+                    nvidia_smi_output = nvidia_smi_output.strip().split('\n')
+                    for process_info in nvidia_smi_output:
+                        pid, megabytes_used = process_info.strip().split(',')
+                        pid = int(pid.strip())
+                        if pid in process_ids:
+                            megabytes_used = int(megabytes_used.replace('MiB', '').strip())
+                            curr_gpu_usage += megabytes_used
+                # Update maximum resource usage.
+                if curr_mem_usage > max_ram:
+                    max_ram = curr_mem_usage
+                if curr_gpu_usage > max_gpu:
+                    max_gpu = curr_gpu_usage
+                _testable_sleep(self.sleep_time)
+                self.max_ram, self.max_gpu, self.compute_time = (
+                    max_ram * self._ram_coefficient, max_gpu * self._gpu_coefficient, (time.time() - start_time) * self._time_coefficient)
+            except Exception as error:
+                log.warning('The following exception was caught in the Tracker\'s thread:')
+                print(error)
 
     def __enter__(self) -> Tracker:
         self._thread.start()
