@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gpu_tracker.tracker &mdash; gpu_tracker 0.1.dev1+g4158362 documentation</title>
+  <title>gpu_tracker.tracker &mdash; gpu_tracker 0.1.dev1+gf592bbe documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=6d66bd63"></script>
+        <script src="../../_static/documentation_options.js?v=8010e44d"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -34,7 +34,7 @@
             gpu_tracker
           </a>
               <div class="version">
-                0.1.dev1+g4158362
+                0.1.dev1+gf592bbe
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -166,37 +166,45 @@
         <span class="n">max_gpu</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
-            <span class="n">process_id</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
-            <span class="n">process</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">process_id</span><span class="p">)</span>
-            <span class="c1"># Get the current RAM usage.</span>
-            <span class="n">curr_mem_usage</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">memory_info</span><span class="p">()</span><span class="o">.</span><span class="n">rss</span>
-            <span class="n">process_ids</span> <span class="o">=</span> <span class="p">{</span><span class="n">process_id</span><span class="p">}</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_children</span><span class="p">:</span>
-                <span class="n">child_processes</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">children</span><span class="p">()</span>
-                <span class="n">process_ids</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span> <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">child_processes</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">child_process</span> <span class="ow">in</span> <span class="n">child_processes</span><span class="p">:</span>
-                    <span class="n">child_proc_usage</span> <span class="o">=</span> <span class="n">child_process</span><span class="o">.</span><span class="n">memory_info</span><span class="p">()</span><span class="o">.</span><span class="n">rss</span>
-                    <span class="n">curr_mem_usage</span> <span class="o">+=</span> <span class="n">child_proc_usage</span>
-            <span class="c1"># Get the current GPU RAM usage.</span>
-            <span class="n">curr_gpu_usage</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">memory_used_command</span> <span class="o">=</span> <span class="s1">&#39;nvidia-smi --query-compute-apps=pid,used_gpu_memory --format=csv,noheader&#39;</span>
-            <span class="n">nvidia_smi_output</span> <span class="o">=</span> <span class="n">subp</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">memory_used_command</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subp</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">nvidia_smi_output</span><span class="p">:</span>
-                <span class="n">nvidia_smi_output</span> <span class="o">=</span> <span class="n">nvidia_smi_output</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">process_info</span> <span class="ow">in</span> <span class="n">nvidia_smi_output</span><span class="p">:</span>
-                    <span class="n">pid</span><span class="p">,</span> <span class="n">megabytes_used</span> <span class="o">=</span> <span class="n">process_info</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-                    <span class="n">pid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-                    <span class="k">if</span> <span class="n">pid</span> <span class="ow">in</span> <span class="n">process_ids</span><span class="p">:</span>
-                        <span class="n">megabytes_used</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">megabytes_used</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;MiB&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-                        <span class="n">curr_gpu_usage</span> <span class="o">+=</span> <span class="n">megabytes_used</span>
-            <span class="c1"># Update maximum resource usage.</span>
-            <span class="k">if</span> <span class="n">curr_mem_usage</span> <span class="o">&gt;</span> <span class="n">max_ram</span><span class="p">:</span>
-                <span class="n">max_ram</span> <span class="o">=</span> <span class="n">curr_mem_usage</span>
-            <span class="k">if</span> <span class="n">curr_gpu_usage</span> <span class="o">&gt;</span> <span class="n">max_gpu</span><span class="p">:</span>
-                <span class="n">max_gpu</span> <span class="o">=</span> <span class="n">curr_gpu_usage</span>
-            <span class="n">_testable_sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sleep_time</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">max_ram</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_gpu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">max_ram</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ram_coefficient</span><span class="p">,</span> <span class="n">max_gpu</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpu_coefficient</span><span class="p">,</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_coefficient</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">process_id</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
+                <span class="n">process</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">process_id</span><span class="p">)</span>
+                <span class="c1"># Get the current RAM usage.</span>
+                <span class="n">curr_mem_usage</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">memory_info</span><span class="p">()</span><span class="o">.</span><span class="n">rss</span>
+                <span class="n">process_ids</span> <span class="o">=</span> <span class="p">{</span><span class="n">process_id</span><span class="p">}</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_children</span><span class="p">:</span>
+                    <span class="n">child_processes</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">children</span><span class="p">()</span>
+                    <span class="n">process_ids</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span> <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">child_processes</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">child_process</span> <span class="ow">in</span> <span class="n">child_processes</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">child_proc_usage</span> <span class="o">=</span> <span class="n">child_process</span><span class="o">.</span><span class="n">memory_info</span><span class="p">()</span><span class="o">.</span><span class="n">rss</span>
+                            <span class="n">curr_mem_usage</span> <span class="o">+=</span> <span class="n">child_proc_usage</span>
+                        <span class="k">except</span> <span class="n">psutil</span><span class="o">.</span><span class="n">NoSuchProcess</span><span class="p">:</span>
+                            <span class="c1"># Race condition: The previously detected child process no longer exists.</span>
+                            <span class="k">pass</span>
+                <span class="c1"># Get the current GPU RAM usage.</span>
+                <span class="n">curr_gpu_usage</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">memory_used_command</span> <span class="o">=</span> <span class="s1">&#39;nvidia-smi --query-compute-apps=pid,used_gpu_memory --format=csv,noheader&#39;</span>
+                <span class="n">nvidia_smi_output</span> <span class="o">=</span> <span class="n">subp</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">memory_used_command</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subp</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">nvidia_smi_output</span><span class="p">:</span>
+                    <span class="n">nvidia_smi_output</span> <span class="o">=</span> <span class="n">nvidia_smi_output</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">process_info</span> <span class="ow">in</span> <span class="n">nvidia_smi_output</span><span class="p">:</span>
+                        <span class="n">pid</span><span class="p">,</span> <span class="n">megabytes_used</span> <span class="o">=</span> <span class="n">process_info</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+                        <span class="n">pid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                        <span class="k">if</span> <span class="n">pid</span> <span class="ow">in</span> <span class="n">process_ids</span><span class="p">:</span>
+                            <span class="n">megabytes_used</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">megabytes_used</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;MiB&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                            <span class="n">curr_gpu_usage</span> <span class="o">+=</span> <span class="n">megabytes_used</span>
+                <span class="c1"># Update maximum resource usage.</span>
+                <span class="k">if</span> <span class="n">curr_mem_usage</span> <span class="o">&gt;</span> <span class="n">max_ram</span><span class="p">:</span>
+                    <span class="n">max_ram</span> <span class="o">=</span> <span class="n">curr_mem_usage</span>
+                <span class="k">if</span> <span class="n">curr_gpu_usage</span> <span class="o">&gt;</span> <span class="n">max_gpu</span><span class="p">:</span>
+                    <span class="n">max_gpu</span> <span class="o">=</span> <span class="n">curr_gpu_usage</span>
+                <span class="n">_testable_sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sleep_time</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">max_ram</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_gpu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">max_ram</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ram_coefficient</span><span class="p">,</span> <span class="n">max_gpu</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpu_coefficient</span><span class="p">,</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_coefficient</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;The following exception was caught in the Tracker</span><span class="se">\&#39;</span><span class="s1">s thread:&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tracker</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
