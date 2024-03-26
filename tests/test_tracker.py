@@ -1,5 +1,5 @@
 import typing as typ
-import gpu_tracker.tracker as track
+import gpu_tracker as gput
 import pytest as pt
 
 
@@ -28,10 +28,11 @@ test_tracker_data = [
 ]
 
 
-@pt.mark.parametrize('include_children,expected_ram,expected_gpu,expected_time,ram_unit,gpu_unit,time_unit,tracker_str', test_tracker_data)
+@pt.mark.parametrize(
+    'include_children,expected_ram,expected_gpu_ram,expected_time,ram_unit,gpu_ram_unit,time_unit,tracker_str', test_tracker_data)
 def test_tracker(
-        mocker, use_context_manager: bool, include_children: bool, expected_ram: float, expected_gpu: float, expected_time: float,
-        ram_unit: str, gpu_unit: str, time_unit: str, tracker_str):
+        mocker, use_context_manager: bool, include_children: bool, expected_ram: float, expected_gpu_ram: float, expected_time: float,
+        ram_unit: str, gpu_ram_unit: str, time_unit: str, tracker_str):
     class EventMock:
         def __init__(self):
             self.count = 0
@@ -82,21 +83,21 @@ def test_tracker(
     sleep_time = 1.5
     join_timeout = 5.5
     if use_context_manager:
-        with track.Tracker(
-                include_children=include_children, sleep_time=sleep_time, join_timeout=join_timeout, ram_unit=ram_unit, gpu_unit=gpu_unit,
-                time_unit=time_unit) as tracker:
+        with gput.Tracker(
+                include_children=include_children, sleep_time=sleep_time, join_timeout=join_timeout, ram_unit=ram_unit,
+                gpu_ram_unit=gpu_ram_unit, time_unit=time_unit) as tracker:
             pass
     else:
-        tracker = track.Tracker(
-            include_children=include_children, sleep_time=sleep_time, join_timeout=join_timeout, ram_unit=ram_unit, gpu_unit=gpu_unit,
-            time_unit=time_unit)
+        tracker = gput.Tracker(
+            include_children=include_children, sleep_time=sleep_time, join_timeout=join_timeout, ram_unit=ram_unit,
+            gpu_ram_unit=gpu_ram_unit, time_unit=time_unit)
         tracker.start()
         tracker.stop()
     EventMock.assert_called_once_with()
     ThreadMock.assert_called_once_with(target=tracker._profile)
     tracker._thread.start.assert_called_once_with()
     _assert_args_list(mock=tracker._stop_event.is_set, expected_args_list=[()] * 4)
-    _assert_args_list(mock=getpid_mock, expected_args_list=[()] * 3)
+    _assert_args_list(mock=getpid_mock, expected_args_list=[()])
     _assert_args_list(mock=ProcessMock, expected_args_list=[(process_id,)] * 3)
     _assert_args_list(mock=process_mock.memory_info, expected_args_list=[()] * 3)
     _assert_args_list(mock=process_mock.children, expected_args_list=[()] * 3 if include_children else [])
@@ -106,7 +107,7 @@ def test_tracker(
     _assert_args_list(mock=time_mock, expected_args_list=[()] * 4)
     _assert_args_list(mock=sleep_mock, expected_args_list=[(sleep_time,)] * 3)
     assert tracker.max_ram == expected_ram
-    assert tracker.max_gpu == expected_gpu
+    assert tracker.max_gpu_ram == expected_gpu_ram
     assert tracker.compute_time == expected_time
     assert str(tracker) == tracker_str
     tracker._stop_event.set.assert_called_once_with()
@@ -129,7 +130,7 @@ def test_warnings(mocker, kill_if_join_fails: bool, caplog):
         return_value=mocker.MagicMock(start=mocker.MagicMock(), is_alive=mocker.MagicMock(return_value=True), join=mocker.MagicMock())
     )
     exit_mock = mocker.patch('gpu_tracker.tracker.sys.exit')
-    with track.Tracker(kill_if_join_fails=kill_if_join_fails, n_join_attempts=n_join_attempts, join_timeout=join_timeout) as tracker:
+    with gput.Tracker(kill_if_join_fails=kill_if_join_fails, n_join_attempts=n_join_attempts, join_timeout=join_timeout) as tracker:
         pass
     _assert_args_list(mock=tracker._stop_event.set, expected_args_list=[()] * n_join_attempts)
     _assert_args_list(mock=tracker._thread.join, expected_args_list=[{'timeout': join_timeout}] * n_join_attempts, use_kwargs=True)
@@ -149,5 +150,5 @@ def test_warnings(mocker, kill_if_join_fails: bool, caplog):
 
 def test_validate_unit():
     with pt.raises(ValueError) as error:
-        track.Tracker(ram_unit='milibytes')
+        gput.Tracker(ram_unit='milibytes')
     assert str(error.value) == '"milibytes" is not a valid memory unit. Valid values are bytes, gigabytes, kilobytes, megabytes, terabytes'
