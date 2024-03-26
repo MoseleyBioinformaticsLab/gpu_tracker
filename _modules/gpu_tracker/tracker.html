@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gpu_tracker.tracker &mdash; gpu_tracker 0.1.dev1+gb893af5 documentation</title>
+  <title>gpu_tracker.tracker &mdash; gpu_tracker 0.1.dev1+g2012a0f documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=27d42795"></script>
+        <script src="../../_static/documentation_options.js?v=14420b4d"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -34,7 +34,7 @@
             gpu_tracker
           </a>
               <div class="version">
-                0.1.dev1+gb893af5
+                0.1.dev1+g2012a0f
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -77,7 +77,8 @@
            <div itemprop="articleBody">
              
   <h1>Source code for gpu_tracker.tracker</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="sd">&quot;&quot;&quot;The ``tracker`` module contains the ``Tracker`` class which can alternatively be imported directly from the ``gpu_tracker`` package.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">threading</span> <span class="k">as</span> <span class="nn">thrd</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -95,30 +96,33 @@
 <span class="sd">    Calculated quantities are scaled depending on the unit chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).</span>
 
 <span class="sd">    :ivar float max_ram: The highest RAM observed while tracking.</span>
-<span class="sd">    :ivar float max_gpu: The highest GPU RAM observed while tracking.</span>
+<span class="sd">    :ivar float max_gpu_ram: The highest GPU RAM observed while tracking.</span>
 <span class="sd">    :ivar float compute_time: The amount of time spent tracking.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">sleep_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">include_children</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">ram_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;gigabytes&#39;</span><span class="p">,</span> <span class="n">gpu_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;gigabytes&#39;</span><span class="p">,</span>
-            <span class="n">time_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;hours&#39;</span><span class="p">,</span> <span class="n">n_join_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">join_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span> <span class="n">kill_if_join_fails</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">sleep_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">include_children</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">ram_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;gigabytes&#39;</span><span class="p">,</span> <span class="n">gpu_ram_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;gigabytes&#39;</span><span class="p">,</span>
+            <span class="n">time_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;hours&#39;</span><span class="p">,</span> <span class="n">n_join_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">join_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span> <span class="n">kill_if_join_fails</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="n">process_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param sleep_time: The number of seconds to sleep in between usage-collection iterations.</span>
 <span class="sd">        :param include_children: Whether to add the usage (RAM and GPU RAM) of child processes. Otherwise, only collects usage of the main process.</span>
 <span class="sd">        :param ram_unit: One of &#39;bytes&#39;, &#39;kilobytes&#39;, &#39;megabytes&#39;, &#39;gigabytes&#39;, or &#39;terabytes&#39;.</span>
-<span class="sd">        :param gpu_unit: One of &#39;bytes&#39;, &#39;kilobytes&#39;, &#39;megabytes&#39;, &#39;gigabytes&#39;, or &#39;terabytes&#39;.</span>
+<span class="sd">        :param gpu_ram_unit: One of &#39;bytes&#39;, &#39;kilobytes&#39;, &#39;megabytes&#39;, &#39;gigabytes&#39;, or &#39;terabytes&#39;.</span>
 <span class="sd">        :param time_unit: One of &#39;seconds&#39;, &#39;minutes&#39;, &#39;hours&#39;, or &#39;days&#39;.</span>
 <span class="sd">        :param n_join_attempts: The number of times the tracker attempts to join its underlying thread.</span>
 <span class="sd">        :param join_timeout: The amount of time the tracker waits for its underlying thread to join.</span>
 <span class="sd">        :param kill_if_join_fails: If true, kill the process if the underlying thread fails to join.</span>
+<span class="sd">        :param process_id: The ID of the process to track (along with its children if ``include_children`` is set). Defaults to the current process.</span>
 <span class="sd">        :raises ValueError: Raised if invalid units are provided.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">Tracker</span><span class="o">.</span><span class="n">_validate_mem_unit</span><span class="p">(</span><span class="n">ram_unit</span><span class="p">)</span>
-        <span class="n">Tracker</span><span class="o">.</span><span class="n">_validate_mem_unit</span><span class="p">(</span><span class="n">gpu_unit</span><span class="p">)</span>
+        <span class="n">Tracker</span><span class="o">.</span><span class="n">_validate_mem_unit</span><span class="p">(</span><span class="n">gpu_ram_unit</span><span class="p">)</span>
         <span class="n">Tracker</span><span class="o">.</span><span class="n">_validate_unit</span><span class="p">(</span><span class="n">time_unit</span><span class="p">,</span> <span class="n">valid_units</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;seconds&#39;</span><span class="p">,</span> <span class="s1">&#39;minutes&#39;</span><span class="p">,</span> <span class="s1">&#39;hours&#39;</span><span class="p">,</span> <span class="s1">&#39;days&#39;</span><span class="p">},</span> <span class="n">unit_type</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sleep_time</span> <span class="o">=</span> <span class="n">sleep_time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">include_children</span> <span class="o">=</span> <span class="n">include_children</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ram_unit</span> <span class="o">=</span> <span class="n">ram_unit</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gpu_unit</span> <span class="o">=</span> <span class="n">gpu_unit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gpu_ram_unit</span> <span class="o">=</span> <span class="n">gpu_ram_unit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_unit</span> <span class="o">=</span> <span class="n">time_unit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ram_coefficient</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;bytes&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
@@ -127,13 +131,13 @@
             <span class="s1">&#39;gigabytes&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span>
             <span class="s1">&#39;terabytes&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="mf">1e12</span>
         <span class="p">}[</span><span class="n">ram_unit</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_gpu_coefficient</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gpu_ram_coefficient</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;bytes&#39;</span><span class="p">:</span> <span class="mf">1e6</span><span class="p">,</span>
             <span class="s1">&#39;kilobytes&#39;</span><span class="p">:</span> <span class="mf">1e3</span><span class="p">,</span>
             <span class="s1">&#39;megabytes&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
             <span class="s1">&#39;gigabytes&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="mf">1e3</span><span class="p">,</span>
             <span class="s1">&#39;terabytes&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="mf">1e6</span>
-        <span class="p">}[</span><span class="n">gpu_unit</span><span class="p">]</span>
+        <span class="p">}[</span><span class="n">gpu_ram_unit</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_time_coefficient</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;seconds&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
             <span class="s1">&#39;minutes&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span>
@@ -143,11 +147,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span> <span class="o">=</span> <span class="n">thrd</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span> <span class="o">=</span> <span class="n">thrd</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_profile</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_ram</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_gpu</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_gpu_ram</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_join_attempts</span> <span class="o">=</span> <span class="n">n_join_attempts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">join_timeout</span> <span class="o">=</span> <span class="n">join_timeout</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kill_if_join_fails</span> <span class="o">=</span> <span class="n">kill_if_join_fails</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_id</span> <span class="o">=</span> <span class="n">process_id</span> <span class="k">if</span> <span class="n">process_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_validate_mem_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -163,15 +168,14 @@
 <span class="sd">        Continuously tracks computational resource usage until the end of tracking is triggered, either by exiting the context manager or by a call to stop()</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">max_ram</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">max_gpu</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">max_gpu_ram</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">process_id</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
-                <span class="n">process</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">process_id</span><span class="p">)</span>
+                <span class="n">process</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_id</span><span class="p">)</span>
                 <span class="c1"># Get the current RAM usage.</span>
                 <span class="n">curr_mem_usage</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">memory_info</span><span class="p">()</span><span class="o">.</span><span class="n">rss</span>
-                <span class="n">process_ids</span> <span class="o">=</span> <span class="p">{</span><span class="n">process_id</span><span class="p">}</span>
+                <span class="n">process_ids</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">process_id</span><span class="p">}</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_children</span><span class="p">:</span>
                     <span class="n">child_processes</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">children</span><span class="p">()</span>
                     <span class="n">process_ids</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span> <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">child_processes</span><span class="p">)</span>
@@ -180,10 +184,10 @@
                             <span class="n">child_proc_usage</span> <span class="o">=</span> <span class="n">child_process</span><span class="o">.</span><span class="n">memory_info</span><span class="p">()</span><span class="o">.</span><span class="n">rss</span>
                             <span class="n">curr_mem_usage</span> <span class="o">+=</span> <span class="n">child_proc_usage</span>
                         <span class="k">except</span> <span class="n">psutil</span><span class="o">.</span><span class="n">NoSuchProcess</span><span class="p">:</span>
-                            <span class="c1"># Race condition: The previously detected child process no longer exists.</span>
-                            <span class="k">pass</span>
+                            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                                <span class="s1">&#39;Race condition: Failed to collect usage of a previously detected child process that no longer exists.&#39;</span><span class="p">)</span>
                 <span class="c1"># Get the current GPU RAM usage.</span>
-                <span class="n">curr_gpu_usage</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">curr_gpu_ram</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="n">memory_used_command</span> <span class="o">=</span> <span class="s1">&#39;nvidia-smi --query-compute-apps=pid,used_gpu_memory --format=csv,noheader&#39;</span>
                 <span class="n">nvidia_smi_output</span> <span class="o">=</span> <span class="n">subp</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">memory_used_command</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subp</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">nvidia_smi_output</span><span class="p">:</span>
@@ -193,17 +197,21 @@
                         <span class="n">pid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
                         <span class="k">if</span> <span class="n">pid</span> <span class="ow">in</span> <span class="n">process_ids</span><span class="p">:</span>
                             <span class="n">megabytes_used</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">megabytes_used</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;MiB&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-                            <span class="n">curr_gpu_usage</span> <span class="o">+=</span> <span class="n">megabytes_used</span>
+                            <span class="n">curr_gpu_ram</span> <span class="o">+=</span> <span class="n">megabytes_used</span>
                 <span class="c1"># Update maximum resource usage.</span>
                 <span class="k">if</span> <span class="n">curr_mem_usage</span> <span class="o">&gt;</span> <span class="n">max_ram</span><span class="p">:</span>
                     <span class="n">max_ram</span> <span class="o">=</span> <span class="n">curr_mem_usage</span>
-                <span class="k">if</span> <span class="n">curr_gpu_usage</span> <span class="o">&gt;</span> <span class="n">max_gpu</span><span class="p">:</span>
-                    <span class="n">max_gpu</span> <span class="o">=</span> <span class="n">curr_gpu_usage</span>
+                <span class="k">if</span> <span class="n">curr_gpu_ram</span> <span class="o">&gt;</span> <span class="n">max_gpu_ram</span><span class="p">:</span>
+                    <span class="n">max_gpu_ram</span> <span class="o">=</span> <span class="n">curr_gpu_ram</span>
                 <span class="n">_testable_sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sleep_time</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">max_ram</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_gpu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">max_ram</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ram_coefficient</span><span class="p">,</span> <span class="n">max_gpu</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpu_coefficient</span><span class="p">,</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_coefficient</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">max_ram</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_gpu_ram</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">max_ram</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ram_coefficient</span><span class="p">,</span> <span class="n">max_gpu_ram</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpu_ram_coefficient</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_coefficient</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">psutil</span><span class="o">.</span><span class="n">NoSuchProcess</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Failed to track a process that does not exist. &#39;</span>
+                            <span class="s1">&#39;This possibly resulted from the process completing before tracking could begin.&#39;</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
-                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;The following exception was caught in the Tracker</span><span class="se">\&#39;</span><span class="s1">s thread:&#39;</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;The following uncaught exception occurred in the Tracker</span><span class="se">\&#39;</span><span class="s1">s thread:&#39;</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tracker</span><span class="p">:</span>
@@ -232,7 +240,7 @@
 <a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.Tracker.start">[docs]</a>
     <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Begins tracking for the duration of time until stop() is called. Equivalent to entering the context manager.</span>
+<span class="sd">        Begins tracking for the duration of time until ``stop()`` is called. Equivalent to entering the context manager.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span></div>
 
@@ -246,10 +254,36 @@
         <span class="bp">self</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">()</span></div>
 
 
+<div class="viewcode-block" id="Tracker.to_json">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.Tracker.to_json">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs a dictionary containing the computational-resource-measurements and their units.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;max_ram&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_ram</span><span class="p">,</span>
+            <span class="s1">&#39;ram_unit&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ram_unit</span><span class="p">,</span>
+            <span class="s1">&#39;max_gpu_ram&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_gpu_ram</span><span class="p">,</span>
+            <span class="s1">&#39;gpu_ram_unit&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpu_ram_unit</span><span class="p">,</span>
+            <span class="s1">&#39;compute_time&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span><span class="p">,</span>
+            <span class="s1">&#39;time_unit&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_unit</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Tracker.__str__">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.Tracker.__str__">[docs]</a>
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;Max RAM: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_ram</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ram_unit</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span> \
-               <span class="sa">f</span><span class="s1">&#39;Max GPU: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_gpu</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">gpu_unit</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span> \
-               <span class="sa">f</span><span class="s1">&#39;Compute time: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time_unit</span><span class="si">}</span><span class="s1">&#39;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs a string representation of the computational-resource-usage measurements and their units.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">max_ram</span><span class="p">,</span> <span class="n">max_gpu_ram</span><span class="p">,</span> <span class="n">compute_time</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">measurement</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">if</span> <span class="n">measurement</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;null&#39;</span> <span class="k">for</span> <span class="n">measurement</span><span class="p">,</span> <span class="n">unit</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_ram</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ram_unit</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_gpu_ram</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpu_ram_unit</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_unit</span><span class="p">)))</span>
+        <span class="k">return</span> \
+            <span class="sa">f</span><span class="s1">&#39;Max RAM: </span><span class="si">{</span><span class="n">max_ram</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span> \
+            <span class="sa">f</span><span class="s1">&#39;Max GPU: </span><span class="si">{</span><span class="n">max_gpu_ram</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span> \
+            <span class="sa">f</span><span class="s1">&#39;Compute time: </span><span class="si">{</span><span class="n">compute_time</span><span class="si">}</span><span class="s1">&#39;</span></div>
+
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>  <span class="c1"># pragma: no cover</span></div>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tutorial &mdash; gpu_tracker 0.1.dev1+gb893af5 documentation</title>
+  <title>Tutorial &mdash; gpu_tracker 0.1.dev1+g2012a0f documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=27d42795"></script>
+        <script src="_static/documentation_options.js?v=14420b4d"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -37,7 +37,7 @@
             gpu_tracker
           </a>
               <div class="version">
-                0.1.dev1+gb893af5
+                0.1.dev1+g2012a0f
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -50,7 +50,11 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="guide.html">User Guide</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#api">API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cli">CLI</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 </ul>
@@ -81,58 +85,73 @@
              
   <section id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gpu_tracker.tracker</span> <span class="k">as</span> <span class="nn">track</span>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gpu_tracker</span> <span class="k">as</span> <span class="nn">gput</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">gpu_tracker.tracker</span></code> module provides the <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class which
-uses an underlying thread to measure computational resource usage,
-namely the compute time, maximum RAM used, and maximum GPU RAM used. The
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">gpu_tracker</span></code> package provides the <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class which uses an
+underlying thread to measure computational resource usage, namely the
+compute time, maximum RAM used, and maximum GPU RAM used. The
 <code class="docutils literal notranslate"><span class="pre">start()</span></code> method starts this thread which tracks usage in the
 background. After calling <code class="docutils literal notranslate"><span class="pre">start()</span></code>, write the code to measure
 resource usage, followed by calling the <code class="docutils literal notranslate"><span class="pre">stop()</span></code> method. The compute
 time will be the time from the call to <code class="docutils literal notranslate"><span class="pre">start()</span></code> to the call to
-<code class="docutils literal notranslate"><span class="pre">stop()</span></code> and the RAM and GPU quantities will be the amount of RAM used
-by the code that’s in between <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code>. The
+<code class="docutils literal notranslate"><span class="pre">stop()</span></code> and the RAM and GPU RAM quantities will be the amount of RAM
+used by the code that’s in between <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code>. The
 <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class additionally has a <code class="docutils literal notranslate"><span class="pre">__str__</span></code> method so it can be
 printed as a string that formats the values and units of each
 computational resource.</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span> <span class="o">=</span> <span class="n">track</span><span class="o">.</span><span class="n">Tracker</span><span class="p">()</span>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span> <span class="o">=</span> <span class="n">gput</span><span class="o">.</span><span class="n">Tracker</span><span class="p">()</span>
 <span class="n">tracker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 <span class="c1"># Perform expensive operations</span>
 <span class="n">tracker</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Max</span> <span class="n">RAM</span><span class="p">:</span> <span class="mf">0.068</span> <span class="n">gigabytes</span>
-<span class="n">Max</span> <span class="n">GPU</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">gigabytes</span>
-<span class="n">Compute</span> <span class="n">time</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">hours</span>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 0.067 gigabytes
+Max GPU: 0.000 gigabytes
+Compute time: 0.000 hours
 </pre></div>
 </div>
 <p>The equivalent can be accomplished using <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> as a context
 manager rather than explicitly calling <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code>.</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">track</span><span class="o">.</span><span class="n">Tracker</span><span class="p">()</span> <span class="k">as</span> <span class="n">tracker</span><span class="p">:</span>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gput</span><span class="o">.</span><span class="n">Tracker</span><span class="p">()</span> <span class="k">as</span> <span class="n">tracker</span><span class="p">:</span>
     <span class="c1"># Perform expensive operations</span>
     <span class="k">pass</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Max</span> <span class="n">RAM</span><span class="p">:</span> <span class="mf">0.068</span> <span class="n">gigabytes</span>
-<span class="n">Max</span> <span class="n">GPU</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">gigabytes</span>
-<span class="n">Compute</span> <span class="n">time</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">hours</span>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 0.067 gigabytes
+Max GPU: 0.000 gigabytes
+Compute time: 0.000 hours
 </pre></div>
 </div>
 <p>The units of the computational resources can be modified as desired. For
 example, to measure the RAM in megabytes, the GPU RAM in kilobytes, and
 the compute time in seconds:</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">track</span><span class="o">.</span><span class="n">Tracker</span><span class="p">(</span><span class="n">ram_unit</span><span class="o">=</span><span class="s1">&#39;megabytes&#39;</span><span class="p">,</span> <span class="n">gpu_unit</span><span class="o">=</span><span class="s1">&#39;kilobytes&#39;</span><span class="p">,</span> <span class="n">time_unit</span><span class="o">=</span><span class="s1">&#39;seconds&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tracker</span><span class="p">:</span>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gput</span><span class="o">.</span><span class="n">Tracker</span><span class="p">(</span><span class="n">ram_unit</span><span class="o">=</span><span class="s1">&#39;megabytes&#39;</span><span class="p">,</span> <span class="n">gpu_ram_unit</span><span class="o">=</span><span class="s1">&#39;kilobytes&#39;</span><span class="p">,</span> <span class="n">time_unit</span><span class="o">=</span><span class="s1">&#39;seconds&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tracker</span><span class="p">:</span>
     <span class="c1"># Perform expensive operations</span>
     <span class="k">pass</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Max</span> <span class="n">RAM</span><span class="p">:</span> <span class="mf">67.662</span> <span class="n">megabytes</span>
-<span class="n">Max</span> <span class="n">GPU</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">kilobytes</span>
-<span class="n">Compute</span> <span class="n">time</span><span class="p">:</span> <span class="mf">1.043</span> <span class="n">seconds</span>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 67.240 megabytes
+Max GPU: 0.000 kilobytes
+Compute time: 1.035 seconds
+</pre></div>
+</div>
+<p>The same information can be obtained in a dictionary via the
+<code class="docutils literal notranslate"><span class="pre">Tracker</span></code>’s <code class="docutils literal notranslate"><span class="pre">to_json()</span></code> method.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{&#39;max_ram&#39;: 67.239936,
+ &#39;ram_unit&#39;: &#39;megabytes&#39;,
+ &#39;max_gpu_ram&#39;: 0.0,
+ &#39;gpu_ram_unit&#39;: &#39;kilobytes&#39;,
+ &#39;compute_time&#39;: 1.034773826599121,
+ &#39;time_unit&#39;: &#39;seconds&#39;}
 </pre></div>
 </div>
 <p>Additionally, the individual measurements and units are available as
@@ -140,9 +159,114 @@ attributes in the <code class="docutils literal notranslate"><span class="pre">T
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">max_ram</span><span class="p">,</span> <span class="n">tracker</span><span class="o">.</span><span class="n">ram_unit</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">67.661824</span> <span class="n">megabytes</span>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>67.239936 megabytes
 </pre></div>
 </div>
+</section>
+<section id="cli">
+<h2>CLI<a class="headerlink" href="#cli" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">gpu-tracker</span></code> package also comes with a commandline interface that
+can track the computational-resource-usage of any shell command, not
+just python code. Entering <code class="docutils literal notranslate"><span class="pre">gpu-tracker</span> <span class="pre">-h</span></code> in a shell will show the
+help message.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ gpu-tracker -h
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Tracks the computational resource usage (RAM, GPU RAM, and compute time) of a process corresponding to a given shell command.
+
+Usage:
+    gpu-tracker --execute=&lt;command&gt; [--output=&lt;output&gt;] [--format=&lt;format&gt;] [--st=&lt;sleep-time&gt;] [--ic] [--ru=&lt;ram-unit&gt;] [--gru=&lt;gpu-unit&gt;] [--tu=&lt;time-unit&gt;]
+
+Options:
+    -h --help               Show this help message.
+    -e --execute=&lt;command&gt;  The command to run along with its arguments all within quotes e.g. &quot;ls -l -a&quot;.
+    -o --output=&lt;output&gt;    File path to store the computational-resource-usage measurements. If not set, prints measurements to the screen.
+    -f --format=&lt;format&gt;    File format of the output. Either &#39;json&#39; or &#39;text&#39;. Defaults to &#39;text&#39;.
+    --st=&lt;sleep-time&gt;       The number of seconds to sleep in between usage-collection iterations.
+    --ic                    Stands for include-children; Whether to add the usage (RAM and GPU RAM) of child processes. Otherwise, only collects usage of the main process.
+    --ru=&lt;ram-unit&gt;         One of &#39;bytes&#39;, &#39;kilobytes&#39;, &#39;megabytes&#39;, &#39;gigabytes&#39;, or &#39;terabytes&#39;.
+    --gru=&lt;gpu-ram-unit&gt;    One of &#39;bytes&#39;, &#39;kilobytes&#39;, &#39;megabytes&#39;, &#39;gigabytes&#39;, or &#39;terabytes&#39;.
+    --tu=&lt;time-unit&gt;        One of &#39;seconds&#39;, &#39;minutes&#39;, &#39;hours&#39;, or &#39;days&#39;.
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">-e</span></code> or <code class="docutils literal notranslate"><span class="pre">--execute</span></code> is a required option where the desired shell
+command is provided, with both the command and its proceeding arguments
+surrounded by quotes. Below is an example of running the <code class="docutils literal notranslate"><span class="pre">sleep</span></code>
+command with an argument of 2 seconds. When the command completes, its
+status code is reported.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ gpu-tracker -e &#39;sleep 2&#39;
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Resource tracking complete. Process completed with status code: 0
+Max RAM: 0.002 gigabytes
+Max GPU: 0.000 gigabytes
+Compute time: 0.001 hours
+</pre></div>
+</div>
+<p>Like with the API, the units can be modified. For example, –tu stands
+for time-unit and –ru stands for ram-unit.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ gpu-tracker -e &#39;sleep 2&#39; --tu=seconds --ru=megabytes
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Resource tracking complete. Process completed with status code: 0
+Max RAM: 1.966 megabytes
+Max GPU: 0.000 gigabytes
+Compute time: 2.052 seconds
+</pre></div>
+</div>
+<p>By default, the computational-resource-usage statistics are printed to
+the screen. The <code class="docutils literal notranslate"><span class="pre">-o</span></code> or <code class="docutils literal notranslate"><span class="pre">--output</span></code> option can be specified to store
+that same content in a file.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ gpu-tracker -e &#39;sleep 2&#39; -o out.txt
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Resource tracking complete. Process completed with status code: 0
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cat out.txt
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 0.002 gigabytes
+Max GPU: 0.000 gigabytes
+Compute time: 0.001 hours
+</pre></div>
+</div>
+<p>By default, the format of the output is “text”. The <code class="docutils literal notranslate"><span class="pre">-f</span></code> or
+<code class="docutils literal notranslate"><span class="pre">--format</span></code> option can specify the format to be “json” instead.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ gpu-tracker -e &#39;sleep 2&#39; -f json
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Resource tracking complete. Process completed with status code: 0
+{
+ &quot;max_ram&quot;: 0.0018350080000000002,
+ &quot;ram_unit&quot;: &quot;gigabytes&quot;,
+ &quot;max_gpu_ram&quot;: 0.0,
+ &quot;gpu_ram_unit&quot;: &quot;gigabytes&quot;,
+ &quot;compute_time&quot;: 0.0005692813131544325,
+ &quot;time_unit&quot;: &quot;hours&quot;
+}
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ gpu-tracker -e &#39;sleep 2&#39; -f json -o out.json
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Resource tracking complete. Process completed with status code: 0
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cat out.json
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
+ &quot;max_ram&quot;: 0.0018350080000000002,
+ &quot;ram_unit&quot;: &quot;gigabytes&quot;,
+ &quot;max_gpu_ram&quot;: 0.0,
+ &quot;gpu_ram_unit&quot;: &quot;gigabytes&quot;,
+ &quot;compute_time&quot;: 0.0005693478716744317,
+ &quot;time_unit&quot;: &quot;hours&quot;
+}
+</pre></div>
+</div>
+</section>
 </section>
 
 
