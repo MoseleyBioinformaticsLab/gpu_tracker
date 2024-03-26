@@ -189,7 +189,7 @@ class Tracker:
                 (self.max_ram, self.ram_unit), (self.max_gpu_ram, self.gpu_ram_unit), (self.compute_time, self.time_unit)))
         return \
             f'Max RAM: {max_ram}\n' \
-            f'Max GPU: {max_gpu_ram}\n' \
+            f'Max GPU RAM: {max_gpu_ram}\n' \
             f'Compute time: {compute_time}'
 
     def __repr__(self) -> str:
