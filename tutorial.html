@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tutorial &mdash; gpu_tracker 0.1.dev1+ge6efde6 documentation</title>
+  <title>Tutorial &mdash; gpu_tracker 0.1.dev1+gc4b379f documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=4af81299"></script>
+        <script src="_static/documentation_options.js?v=937edde5"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -37,7 +37,7 @@
             gpu_tracker
           </a>
               <div class="version">
-                0.1.dev1+ge6efde6
+                0.1.dev1+gc4b379f
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -109,8 +109,8 @@ computational resource.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 0.067 gigabytes
-Max GPU: 0.000 gigabytes
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 0.068 gigabytes
+Max GPU RAM: 0.000 gigabytes
 Compute time: 0.000 hours
 </pre></div>
 </div>
@@ -122,8 +122,8 @@ manager rather than explicitly calling <code class="docutils literal notranslate
 <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 0.067 gigabytes
-Max GPU: 0.000 gigabytes
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 0.068 gigabytes
+Max GPU RAM: 0.000 gigabytes
 Compute time: 0.000 hours
 </pre></div>
 </div>
@@ -136,9 +136,9 @@ the compute time in seconds:</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 67.240 megabytes
-Max GPU: 0.000 kilobytes
-Compute time: 1.035 seconds
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 67.949 megabytes
+Max GPU RAM: 0.000 kilobytes
+Compute time: 1.031 seconds
 </pre></div>
 </div>
 <p>The same information can be obtained in a dictionary via the
@@ -146,11 +146,11 @@ Compute time: 1.035 seconds
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{&#39;max_ram&#39;: 67.239936,
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{&#39;max_ram&#39;: 67.948544,
  &#39;ram_unit&#39;: &#39;megabytes&#39;,
  &#39;max_gpu_ram&#39;: 0.0,
  &#39;gpu_ram_unit&#39;: &#39;kilobytes&#39;,
- &#39;compute_time&#39;: 1.034773826599121,
+ &#39;compute_time&#39;: 1.0309913158416748,
  &#39;time_unit&#39;: &#39;seconds&#39;}
 </pre></div>
 </div>
@@ -159,7 +159,7 @@ attributes in the <code class="docutils literal notranslate"><span class="pre">T
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">max_ram</span><span class="p">,</span> <span class="n">tracker</span><span class="o">.</span><span class="n">ram_unit</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>67.239936 megabytes
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>67.948544 megabytes
 </pre></div>
 </div>
 </section>
@@ -199,7 +199,7 @@ status code is reported.</p>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Resource tracking complete. Process completed with status code: 0
 Max RAM: 0.002 gigabytes
-Max GPU: 0.000 gigabytes
+Max GPU RAM: 0.000 gigabytes
 Compute time: 0.001 hours
 </pre></div>
 </div>
@@ -209,9 +209,9 @@ for time-unit and –ru stands for ram-unit.</p>
 </pre></div>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Resource tracking complete. Process completed with status code: 0
-Max RAM: 1.966 megabytes
-Max GPU: 0.000 gigabytes
-Compute time: 2.052 seconds
+Max RAM: 1.835 megabytes
+Max GPU RAM: 0.000 gigabytes
+Compute time: 2.050 seconds
 </pre></div>
 </div>
 <p>By default, the computational-resource-usage statistics are printed to
@@ -227,7 +227,7 @@ that same content in a file.</p>
 </pre></div>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 0.002 gigabytes
-Max GPU: 0.000 gigabytes
+Max GPU RAM: 0.000 gigabytes
 Compute time: 0.001 hours
 </pre></div>
 </div>
@@ -238,11 +238,11 @@ Compute time: 0.001 hours
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Resource tracking complete. Process completed with status code: 0
 {
- &quot;max_ram&quot;: 0.0018350080000000002,
+ &quot;max_ram&quot;: 0.002097152,
  &quot;ram_unit&quot;: &quot;gigabytes&quot;,
  &quot;max_gpu_ram&quot;: 0.0,
  &quot;gpu_ram_unit&quot;: &quot;gigabytes&quot;,
- &quot;compute_time&quot;: 0.0005692813131544325,
+ &quot;compute_time&quot;: 0.0005690234899520874,
  &quot;time_unit&quot;: &quot;hours&quot;
 }
 </pre></div>
@@ -261,7 +261,7 @@ Compute time: 0.001 hours
  &quot;ram_unit&quot;: &quot;gigabytes&quot;,
  &quot;max_gpu_ram&quot;: 0.0,
  &quot;gpu_ram_unit&quot;: &quot;gigabytes&quot;,
- &quot;compute_time&quot;: 0.0005693478716744317,
+ &quot;compute_time&quot;: 0.0005691042873594496,
  &quot;time_unit&quot;: &quot;hours&quot;
 }
 </pre></div>
