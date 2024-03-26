@@ -11,19 +11,19 @@ def get_use_context_manager(request) -> bool:
 test_tracker_data = [
     (
         True, 1697450.0, 5800.0, 300.0, 'bytes', 'megabytes', 'seconds',
-        'Max RAM: 1697450.000 bytes\nMax GPU: 5800.000 megabytes\nCompute time: 300.000 seconds'
+        'Max RAM: 1697450.000 bytes\nMax GPU RAM: 5800.000 megabytes\nCompute time: 300.000 seconds'
     ),
     (
         True, 1697.450, 5.8, 5.0, 'kilobytes', 'gigabytes', 'minutes',
-        'Max RAM: 1697.450 kilobytes\nMax GPU: 5.800 gigabytes\nCompute time: 5.000 minutes'
+        'Max RAM: 1697.450 kilobytes\nMax GPU RAM: 5.800 gigabytes\nCompute time: 5.000 minutes'
     ),
     (
         False, 0.5505, 1600000.0, 300.0 / 3600, 'megabytes', 'kilobytes', 'hours',
-        'Max RAM: 0.550 megabytes\nMax GPU: 1600000.000 kilobytes\nCompute time: 0.083 hours'
+        'Max RAM: 0.550 megabytes\nMax GPU RAM: 1600000.000 kilobytes\nCompute time: 0.083 hours'
     ),
     (
         False, 550.5, 1600000000.0, 300.0 / (3600 * 24), 'kilobytes', 'bytes', 'days',
-        'Max RAM: 550.500 kilobytes\nMax GPU: 1600000000.000 bytes\nCompute time: 0.003 days'
+        'Max RAM: 550.500 kilobytes\nMax GPU RAM: 1600000000.000 bytes\nCompute time: 0.003 days'
     )
 ]
 

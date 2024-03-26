@@ -32,8 +32,8 @@ computational resource.
 
 .. code:: none
 
-    Max RAM: 0.067 gigabytes
-    Max GPU: 0.000 gigabytes
+    Max RAM: 0.068 gigabytes
+    Max GPU RAM: 0.000 gigabytes
     Compute time: 0.000 hours
 
 
@@ -50,8 +50,8 @@ manager rather than explicitly calling ``start()`` and ``stop()``.
 
 .. code:: none
 
-    Max RAM: 0.067 gigabytes
-    Max GPU: 0.000 gigabytes
+    Max RAM: 0.068 gigabytes
+    Max GPU RAM: 0.000 gigabytes
     Compute time: 0.000 hours
 
 
@@ -69,9 +69,9 @@ the compute time in seconds:
 
 .. code:: none
 
-    Max RAM: 67.240 megabytes
-    Max GPU: 0.000 kilobytes
-    Compute time: 1.035 seconds
+    Max RAM: 67.949 megabytes
+    Max GPU RAM: 0.000 kilobytes
+    Compute time: 1.031 seconds
 
 
 The same information can be obtained in a dictionary via the
@@ -86,11 +86,11 @@ The same information can be obtained in a dictionary via the
 
 .. code:: none
 
-    {'max_ram': 67.239936,
+    {'max_ram': 67.948544,
      'ram_unit': 'megabytes',
      'max_gpu_ram': 0.0,
      'gpu_ram_unit': 'kilobytes',
-     'compute_time': 1.034773826599121,
+     'compute_time': 1.0309913158416748,
      'time_unit': 'seconds'}
 
 
@@ -105,7 +105,7 @@ attributes in the ``Tracker`` class.
 
 .. code:: none
 
-    67.239936 megabytes
+    67.948544 megabytes
 
 
 CLI
@@ -155,7 +155,7 @@ status code is reported.
 
     Resource tracking complete. Process completed with status code: 0
     Max RAM: 0.002 gigabytes
-    Max GPU: 0.000 gigabytes
+    Max GPU RAM: 0.000 gigabytes
     Compute time: 0.001 hours
     
 
@@ -171,9 +171,9 @@ for time-unit and –ru stands for ram-unit.
 .. code:: none
 
     Resource tracking complete. Process completed with status code: 0
-    Max RAM: 1.966 megabytes
-    Max GPU: 0.000 gigabytes
-    Compute time: 2.052 seconds
+    Max RAM: 1.835 megabytes
+    Max GPU RAM: 0.000 gigabytes
+    Compute time: 2.050 seconds
     
 
 
@@ -199,7 +199,7 @@ that same content in a file.
 .. code:: none
 
     Max RAM: 0.002 gigabytes
-    Max GPU: 0.000 gigabytes
+    Max GPU RAM: 0.000 gigabytes
     Compute time: 0.001 hours
 
 
@@ -215,11 +215,11 @@ By default, the format of the output is “text”. The ``-f`` or
 
     Resource tracking complete. Process completed with status code: 0
     {
-     "max_ram": 0.0018350080000000002,
+     "max_ram": 0.002097152,
      "ram_unit": "gigabytes",
      "max_gpu_ram": 0.0,
      "gpu_ram_unit": "gigabytes",
-     "compute_time": 0.0005692813131544325,
+     "compute_time": 0.0005690234899520874,
      "time_unit": "hours"
     }
 
@@ -246,6 +246,6 @@ By default, the format of the output is “text”. The ``-f`` or
      "ram_unit": "gigabytes",
      "max_gpu_ram": 0.0,
      "gpu_ram_unit": "gigabytes",
-     "compute_time": 0.0005693478716744317,
+     "compute_time": 0.0005691042873594496,
      "time_unit": "hours"
     }
