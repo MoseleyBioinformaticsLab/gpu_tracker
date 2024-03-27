@@ -1,9 +1,7 @@
+.. _tutorial-label:
+
 Tutorial
 ========
-
-.. code:: python3
-
-    import gpu_tracker as gput
 
 API
 ---
@@ -23,6 +21,10 @@ computational resource.
 
 .. code:: python3
 
+    import gpu_tracker as gput
+
+.. code:: python3
+
     tracker = gput.Tracker()
     tracker.start()
     # Perform expensive operations
@@ -32,7 +34,7 @@ computational resource.
 
 .. code:: none
 
-    Max RAM: 0.068 gigabytes
+    Max RAM: 0.067 gigabytes
     Max GPU RAM: 0.000 gigabytes
     Compute time: 0.000 hours
 
@@ -50,7 +52,7 @@ manager rather than explicitly calling ``start()`` and ``stop()``.
 
 .. code:: none
 
-    Max RAM: 0.068 gigabytes
+    Max RAM: 0.067 gigabytes
     Max GPU RAM: 0.000 gigabytes
     Compute time: 0.000 hours
 
@@ -69,9 +71,9 @@ the compute time in seconds:
 
 .. code:: none
 
-    Max RAM: 67.949 megabytes
+    Max RAM: 67.391 megabytes
     Max GPU RAM: 0.000 kilobytes
-    Compute time: 1.031 seconds
+    Compute time: 1.035 seconds
 
 
 The same information can be obtained in a dictionary via the
@@ -86,11 +88,11 @@ The same information can be obtained in a dictionary via the
 
 .. code:: none
 
-    {'max_ram': 67.948544,
+    {'max_ram': 67.391488,
      'ram_unit': 'megabytes',
      'max_gpu_ram': 0.0,
      'gpu_ram_unit': 'kilobytes',
-     'compute_time': 1.0309913158416748,
+     'compute_time': 1.0349853038787842,
      'time_unit': 'seconds'}
 
 
@@ -105,7 +107,7 @@ attributes in the ``Tracker`` class.
 
 .. code:: none
 
-    67.948544 megabytes
+    67.391488 megabytes
 
 
 CLI
@@ -171,9 +173,9 @@ for time-unit and –ru stands for ram-unit.
 .. code:: none
 
     Resource tracking complete. Process completed with status code: 0
-    Max RAM: 1.835 megabytes
+    Max RAM: 1.966 megabytes
     Max GPU RAM: 0.000 gigabytes
-    Compute time: 2.050 seconds
+    Compute time: 2.045 seconds
     
 
 
@@ -215,11 +217,11 @@ By default, the format of the output is “text”. The ``-f`` or
 
     Resource tracking complete. Process completed with status code: 0
     {
-     "max_ram": 0.002097152,
+     "max_ram": 0.0019660800000000003,
      "ram_unit": "gigabytes",
      "max_gpu_ram": 0.0,
      "gpu_ram_unit": "gigabytes",
-     "compute_time": 0.0005690234899520874,
+     "compute_time": 0.0005680449803670247,
      "time_unit": "hours"
     }
 
@@ -242,10 +244,10 @@ By default, the format of the output is “text”. The ``-f`` or
 .. code:: none
 
     {
-     "max_ram": 0.0018350080000000002,
+     "max_ram": 0.0019660800000000003,
      "ram_unit": "gigabytes",
      "max_gpu_ram": 0.0,
      "gpu_ram_unit": "gigabytes",
-     "compute_time": 0.0005691042873594496,
+     "compute_time": 0.0005686806970172458,
      "time_unit": "hours"
     }
