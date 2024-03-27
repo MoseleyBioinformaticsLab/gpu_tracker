@@ -8,6 +8,7 @@ Welcome to gpu_tracker's documentation!
    guide
    tutorial
    api
+   cli
    license
 
 Indices and tables
