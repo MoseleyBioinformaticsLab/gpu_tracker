@@ -46,7 +46,7 @@ def main():
         log.error(f'Command not found: "{command[0]}"')
         sys.exit(1)
     except Exception as e:
-        f'The following error occurred when starting the command "{command[0]}":'
+        log.error(f'The following error occurred when starting the command "{command[0]}":')
         print(e)
         sys.exit(1)
     with Tracker(process_id=process.pid, **kwargs) as tracker:
