@@ -2,7 +2,7 @@
 Tracks the computational resource usage (RAM, GPU RAM, and compute time) of a process corresponding to a given shell command.
 
 Usage:
-    gpu-tracker --execute=<command> [--output=<output>] [--format=<format>] [--st=<sleep-time>] [--ic] [--ru=<ram-unit>] [--gru=<gpu-unit>] [--tu=<time-unit>]
+    gpu-tracker --execute=<command> [--output=<output>] [--format=<format>] [--st=<sleep-time>] [--ru=<ram-unit>] [--gru=<gpu-ram-unit>] [--tu=<time-unit>]
 
 Options:
     -h --help               Show this help message.
@@ -10,7 +10,6 @@ Options:
     -o --output=<output>    File path to store the computational-resource-usage measurements. If not set, prints measurements to the screen.
     -f --format=<format>    File format of the output. Either 'json' or 'text'. Defaults to 'text'.
     --st=<sleep-time>       The number of seconds to sleep in between usage-collection iterations.
-    --ic                    Stands for include-children; Whether to add the usage (RAM and GPU RAM) of child processes. Otherwise, only collects usage of the main process.
     --ru=<ram-unit>         One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
     --gru=<gpu-ram-unit>    One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
     --tu=<time-unit>        One of 'seconds', 'minutes', 'hours', or 'days'.
@@ -30,7 +29,6 @@ def main():
     output_format = args['--format'] if args['--format'] is not None else 'text'
     option_map = {
         '--st': 'sleep_time',
-        '--ic': 'include_children',
         '--ru': 'ram_unit',
         '--gu': 'gpu_unit',
         '--tu': 'time_unit'
@@ -53,6 +51,7 @@ def main():
         process.wait()
     print(f'Resource tracking complete. Process completed with status code: {process.returncode}')
     if output_format == 'json':
+        # TODO just do JSON (no text) and add units to json object.
         output_str = json.dumps(tracker.to_json(), indent=1)
     elif output_format == 'text':
         output_str = str(tracker) + '\n'

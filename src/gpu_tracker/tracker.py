@@ -1,5 +1,6 @@
 """The ``tracker`` module contains the ``Tracker`` class which can alternatively be imported directly from the ``gpu_tracker`` package."""
 from __future__ import annotations
+import platform
 import time
 import threading as thrd
 import os
@@ -14,32 +15,28 @@ class Tracker:
     Runs a thread in the background that tracks the compute time, maximum RAM, and maximum GPU RAM usage within a context manager or explicit ``start()`` and ``stop()`` methods.
     Calculated quantities are scaled depending on the unit chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).
 
-    :ivar float max_ram: The highest RAM observed while tracking.
-    :ivar float max_gpu_ram: The highest GPU RAM observed while tracking.
-    :ivar float compute_time: The amount of time spent tracking.
+    :ivar dict measurements: The measured values of the computational-resource usage i.e. maximum RAM, maximum GPU RAM, and compute time.
     """
+    NO_PROCESS_WARNING = 'Attempted to obtain RAM information of a process that no longer exists.'
 
     def __init__(
-            self, sleep_time: float = 1.0, include_children: bool = True, ram_unit: str = 'gigabytes', gpu_ram_unit: str = 'gigabytes',
-            time_unit: str = 'hours', n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False,
-            process_id: int | None = None):
+            self, sleep_time: float = 1.0, ram_unit: str = 'gigabytes', gpu_ram_unit: str = 'gigabytes', time_unit: str = 'hours',
+            n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False, process_id: int | None = None):
         """
         :param sleep_time: The number of seconds to sleep in between usage-collection iterations.
-        :param include_children: Whether to add the usage (RAM and GPU RAM) of child processes. Otherwise, only collects usage of the main process.
         :param ram_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
         :param gpu_ram_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
         :param time_unit: One of 'seconds', 'minutes', 'hours', or 'days'.
         :param n_join_attempts: The number of times the tracker attempts to join its underlying thread.
         :param join_timeout: The amount of time the tracker waits for its underlying thread to join.
         :param kill_if_join_fails: If true, kill the process if the underlying thread fails to join.
-        :param process_id: The ID of the process to track (along with its children if ``include_children`` is set). Defaults to the current process.
+        :param process_id: The ID of the process to track. Defaults to the current process.
         :raises ValueError: Raised if invalid units are provided.
         """
         Tracker._validate_mem_unit(ram_unit)
         Tracker._validate_mem_unit(gpu_ram_unit)
         Tracker._validate_unit(time_unit, valid_units={'seconds', 'minutes', 'hours', 'days'}, unit_type='time')
         self.sleep_time = sleep_time
-        self.include_children = include_children
         self.ram_unit = ram_unit
         self.gpu_ram_unit = gpu_ram_unit
         self.time_unit = time_unit
@@ -65,13 +62,37 @@ class Tracker:
         }[time_unit]
         self._stop_event = thrd.Event()
         self._thread = thrd.Thread(target=self._profile)
-        self.max_ram = None
-        self.max_gpu_ram = None
-        self.compute_time = None
         self.n_join_attempts = n_join_attempts
         self.join_timeout = join_timeout
         self.kill_if_join_fails = kill_if_join_fails
         self.process_id = process_id if process_id is not None else os.getpid()
+        self._main_process = psutil.Process(self.process_id)
+        self._is_linux = platform.system().lower() == 'linux'
+        self.measurements = {
+            'max_ram': {
+                'main': {
+                    'total_rss': 0,
+                    'private_rss': 0,
+                    'shared_rss': 0
+                },
+                'descendents': {
+                    'total_rss': 0,
+                    'private_rss': 0,
+                    'shared_rss': 0
+                },
+                'combined': {
+                    'total_rss': 0,
+                    'private_rss': 0,
+                    'shared_rss': 0
+                }
+            },
+            'max_gpu_ram': {
+                'main': 0,
+                'descendents': 0,
+                'combined': 0
+            },
+            'compute_time': 0.
+        }
 
     @staticmethod
     def _validate_mem_unit(unit: str):
@@ -82,50 +103,79 @@ class Tracker:
         if unit not in valid_units:
             raise ValueError(f'"{unit}" is not a valid {unit_type} unit. Valid values are {", ".join(sorted(valid_units))}')
 
+    def _update_ram(self, measurement: str, processes: list[psutil.Process]):
+        measurements = self.measurements['max_ram'][measurement]
+        if self._is_linux:
+            memory_maps_list = list[list]()
+            for process in processes:
+                try:
+                    memory_maps_list.append(process.memory_maps(grouped=False))
+                except psutil.NoSuchProcess:
+                    log.warning(self.NO_PROCESS_WARNING)
+            private_rss = 0
+            path_to_shared_rss = dict[str, float]()
+            for memory_maps in memory_maps_list:
+                for memory_map in memory_maps:
+                    path = memory_map.path
+                    # If the same memory map is shared by multiple processes, record the shared rss of the process using the most of it.
+                    if path in path_to_shared_rss.keys():
+                        path_to_shared_rss[path] = max(path_to_shared_rss[path], memory_map.shared_dirty + memory_map.shared_clean)
+                    else:
+                        path_to_shared_rss[path] = memory_map.shared_dirty + memory_map.shared_clean
+                    private_rss += memory_map.private_dirty + memory_map.private_clean
+            private_rss *= self._ram_coefficient
+            measurements['private_rss'] = max(measurements['private_rss'], private_rss)
+            shared_rss = sum(path_to_shared_rss.values()) * self._ram_coefficient
+            measurements['shared_rss'] = max(measurements['shared_rss'], shared_rss)
+            total_rss = private_rss + shared_rss
+        else:
+            total_rss = 0
+            for process in processes:
+                try:
+                    total_rss += process.memory_info().rss
+                except psutil.NoSuchProcess:
+                    log.warning(self.NO_PROCESS_WARNING)
+            total_rss *= self._ram_coefficient
+        measurements['total_rss'] = max(measurements['total_rss'], total_rss)
+
+    def _update_gpu_ram(self, measurement: str, process_ids: set[int], nvidia_smi_output: str):
+        nvidia_smi_output = nvidia_smi_output.strip().split('\n')
+        curr_gpu_ram = 0
+        for process_info in nvidia_smi_output:
+            pid, megabytes_used = process_info.strip().split(',')
+            pid = int(pid.strip())
+            if pid in process_ids:
+                megabytes_used = int(megabytes_used.replace('MiB', '').strip())
+                curr_gpu_ram += megabytes_used
+        self.measurements['max_gpu_ram'][measurement] = max(
+            self.measurements['max_gpu_ram'][measurement], curr_gpu_ram * self._gpu_ram_coefficient)
+
     def _profile(self):
         """
         Continuously tracks computational resource usage until the end of tracking is triggered, either by exiting the context manager or by a call to stop()
         """
-        max_ram = 0
-        max_gpu_ram = 0
         start_time = time.time()
         while not self._stop_event.is_set():
             try:
-                process = psutil.Process(self.process_id)
                 # Get the current RAM usage.
-                curr_mem_usage = process.memory_info().rss
-                process_ids = {self.process_id}
-                if self.include_children:
-                    child_processes = process.children()
-                    process_ids.update(process.pid for process in child_processes)
-                    for child_process in child_processes:
-                        try:
-                            child_proc_usage = child_process.memory_info().rss
-                            curr_mem_usage += child_proc_usage
-                        except psutil.NoSuchProcess:
-                            log.warning(
-                                'Race condition: Failed to collect usage of a previously detected child process that no longer exists.')
+                self._update_ram(measurement='main', processes=[self._main_process])
+                self._update_ram(measurement='descendents', processes=self._main_process.children(recursive=True))
+                # Call children() each time it's used to get an updated list in case the children changed since the above call.
+                self._update_ram(
+                    measurement='combined', processes=[self._main_process] + self._main_process.children(recursive=True))
                 # Get the current GPU RAM usage.
-                curr_gpu_ram = 0
                 memory_used_command = 'nvidia-smi --query-compute-apps=pid,used_gpu_memory --format=csv,noheader'
                 nvidia_smi_output = subp.check_output(memory_used_command.split(), stderr=subp.STDOUT).decode()
                 if nvidia_smi_output:
-                    nvidia_smi_output = nvidia_smi_output.strip().split('\n')
-                    for process_info in nvidia_smi_output:
-                        pid, megabytes_used = process_info.strip().split(',')
-                        pid = int(pid.strip())
-                        if pid in process_ids:
-                            megabytes_used = int(megabytes_used.replace('MiB', '').strip())
-                            curr_gpu_ram += megabytes_used
-                # Update maximum resource usage.
-                if curr_mem_usage > max_ram:
-                    max_ram = curr_mem_usage
-                if curr_gpu_ram > max_gpu_ram:
-                    max_gpu_ram = curr_gpu_ram
+                    process_ids = {self.process_id}
+                    self._update_gpu_ram(measurement='main', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
+                    process_ids = {process.pid for process in self._main_process.children(recursive=True)}
+                    self._update_gpu_ram(
+                        measurement='descendents', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
+                    process_ids.add(self.process_id)
+                    self._update_gpu_ram(measurement='combined', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
+                self.measurements['compute_time'] = (time.time() - start_time) * self._time_coefficient
                 _testable_sleep(self.sleep_time)
-                self.max_ram, self.max_gpu_ram, self.compute_time = (
-                    max_ram * self._ram_coefficient, max_gpu_ram * self._gpu_ram_coefficient,
-                    (time.time() - start_time) * self._time_coefficient)
             except psutil.NoSuchProcess:
                 log.warning('Failed to track a process that does not exist. '
                             'This possibly resulted from the process completing before tracking could begin.')
@@ -167,29 +217,18 @@ class Tracker:
         """
         self.__exit__()
 
-    def to_json(self) -> dict[str, float | str]:
-        """
-        Constructs a dictionary containing the computational-resource-measurements and their units.
-        """
-        return {
-            'max_ram': self.max_ram,
-            'ram_unit': self.ram_unit,
-            'max_gpu_ram': self.max_gpu_ram,
-            'gpu_ram_unit': self.gpu_ram_unit,
-            'compute_time': self.compute_time,
-            'time_unit': self.time_unit
-        }
-
     def __str__(self) -> str:
         """
         Constructs a string representation of the computational-resource-usage measurements and their units.
         """
         max_ram, max_gpu_ram, compute_time = (
             f'{measurement:.3f} {unit}' if measurement is not None else 'null' for measurement, unit in (
-                (self.max_ram, self.ram_unit), (self.max_gpu_ram, self.gpu_ram_unit), (self.compute_time, self.time_unit)))
+                (self.measurements['max_ram']['combined']['total_rss'], self.ram_unit),
+                (self.measurements['max_gpu_ram']['combined'], self.gpu_ram_unit),
+                (self.measurements['compute_time'], self.time_unit)))
         return \
-            f'Max RAM: {max_ram}\n' \
-            f'Max GPU RAM: {max_gpu_ram}\n' \
+            f'Max RAM (combined total RSS): {max_ram}\n' \
+            f'Max GPU RAM (combined): {max_gpu_ram}\n' \
             f'Compute time: {compute_time}'
 
     def __repr__(self) -> str:
