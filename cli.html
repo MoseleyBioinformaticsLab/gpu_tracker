@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CLI &mdash; gpu_tracker 0.1.dev1+g49706d3 documentation</title>
+  <title>CLI &mdash; gpu_tracker 0.1.dev1+g049ce38 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5e68ae56"></script>
+        <script src="_static/documentation_options.js?v=50b1a9a6"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -37,7 +37,7 @@
             gpu_tracker
           </a>
               <div class="version">
-                0.1.dev1+g49706d3
+                0.1.dev1+g049ce38
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -87,7 +87,7 @@ For example, one may want to profile a command that runs a script or a command r
 Below is the help message shown from <code class="docutils literal notranslate"><span class="pre">gpu-tracker</span> <span class="pre">--help</span></code>.
 See the <a class="reference internal" href="tutorial.html#tutorial-label"><span class="std std-ref">Tutorial</span></a> for examples of using the CLI.</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Usage:
-    gpu-tracker --execute=&lt;command&gt; [--output=&lt;output&gt;] [--format=&lt;format&gt;] [--st=&lt;sleep-time&gt;] [--ic] [--ru=&lt;ram-unit&gt;] [--gru=&lt;gpu-unit&gt;] [--tu=&lt;time-unit&gt;]
+    gpu-tracker --execute=&lt;command&gt; [--output=&lt;output&gt;] [--format=&lt;format&gt;] [--st=&lt;sleep-time&gt;] [--ru=&lt;ram-unit&gt;] [--gru=&lt;gpu-ram-unit&gt;] [--tu=&lt;time-unit&gt;]
 
 Options:
     -h --help               Show this help message.
@@ -95,7 +95,6 @@ Options:
     -o --output=&lt;output&gt;    File path to store the computational-resource-usage measurements. If not set, prints measurements to the screen.
     -f --format=&lt;format&gt;    File format of the output. Either &#39;json&#39; or &#39;text&#39;. Defaults to &#39;text&#39;.
     --st=&lt;sleep-time&gt;       The number of seconds to sleep in between usage-collection iterations.
-    --ic                    Stands for include-children; Whether to add the usage (RAM and GPU RAM) of child processes. Otherwise, only collects usage of the main process.
     --ru=&lt;ram-unit&gt;         One of &#39;bytes&#39;, &#39;kilobytes&#39;, &#39;megabytes&#39;, &#39;gigabytes&#39;, or &#39;terabytes&#39;.
     --gru=&lt;gpu-ram-unit&gt;    One of &#39;bytes&#39;, &#39;kilobytes&#39;, &#39;megabytes&#39;, &#39;gigabytes&#39;, or &#39;terabytes&#39;.
     --tu=&lt;time-unit&gt;        One of &#39;seconds&#39;, &#39;minutes&#39;, &#39;hours&#39;, or &#39;days&#39;.
