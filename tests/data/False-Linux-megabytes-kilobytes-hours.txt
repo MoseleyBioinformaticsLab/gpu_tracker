@@ -1,0 +1,3 @@
+Max RAM (combined total RSS): 0.043 megabytes
+Max GPU RAM (combined): 5800000.000 kilobytes
+Compute time: 0.083 hours

@@ -1,0 +1,25 @@
+{
+ "max_ram": {
+  "main": {
+   "total_rss": 0.016753999999999998,
+   "private_rss": 0.006718,
+   "shared_rss": 0.010036
+  },
+  "descendents": {
+   "total_rss": 0.030208,
+   "private_rss": 0.013817999999999999,
+   "shared_rss": 0.01639
+  },
+  "combined": {
+   "total_rss": 0.042552999999999994,
+   "private_rss": 0.020536,
+   "shared_rss": 0.022017
+  }
+ },
+ "max_gpu_ram": {
+  "main": 1600000.0,
+  "descendents": 4300000.0,
+  "combined": 5800000.0
+ },
+ "compute_time": 0.08333333333333333
+}
