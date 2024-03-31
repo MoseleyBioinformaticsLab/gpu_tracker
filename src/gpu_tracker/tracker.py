@@ -21,25 +21,36 @@ class RSSValues:
 
 @dclass.dataclass
 class MaxRAM:
+    unit: str
+    system_capacity: float
+    system: float = 0.
     main: RSSValues = dclass.field(default_factory=RSSValues)
     descendents: RSSValues = dclass.field(default_factory=RSSValues)
     combined: RSSValues = dclass.field(default_factory=RSSValues)
-    system: float = 0.
 
 
 @dclass.dataclass
 class MaxGPURAM:
+    unit: str
     main: float = 0.
     descendents: float = 0.
     combined: float = 0.
 
 
+@dclass.dataclass
+class ComputeTime:
+    unit: str
+    time: float = 0.
+
+
 class Tracker:
     """
     Runs a thread in the background that tracks the compute time, maximum RAM, and maximum GPU RAM usage within a context manager or explicit ``start()`` and ``stop()`` methods.
-    Calculated quantities are scaled depending on the unit chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).
+    Calculated quantities are scaled depending on the units chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).
 
-    :ivar dict measurements: The measured values of the computational-resource usage i.e. maximum RAM, maximum GPU RAM, and compute time.
+    :ivar MaxRAM max_ram: Description of the maximum RAM usage of the process, any descendents it may have, and the operating system overall.
+    :ivar MaxGPURAM max_gpu_ram: Description of the maximum GPU RAM usage of the process and any descendents it may have.
+    :ivar ComputeTime compute_time: Description of the real compute time i.e. the duration of tracking.
     """
     NO_PROCESS_WARNING = 'Attempted to obtain RAM information of a process that no longer exists.'
 
@@ -61,9 +72,6 @@ class Tracker:
         Tracker._validate_mem_unit(gpu_ram_unit)
         Tracker._validate_unit(time_unit, valid_units={'seconds', 'minutes', 'hours', 'days'}, unit_type='time')
         self.sleep_time = sleep_time
-        self.ram_unit = ram_unit
-        self.gpu_ram_unit = gpu_ram_unit
-        self.time_unit = time_unit
         self._ram_coefficient: float = {
             'bytes': 1.0,
             'kilobytes': 1 / 1e3,
@@ -92,10 +100,9 @@ class Tracker:
         self.process_id = process_id if process_id is not None else os.getpid()
         self._main_process = psutil.Process(self.process_id)
         self._is_linux = platform.system().lower() == 'linux'
-        self.system_ram_capacity = psutil.virtual_memory().total * self._ram_coefficient
-        self.max_ram = MaxRAM()
-        self.max_gpu_ram = MaxGPURAM()
-        self.compute_time = 0.
+        self.max_ram = MaxRAM(unit=ram_unit, system_capacity=psutil.virtual_memory().total * self._ram_coefficient)
+        self.max_gpu_ram = MaxGPURAM(unit=gpu_ram_unit)
+        self.compute_time = ComputeTime(unit=time_unit)
 
     @staticmethod
     def _validate_mem_unit(unit: str):
@@ -178,7 +185,7 @@ class Tracker:
                     process_ids.add(self.process_id)
                     self._update_gpu_ram(attr='combined', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
                 # Update compute time
-                self.compute_time = (time.time() - start_time) * self._time_coefficient
+                self.compute_time.time = (time.time() - start_time) * self._time_coefficient
                 _testable_sleep(self.sleep_time)
             except psutil.NoSuchProcess:
                 log.warning('Failed to track a process that does not exist. '
@@ -225,28 +232,38 @@ class Tracker:
         """
         Constructs a string representation of the computational-resource-usage measurements and their units.
         """
-        max_ram, max_gpu_ram, compute_time = (
-            f'{measurement:.3f} {unit}' if measurement is not None else 'null' for measurement, unit in (
-                (self.measurements['max_ram']['combined']['total_rss'], self.ram_unit),
-                (self.measurements['max_gpu_ram']['combined'], self.gpu_ram_unit),
-                (self.measurements['compute_time'], self.time_unit)))
-        return \
-            f'Max RAM (combined total RSS): {max_ram}\n' \
-            f'Max GPU RAM (combined): {max_gpu_ram}\n' \
-            f'Compute time: {compute_time}'
+        tracker_json = self.to_json()
+        Tracker._format_float(dictionary=tracker_json)
+        indent = 3
+        text = json.dumps(tracker_json, indent=indent)
+        # Un-indent the lines to the left after removing curley braces.
+        text = '\n'.join(line[indent:] for line in text.split('\n') if line.strip() not in {'{', '}', '},'})
+        text = text.replace(': {', ':').replace('{', '').replace('}', '').replace('_', ' ').replace('"', '').replace(',', '')
+        return text.replace('max', 'Max').replace('ram', 'RAM').replace('unit', 'Unit').replace('system', 'System').replace(
+            'compute', 'Compute').replace('time: ', 'Time: ').replace('rss', 'RSS').replace('total', 'Total').replace(
+            'private', 'Private').replace('shared', 'Shared').replace('main', 'Main').replace('descendents', 'Descendents').replace(
+            'combined', 'Combined').replace('gpu', 'GPU')
 
-    def __repr__(self) -> str:
-        return str(self)  # pragma: no cover
+    @staticmethod
+    def _format_float(dictionary: dict):
+        """
+        Recursively formats the floating points in a dictionary to 3 decimal places.
+        :param dictionary: The dictionary to format.
+        """
+        for key, value in dictionary.items():
+            if type(value) == float:
+                dictionary[key] = float(f'{value:.3f}')
+            elif type(value) == dict:
+                Tracker._format_float(value)
 
     def to_json(self):
+        """
+        Constructs a dictionary of the computational-resource-usage measurements and their units.
+        """
         return {
-            'system_ram_capacity': self.system_ram_capacity,
             'max_ram': dclass.asdict(self.max_ram),
-            'ram_unit': self.ram_unit,
             'max_gpu_ram': dclass.asdict(self.max_gpu_ram),
-            'gpu_ram_unit': self.gpu_ram_unit,
-            'compute_time': self.compute_time,
-            'time_unit': self.time_unit
+            'compute_time': dclass.asdict(self.compute_time),
         }
 
 

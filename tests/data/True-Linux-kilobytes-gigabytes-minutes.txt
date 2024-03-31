@@ -1,3 +1,24 @@
-Max RAM (combined total RSS): 42.553 kilobytes
-Max GPU RAM (combined): 5.800 gigabytes
-Compute time: 5.000 minutes
+Max RAM:
+   Unit: kilobytes
+   System capacity: 67000000.0
+   System: 31000000.0
+   Main:
+      Total RSS: 16.754
+      Private RSS: 6.718
+      Shared RSS: 10.036
+   Descendents:
+      Total RSS: 30.208
+      Private RSS: 13.818
+      Shared RSS: 16.39
+   Combined:
+      Total RSS: 42.553
+      Private RSS: 20.536
+      Shared RSS: 22.017
+Max GPU RAM:
+   Unit: gigabytes
+   Main: 1.6
+   Descendents: 4.3
+   Combined: 5.8
+Compute time:
+   Unit: minutes
+   Time: 5.0
