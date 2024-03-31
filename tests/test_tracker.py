@@ -150,9 +150,9 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
     tracker._thread.join.assert_called_once_with(timeout=join_timeout)
     _assert_args_list(mock=tracker._thread.is_alive, expected_args_list=[()] * 2)
     expected_measurements_file = f'tests/data/{use_context_manager}-{operating_system}-{ram_unit}-{gpu_ram_unit}-{time_unit}'
-    # with open(f'{expected_measurements_file}.txt', 'r') as file:
-    #     expected_tracker_str = file.read()
-    #     assert expected_tracker_str == str(tracker)
+    with open(f'{expected_measurements_file}.txt', 'r') as file:
+        expected_tracker_str = file.read()
+        assert expected_tracker_str == str(tracker)
     with open(f'{expected_measurements_file}.json', 'r') as file:
         expected_measurements = json.load(file)
         assert expected_measurements == tracker.to_json()
