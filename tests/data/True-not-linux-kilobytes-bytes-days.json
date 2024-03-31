@@ -1,25 +1,30 @@
 {
+ "system_ram_capacity": 67000000.0,
  "max_ram": {
   "main": {
    "total_rss": 550.5,
-   "private_rss": 0,
-   "shared_rss": 0
+   "private_rss": 0.0,
+   "shared_rss": 0.0
   },
   "descendents": {
    "total_rss": 1257.05,
-   "private_rss": 0,
-   "shared_rss": 0
+   "private_rss": 0.0,
+   "shared_rss": 0.0
   },
   "combined": {
    "total_rss": 1697.45,
-   "private_rss": 0,
-   "shared_rss": 0
-  }
+   "private_rss": 0.0,
+   "shared_rss": 0.0
+  },
+  "system": 31000000.0
  },
+ "ram_unit": "kilobytes",
  "max_gpu_ram": {
   "main": 1600000000.0,
   "descendents": 4300000000.0,
   "combined": 5800000000.0
  },
- "compute_time": 0.003472222222222222
+ "gpu_ram_unit": "bytes",
+ "compute_time": 0.003472222222222222,
+ "time_unit": "days"
 }
