@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gpu_tracker.tracker &mdash; gpu_tracker 0.1.dev1+ge3c3402 documentation</title>
+  <title>gpu_tracker.tracker &mdash; gpu_tracker 0.1.dev1+gd3b17d9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=7f2cf1ce"></script>
+        <script src="../../_static/documentation_options.js?v=dc45d53e"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -34,7 +34,7 @@
             gpu_tracker
           </a>
               <div class="version">
-                0.1.dev1+ge3c3402
+                0.1.dev1+gd3b17d9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -106,10 +106,12 @@
 <a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.MaxRAM">[docs]</a>
 <span class="nd">@dclass</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">MaxRAM</span><span class="p">:</span>
+    <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">system_capacity</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">system</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="n">main</span><span class="p">:</span> <span class="n">RSSValues</span> <span class="o">=</span> <span class="n">dclass</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">RSSValues</span><span class="p">)</span>
     <span class="n">descendents</span><span class="p">:</span> <span class="n">RSSValues</span> <span class="o">=</span> <span class="n">dclass</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">RSSValues</span><span class="p">)</span>
-    <span class="n">combined</span><span class="p">:</span> <span class="n">RSSValues</span> <span class="o">=</span> <span class="n">dclass</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">RSSValues</span><span class="p">)</span>
-    <span class="n">system</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span></div>
+    <span class="n">combined</span><span class="p">:</span> <span class="n">RSSValues</span> <span class="o">=</span> <span class="n">dclass</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">RSSValues</span><span class="p">)</span></div>
 
 
 
@@ -117,9 +119,19 @@
 <a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.MaxGPURAM">[docs]</a>
 <span class="nd">@dclass</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">MaxGPURAM</span><span class="p">:</span>
+    <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">main</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="n">descendents</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="n">combined</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span></div>
+
+
+
+<div class="viewcode-block" id="ComputeTime">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.ComputeTime">[docs]</a>
+<span class="nd">@dclass</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">ComputeTime</span><span class="p">:</span>
+    <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span></div>
 
 
 
@@ -128,9 +140,11 @@
 <span class="k">class</span> <span class="nc">Tracker</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Runs a thread in the background that tracks the compute time, maximum RAM, and maximum GPU RAM usage within a context manager or explicit ``start()`` and ``stop()`` methods.</span>
-<span class="sd">    Calculated quantities are scaled depending on the unit chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).</span>
+<span class="sd">    Calculated quantities are scaled depending on the units chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).</span>
 
-<span class="sd">    :ivar dict measurements: The measured values of the computational-resource usage i.e. maximum RAM, maximum GPU RAM, and compute time.</span>
+<span class="sd">    :ivar MaxRAM max_ram: Description of the maximum RAM usage of the process, any descendents it may have, and the operating system overall.</span>
+<span class="sd">    :ivar MaxGPURAM max_gpu_ram: Description of the maximum GPU RAM usage of the process and any descendents it may have.</span>
+<span class="sd">    :ivar ComputeTime compute_time: Description of the real compute time i.e. the duration of tracking.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">NO_PROCESS_WARNING</span> <span class="o">=</span> <span class="s1">&#39;Attempted to obtain RAM information of a process that no longer exists.&#39;</span>
 
@@ -152,9 +166,6 @@
         <span class="n">Tracker</span><span class="o">.</span><span class="n">_validate_mem_unit</span><span class="p">(</span><span class="n">gpu_ram_unit</span><span class="p">)</span>
         <span class="n">Tracker</span><span class="o">.</span><span class="n">_validate_unit</span><span class="p">(</span><span class="n">time_unit</span><span class="p">,</span> <span class="n">valid_units</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;seconds&#39;</span><span class="p">,</span> <span class="s1">&#39;minutes&#39;</span><span class="p">,</span> <span class="s1">&#39;hours&#39;</span><span class="p">,</span> <span class="s1">&#39;days&#39;</span><span class="p">},</span> <span class="n">unit_type</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sleep_time</span> <span class="o">=</span> <span class="n">sleep_time</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ram_unit</span> <span class="o">=</span> <span class="n">ram_unit</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gpu_ram_unit</span> <span class="o">=</span> <span class="n">gpu_ram_unit</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">time_unit</span> <span class="o">=</span> <span class="n">time_unit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ram_coefficient</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;bytes&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
             <span class="s1">&#39;kilobytes&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="mf">1e3</span><span class="p">,</span>
@@ -183,10 +194,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">process_id</span> <span class="o">=</span> <span class="n">process_id</span> <span class="k">if</span> <span class="n">process_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_main_process</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_id</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_linux</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;linux&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">system_ram_capacity</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()</span><span class="o">.</span><span class="n">total</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ram_coefficient</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_ram</span> <span class="o">=</span> <span class="n">MaxRAM</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_gpu_ram</span> <span class="o">=</span> <span class="n">MaxGPURAM</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_ram</span> <span class="o">=</span> <span class="n">MaxRAM</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="n">ram_unit</span><span class="p">,</span> <span class="n">system_capacity</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()</span><span class="o">.</span><span class="n">total</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ram_coefficient</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_gpu_ram</span> <span class="o">=</span> <span class="n">MaxGPURAM</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="n">gpu_ram_unit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span> <span class="o">=</span> <span class="n">ComputeTime</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="n">time_unit</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_validate_mem_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -269,7 +279,7 @@
                     <span class="n">process_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_id</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_update_gpu_ram</span><span class="p">(</span><span class="n">attr</span><span class="o">=</span><span class="s1">&#39;combined&#39;</span><span class="p">,</span> <span class="n">process_ids</span><span class="o">=</span><span class="n">process_ids</span><span class="p">,</span> <span class="n">nvidia_smi_output</span><span class="o">=</span><span class="n">nvidia_smi_output</span><span class="p">)</span>
                 <span class="c1"># Update compute time</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_coefficient</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_coefficient</span>
                 <span class="n">_testable_sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sleep_time</span><span class="p">)</span>
             <span class="k">except</span> <span class="n">psutil</span><span class="o">.</span><span class="n">NoSuchProcess</span><span class="p">:</span>
                 <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Failed to track a process that does not exist. &#39;</span>
@@ -324,30 +334,43 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Constructs a string representation of the computational-resource-usage measurements and their units.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">max_ram</span><span class="p">,</span> <span class="n">max_gpu_ram</span><span class="p">,</span> <span class="n">compute_time</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">measurement</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">if</span> <span class="n">measurement</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;null&#39;</span> <span class="k">for</span> <span class="n">measurement</span><span class="p">,</span> <span class="n">unit</span> <span class="ow">in</span> <span class="p">(</span>
-                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measurements</span><span class="p">[</span><span class="s1">&#39;max_ram&#39;</span><span class="p">][</span><span class="s1">&#39;combined&#39;</span><span class="p">][</span><span class="s1">&#39;total_rss&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">ram_unit</span><span class="p">),</span>
-                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measurements</span><span class="p">[</span><span class="s1">&#39;max_gpu_ram&#39;</span><span class="p">][</span><span class="s1">&#39;combined&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpu_ram_unit</span><span class="p">),</span>
-                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measurements</span><span class="p">[</span><span class="s1">&#39;compute_time&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_unit</span><span class="p">)))</span>
-        <span class="k">return</span> \
-            <span class="sa">f</span><span class="s1">&#39;Max RAM (combined total RSS): </span><span class="si">{</span><span class="n">max_ram</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span> \
-            <span class="sa">f</span><span class="s1">&#39;Max GPU RAM (combined): </span><span class="si">{</span><span class="n">max_gpu_ram</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span> \
-            <span class="sa">f</span><span class="s1">&#39;Compute time: </span><span class="si">{</span><span class="n">compute_time</span><span class="si">}</span><span class="s1">&#39;</span></div>
+        <span class="n">tracker_json</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+        <span class="n">Tracker</span><span class="o">.</span><span class="n">_format_float</span><span class="p">(</span><span class="n">dictionary</span><span class="o">=</span><span class="n">tracker_json</span><span class="p">)</span>
+        <span class="n">indent</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">tracker_json</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span>
+        <span class="c1"># Un-indent the lines to the left after removing curley braces.</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="n">indent</span><span class="p">:]</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;{&#39;</span><span class="p">,</span> <span class="s1">&#39;}&#39;</span><span class="p">,</span> <span class="s1">&#39;},&#39;</span><span class="p">})</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;: {&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;{&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;}&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="s1">&#39;Max&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;ram&#39;</span><span class="p">,</span> <span class="s1">&#39;RAM&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;unit&#39;</span><span class="p">,</span> <span class="s1">&#39;Unit&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;system&#39;</span><span class="p">,</span> <span class="s1">&#39;System&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+            <span class="s1">&#39;compute&#39;</span><span class="p">,</span> <span class="s1">&#39;Compute&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;time: &#39;</span><span class="p">,</span> <span class="s1">&#39;Time: &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;rss&#39;</span><span class="p">,</span> <span class="s1">&#39;RSS&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;total&#39;</span><span class="p">,</span> <span class="s1">&#39;Total&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+            <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="s1">&#39;Private&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;shared&#39;</span><span class="p">,</span> <span class="s1">&#39;Shared&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;main&#39;</span><span class="p">,</span> <span class="s1">&#39;Main&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;descendents&#39;</span><span class="p">,</span> <span class="s1">&#39;Descendents&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+            <span class="s1">&#39;combined&#39;</span><span class="p">,</span> <span class="s1">&#39;Combined&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;gpu&#39;</span><span class="p">,</span> <span class="s1">&#39;GPU&#39;</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>  <span class="c1"># pragma: no cover</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_format_float</span><span class="p">(</span><span class="n">dictionary</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recursively formats the floating points in a dictionary to 3 decimal places.</span>
+<span class="sd">        :param dictionary: The dictionary to format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
+                <span class="n">Tracker</span><span class="o">.</span><span class="n">_format_float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
+<div class="viewcode-block" id="Tracker.to_json">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.Tracker.to_json">[docs]</a>
     <span class="k">def</span> <span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs a dictionary of the computational-resource-usage measurements and their units.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s1">&#39;system_ram_capacity&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_ram_capacity</span><span class="p">,</span>
             <span class="s1">&#39;max_ram&#39;</span><span class="p">:</span> <span class="n">dclass</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_ram</span><span class="p">),</span>
-            <span class="s1">&#39;ram_unit&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ram_unit</span><span class="p">,</span>
             <span class="s1">&#39;max_gpu_ram&#39;</span><span class="p">:</span> <span class="n">dclass</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_gpu_ram</span><span class="p">),</span>
-            <span class="s1">&#39;gpu_ram_unit&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpu_ram_unit</span><span class="p">,</span>
-            <span class="s1">&#39;compute_time&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span><span class="p">,</span>
-            <span class="s1">&#39;time_unit&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_unit</span>
+            <span class="s1">&#39;compute_time&#39;</span><span class="p">:</span> <span class="n">dclass</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span><span class="p">),</span>
         <span class="p">}</span></div>
+</div>
 
 
 
