@@ -1,4 +1,5 @@
 {
+ "system_ram_capacity": 67000.0,
  "max_ram": {
   "main": {
    "total_rss": 0.016753999999999998,
@@ -14,12 +15,16 @@
    "total_rss": 0.042552999999999994,
    "private_rss": 0.020536,
    "shared_rss": 0.022017
-  }
+  },
+  "system": 31000.0
  },
+ "ram_unit": "megabytes",
  "max_gpu_ram": {
   "main": 1600000.0,
   "descendents": 4300000.0,
   "combined": 5800000.0
  },
- "compute_time": 0.08333333333333333
+ "gpu_ram_unit": "kilobytes",
+ "compute_time": 0.08333333333333333,
+ "time_unit": "hours"
 }

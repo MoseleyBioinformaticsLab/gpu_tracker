@@ -1,5 +1,7 @@
 """The ``tracker`` module contains the ``Tracker`` class which can alternatively be imported directly from the ``gpu_tracker`` package."""
 from __future__ import annotations
+import json
+import dataclasses as dclass
 import platform
 import time
 import threading as thrd
@@ -8,6 +10,28 @@ import psutil
 import subprocess as subp
 import logging as log
 import sys
+
+
+@dclass.dataclass
+class RSSValues:
+    total_rss: float = 0.
+    private_rss: float = 0.
+    shared_rss: float = 0.
+
+
+@dclass.dataclass
+class MaxRAM:
+    main: RSSValues = dclass.field(default_factory=RSSValues)
+    descendents: RSSValues = dclass.field(default_factory=RSSValues)
+    combined: RSSValues = dclass.field(default_factory=RSSValues)
+    system: float = 0.
+
+
+@dclass.dataclass
+class MaxGPURAM:
+    main: float = 0.
+    descendents: float = 0.
+    combined: float = 0.
 
 
 class Tracker:
@@ -68,31 +92,10 @@ class Tracker:
         self.process_id = process_id if process_id is not None else os.getpid()
         self._main_process = psutil.Process(self.process_id)
         self._is_linux = platform.system().lower() == 'linux'
-        self.measurements = {
-            'max_ram': {
-                'main': {
-                    'total_rss': 0,
-                    'private_rss': 0,
-                    'shared_rss': 0
-                },
-                'descendents': {
-                    'total_rss': 0,
-                    'private_rss': 0,
-                    'shared_rss': 0
-                },
-                'combined': {
-                    'total_rss': 0,
-                    'private_rss': 0,
-                    'shared_rss': 0
-                }
-            },
-            'max_gpu_ram': {
-                'main': 0,
-                'descendents': 0,
-                'combined': 0
-            },
-            'compute_time': 0.
-        }
+        self.system_ram_capacity = psutil.virtual_memory().total * self._ram_coefficient
+        self.max_ram = MaxRAM()
+        self.max_gpu_ram = MaxGPURAM()
+        self.compute_time = 0.
 
     @staticmethod
     def _validate_mem_unit(unit: str):
@@ -103,8 +106,7 @@ class Tracker:
         if unit not in valid_units:
             raise ValueError(f'"{unit}" is not a valid {unit_type} unit. Valid values are {", ".join(sorted(valid_units))}')
 
-    def _update_ram(self, measurement: str, processes: list[psutil.Process]):
-        measurements = self.measurements['max_ram'][measurement]
+    def _update_ram(self, rss_values: RSSValues, processes: list[psutil.Process]):
         if self._is_linux:
             memory_maps_list = list[list]()
             for process in processes:
@@ -124,9 +126,9 @@ class Tracker:
                         path_to_shared_rss[path] = memory_map.shared_dirty + memory_map.shared_clean
                     private_rss += memory_map.private_dirty + memory_map.private_clean
             private_rss *= self._ram_coefficient
-            measurements['private_rss'] = max(measurements['private_rss'], private_rss)
+            rss_values.private_rss = max(rss_values.private_rss, private_rss)
             shared_rss = sum(path_to_shared_rss.values()) * self._ram_coefficient
-            measurements['shared_rss'] = max(measurements['shared_rss'], shared_rss)
+            rss_values.shared_rss = max(rss_values.shared_rss, shared_rss)
             total_rss = private_rss + shared_rss
         else:
             total_rss = 0
@@ -136,9 +138,9 @@ class Tracker:
                 except psutil.NoSuchProcess:
                     log.warning(self.NO_PROCESS_WARNING)
             total_rss *= self._ram_coefficient
-        measurements['total_rss'] = max(measurements['total_rss'], total_rss)
+        rss_values.total_rss = max(rss_values.total_rss, total_rss)
 
-    def _update_gpu_ram(self, measurement: str, process_ids: set[int], nvidia_smi_output: str):
+    def _update_gpu_ram(self, attr: str, process_ids: set[int], nvidia_smi_output: str):
         nvidia_smi_output = nvidia_smi_output.strip().split('\n')
         curr_gpu_ram = 0
         for process_info in nvidia_smi_output:
@@ -147,8 +149,9 @@ class Tracker:
             if pid in process_ids:
                 megabytes_used = int(megabytes_used.replace('MiB', '').strip())
                 curr_gpu_ram += megabytes_used
-        self.measurements['max_gpu_ram'][measurement] = max(
-            self.measurements['max_gpu_ram'][measurement], curr_gpu_ram * self._gpu_ram_coefficient)
+        curr_gpu_ram *= self._gpu_ram_coefficient
+        max_gpu_ram = getattr(self.max_gpu_ram, attr)
+        setattr(self.max_gpu_ram, attr, max(max_gpu_ram, curr_gpu_ram))
 
     def _profile(self):
         """
@@ -157,24 +160,25 @@ class Tracker:
         start_time = time.time()
         while not self._stop_event.is_set():
             try:
-                # Get the current RAM usage.
-                self._update_ram(measurement='main', processes=[self._main_process])
-                self._update_ram(measurement='descendents', processes=self._main_process.children(recursive=True))
+                # Get the maximum RAM usage.
+                self._update_ram(rss_values=self.max_ram.main, processes=[self._main_process])
+                self._update_ram(rss_values=self.max_ram.descendents, processes=self._main_process.children(recursive=True))
                 # Call children() each time it's used to get an updated list in case the children changed since the above call.
                 self._update_ram(
-                    measurement='combined', processes=[self._main_process] + self._main_process.children(recursive=True))
-                # Get the current GPU RAM usage.
+                    rss_values=self.max_ram.combined, processes=[self._main_process] + self._main_process.children(recursive=True))
+                self.max_ram.system = max(self.max_ram.system, psutil.virtual_memory().used * self._ram_coefficient)
+                # Get the maximum GPU RAM usage.
                 memory_used_command = 'nvidia-smi --query-compute-apps=pid,used_gpu_memory --format=csv,noheader'
                 nvidia_smi_output = subp.check_output(memory_used_command.split(), stderr=subp.STDOUT).decode()
                 if nvidia_smi_output:
                     process_ids = {self.process_id}
-                    self._update_gpu_ram(measurement='main', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
+                    self._update_gpu_ram(attr='main', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
                     process_ids = {process.pid for process in self._main_process.children(recursive=True)}
-                    self._update_gpu_ram(
-                        measurement='descendents', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
+                    self._update_gpu_ram(attr='descendents', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
                     process_ids.add(self.process_id)
-                    self._update_gpu_ram(measurement='combined', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
-                self.measurements['compute_time'] = (time.time() - start_time) * self._time_coefficient
+                    self._update_gpu_ram(attr='combined', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
+                # Update compute time
+                self.compute_time = (time.time() - start_time) * self._time_coefficient
                 _testable_sleep(self.sleep_time)
             except psutil.NoSuchProcess:
                 log.warning('Failed to track a process that does not exist. '
@@ -233,6 +237,17 @@ class Tracker:
 
     def __repr__(self) -> str:
         return str(self)  # pragma: no cover
+
+    def to_json(self):
+        return {
+            'system_ram_capacity': self.system_ram_capacity,
+            'max_ram': dclass.asdict(self.max_ram),
+            'ram_unit': self.ram_unit,
+            'max_gpu_ram': dclass.asdict(self.max_gpu_ram),
+            'gpu_ram_unit': self.gpu_ram_unit,
+            'compute_time': self.compute_time,
+            'time_unit': self.time_unit
+        }
 
 
 def _testable_sleep(sleep_time: float):
