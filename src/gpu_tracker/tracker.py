@@ -12,37 +12,6 @@ import logging as log
 import sys
 
 
-@dclass.dataclass
-class RSSValues:
-    total_rss: float = 0.
-    private_rss: float = 0.
-    shared_rss: float = 0.
-
-
-@dclass.dataclass
-class MaxRAM:
-    unit: str
-    system_capacity: float
-    system: float = 0.
-    main: RSSValues = dclass.field(default_factory=RSSValues)
-    descendents: RSSValues = dclass.field(default_factory=RSSValues)
-    combined: RSSValues = dclass.field(default_factory=RSSValues)
-
-
-@dclass.dataclass
-class MaxGPURAM:
-    unit: str
-    main: float = 0.
-    descendents: float = 0.
-    combined: float = 0.
-
-
-@dclass.dataclass
-class ComputeTime:
-    unit: str
-    time: float = 0.
-
-
 class Tracker:
     """
     Runs a thread in the background that tracks the compute time, maximum RAM, and maximum GPU RAM usage within a context manager or explicit ``start()`` and ``stop()`` methods.
@@ -256,7 +225,7 @@ class Tracker:
             elif type(value) == dict:
                 Tracker._format_float(value)
 
-    def to_json(self):
+    def to_json(self) -> dict[str, dict]:
         """
         Constructs a dictionary of the computational-resource-usage measurements and their units.
         """
@@ -265,6 +234,60 @@ class Tracker:
             'max_gpu_ram': dclass.asdict(self.max_gpu_ram),
             'compute_time': dclass.asdict(self.compute_time),
         }
+
+
+@dclass.dataclass
+class RSSValues:
+    """
+    :param total_rss: The sum of ``private_rss`` and ``shared_rss``.
+    :param private_rss: The RAM usage exclusive to a process.
+    :param shared_rss: The RAM usage of a process shared with at least one other process.
+    """
+    total_rss: float = 0.
+    private_rss: float = 0.
+    shared_rss: float = 0.
+
+
+@dclass.dataclass
+class MaxRAM:
+    """
+    :param unit: The unit of measurement for RAM e.g. gigabytes.
+    :param system_capacity: A constant value for the RAM capacity of the entire operating system.
+    :param system: The RAM usage across the entire operating system.
+    :param main: The RAM usage of the main process.
+    :param descendents: The summed RAM usage of the descendent processes (i.e. child processes, grandchild processes, etc.).
+    :param combined: The summed RAM usage of both the main process and any descendent processes it may have.
+    """
+    unit: str
+    system_capacity: float
+    system: float = 0.
+    main: RSSValues = dclass.field(default_factory=RSSValues)
+    descendents: RSSValues = dclass.field(default_factory=RSSValues)
+    combined: RSSValues = dclass.field(default_factory=RSSValues)
+
+
+@dclass.dataclass
+class MaxGPURAM:
+    """
+    :param unit: The unit of measurement for GPU RAM e.g. gigabytes.
+    :param main: The GPU RAM usage of the main process.
+    :param descendents: The summed GPU RAM usage of the descendent processes (i.e. child processes, grandchild processes, etc.).
+    :param combined: The summed GPU RAM usage of both the main process and any descendent processes it may have.
+    """
+    unit: str
+    main: float = 0.
+    descendents: float = 0.
+    combined: float = 0.
+
+
+@dclass.dataclass
+class ComputeTime:
+    """
+    :param unit: The unit of measurement for compute time e.g. hours.
+    :param time: The real compute time.
+    """
+    unit: str
+    time: float = 0.
 
 
 def _testable_sleep(sleep_time: float):
