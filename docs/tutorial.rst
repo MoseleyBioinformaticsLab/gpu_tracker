@@ -19,12 +19,18 @@ used by the code that’s in between ``start()`` and ``stop()``.
 .. code:: python3
 
     import gpu_tracker as gput
+    import torch
+    
+    def example_function() -> torch.Tensor:
+        t1 = torch.tensor(list(range(10000000))).cuda()
+        t2 = torch.tensor(list(range(10000000))).cuda()
+        return t1 * t2
 
 .. code:: python3
 
     tracker = gput.Tracker()
     tracker.start()
-    # Perform expensive operations
+    example_function()
     tracker.stop()
 
 The ``Tracker`` class implements the ``__str__`` method so it can be
@@ -41,27 +47,27 @@ resource formatted.
     Max RAM:
        Unit: gigabytes
        System capacity: 67.254
-       System: 4.545
+       System: 1.799
        Main:
-          Total RSS: 0.061
-          Private RSS: 0.05
-          Shared RSS: 0.011
+          Total RSS: 0.596
+          Private RSS: 0.578
+          Shared RSS: 0.018
        Descendents:
           Total RSS: 0.0
           Private RSS: 0.0
           Shared RSS: 0.0
        Combined:
-          Total RSS: 0.063
-          Private RSS: 0.052
-          Shared RSS: 0.011
+          Total RSS: 0.523
+          Private RSS: 0.505
+          Shared RSS: 0.018
     Max GPU RAM:
        Unit: gigabytes
-       Main: 0.0
+       Main: 0.506
        Descendents: 0.0
-       Combined: 0.0
+       Combined: 0.506
     Compute time:
        Unit: hours
-       Time: 0.0
+       Time: 0.001
 
 
 The system capacity is a constant for the total RAM capacity across the
@@ -102,8 +108,7 @@ than explicitly calling ``start()`` and ``stop()``.
 .. code:: python3
 
     with gput.Tracker() as tracker:
-        # Perform expensive operations
-        pass
+        example_function()
     print(tracker)
 
 
@@ -112,38 +117,37 @@ than explicitly calling ``start()`` and ``stop()``.
     Max RAM:
        Unit: gigabytes
        System capacity: 67.254
-       System: 4.549
+       System: 1.734
        Main:
-          Total RSS: 0.063
-          Private RSS: 0.052
-          Shared RSS: 0.011
+          Total RSS: 0.603
+          Private RSS: 0.585
+          Shared RSS: 0.018
        Descendents:
           Total RSS: 0.0
           Private RSS: 0.0
           Shared RSS: 0.0
        Combined:
-          Total RSS: 0.063
-          Private RSS: 0.052
-          Shared RSS: 0.011
+          Total RSS: 0.523
+          Private RSS: 0.505
+          Shared RSS: 0.018
     Max GPU RAM:
        Unit: gigabytes
-       Main: 0.0
+       Main: 0.506
        Descendents: 0.0
-       Combined: 0.0
+       Combined: 0.506
     Compute time:
        Unit: hours
-       Time: 0.0
+       Time: 0.001
 
 
 The units of the computational resources can be modified as desired. For
-example, to measure the RAM in megabytes, the GPU RAM in kilobytes, and
+example, to measure the RAM in megabytes, the GPU RAM in megabytes, and
 the compute time in seconds:
 
 .. code:: python3
 
-    with gput.Tracker(ram_unit='megabytes', gpu_ram_unit='kilobytes', time_unit='seconds') as tracker:
-        # Perform expensive operations
-        pass
+    with gput.Tracker(ram_unit='megabytes', gpu_ram_unit='megabytes', time_unit='seconds') as tracker:
+        example_function()
     print(tracker)
 
 
@@ -151,28 +155,28 @@ the compute time in seconds:
 
     Max RAM:
        Unit: megabytes
-       System capacity: 67254.161
-       System: 4548.833
+       System capacity: 67254.166
+       System: 1847.591
        Main:
-          Total RSS: 63.279
-          Private RSS: 52.064
-          Shared RSS: 11.215
+          Total RSS: 603.525
+          Private RSS: 585.269
+          Shared RSS: 18.256
        Descendents:
           Total RSS: 0.0
           Private RSS: 0.0
           Shared RSS: 0.0
        Combined:
-          Total RSS: 63.283
-          Private RSS: 52.068
-          Shared RSS: 11.215
+          Total RSS: 523.522
+          Private RSS: 505.266
+          Shared RSS: 18.256
     Max GPU RAM:
-       Unit: kilobytes
-       Main: 0.0
+       Unit: megabytes
+       Main: 506.0
        Descendents: 0.0
-       Combined: 0.0
+       Combined: 506.0
     Compute time:
        Unit: seconds
-       Time: 0.059
+       Time: 2.768
 
 
 The same information as the text format can be provided as a dictionary
@@ -189,12 +193,12 @@ via the ``to_json()`` method of the ``Tracker``.
     {
      "max_ram": {
       "unit": "megabytes",
-      "system_capacity": 67254.161408,
-      "system": 4548.83328,
+      "system_capacity": 67254.165504,
+      "system": 1847.590912,
       "main": {
-       "total_rss": 63.279104000000004,
-       "private_rss": 52.064256,
-       "shared_rss": 11.214848
+       "total_rss": 603.5251199999999,
+       "private_rss": 585.269248,
+       "shared_rss": 18.255872
       },
       "descendents": {
        "total_rss": 0.0,
@@ -202,20 +206,20 @@ via the ``to_json()`` method of the ``Tracker``.
        "shared_rss": 0.0
       },
       "combined": {
-       "total_rss": 63.283199999999994,
-       "private_rss": 52.068352,
-       "shared_rss": 11.214848
+       "total_rss": 523.5220479999999,
+       "private_rss": 505.266176,
+       "shared_rss": 18.255872
       }
      },
      "max_gpu_ram": {
-      "unit": "kilobytes",
-      "main": 0.0,
+      "unit": "megabytes",
+      "main": 506.0,
       "descendents": 0.0,
-      "combined": 0.0
+      "combined": 506.0
      },
      "compute_time": {
       "unit": "seconds",
-      "time": 0.058912038803100586
+      "time": 2.767793655395508
      }
     }
 
@@ -232,13 +236,48 @@ information for each computational resource as python data classes.
 
 .. code:: none
 
-    MaxRAM(unit='megabytes', system_capacity=67254.161408, system=4548.83328, main=RSSValues(total_rss=63.279104000000004, private_rss=52.064256, shared_rss=11.214848), descendents=RSSValues(total_rss=0.0, private_rss=0.0, shared_rss=0.0), combined=RSSValues(total_rss=63.283199999999994, private_rss=52.068352, shared_rss=11.214848))
+    MaxRAM(unit='megabytes', system_capacity=67254.165504, system=1847.590912, main=RSSValues(total_rss=603.5251199999999, private_rss=585.269248, shared_rss=18.255872), descendents=RSSValues(total_rss=0.0, private_rss=0.0, shared_rss=0.0), combined=RSSValues(total_rss=523.5220479999999, private_rss=505.266176, shared_rss=18.255872))
 
 
 
 .. code:: python3
 
-    trac
+    tracker.max_ram.unit
+
+
+
+
+.. code:: none
+
+    'megabytes'
+
+
+
+.. code:: python3
+
+    tracker.max_ram.main
+
+
+
+
+.. code:: none
+
+    RSSValues(total_rss=603.5251199999999, private_rss=585.269248, shared_rss=18.255872)
+
+
+
+.. code:: python3
+
+    tracker.max_ram.main.total_rss
+
+
+
+
+.. code:: none
+
+    603.5251199999999
+
+
 
 .. code:: python3
 
@@ -249,7 +288,7 @@ information for each computational resource as python data classes.
 
 .. code:: none
 
-    MaxGPURAM(unit='kilobytes', main=0.0, descendents=0.0, combined=0.0)
+    MaxGPURAM(unit='megabytes', main=506.0, descendents=0.0, combined=506.0)
 
 
 
@@ -262,7 +301,7 @@ information for each computational resource as python data classes.
 
 .. code:: none
 
-    ComputeTime(unit='seconds', time=0.058912038803100586)
+    ComputeTime(unit='seconds', time=2.767793655395508)
 
 
 
@@ -299,13 +338,13 @@ help message.
 
 The ``-e`` or ``--execute`` is a required option where the desired shell
 command is provided, with both the command and its proceeding arguments
-surrounded by quotes. Below is an example of running the ``sleep``
-command with an argument of 2 seconds. When the command completes, its
-status code is reported.
+surrounded by quotes. Below is an example of running the ``bash``
+command with an argument of ``example-script.sh``. When the command
+completes, its status code is reported.
 
 .. code:: none
 
-    $ gpu-tracker -e 'sleep 2'
+    $ gpu-tracker -e "bash example-script.sh"
 
 
 .. code:: none
@@ -314,35 +353,40 @@ status code is reported.
     Max RAM:
        Unit: gigabytes
        System capacity: 67.254
-       System: 4.548
+       System: 2.55
        Main:
-          Total RSS: 0.002
+          Total RSS: 0.003
           Private RSS: 0.0
-          Shared RSS: 0.002
+          Shared RSS: 0.003
        Descendents:
-          Total RSS: 0.0
-          Private RSS: 0.0
-          Shared RSS: 0.0
+          Total RSS: 0.83
+          Private RSS: 0.708
+          Shared RSS: 0.122
        Combined:
-          Total RSS: 0.002
-          Private RSS: 0.0
-          Shared RSS: 0.002
+          Total RSS: 0.832
+          Private RSS: 0.709
+          Shared RSS: 0.123
     Max GPU RAM:
        Unit: gigabytes
        Main: 0.0
-       Descendents: 0.0
-       Combined: 0.0
+       Descendents: 0.314
+       Combined: 0.314
     Compute time:
        Unit: hours
-       Time: 0.0
+       Time: 0.001
 
+
+*Notice that the RAM and GPU RAM usage primarily takes place in the
+descendent processes since the bash command itself calls the commands
+relevant to resource usage.*
 
 The units of the computational resources can be modified. For example,
-–tu stands for time-unit and –ru stands for ram-unit.
+–tu stands for time-unit, –gru stands for gpu-ram-unit, and –ru stands
+for ram-unit.
 
 .. code:: none
 
-    $ gpu-tracker -e 'sleep 2' --tu=seconds --ru=megabytes
+    $ gpu-tracker -e 'bash example-script.sh' --tu=seconds --gru=megabytes --ru=megabytes
 
 
 .. code:: none
@@ -350,28 +394,28 @@ The units of the computational resources can be modified. For example,
     Resource tracking complete. Process completed with status code: 0
     Max RAM:
        Unit: megabytes
-       System capacity: 67254.161
-       System: 4550.529
+       System capacity: 67254.166
+       System: 2458.182
        Main:
-          Total RSS: 1.831
-          Private RSS: 0.135
-          Shared RSS: 1.696
+          Total RSS: 3.072
+          Private RSS: 0.373
+          Shared RSS: 2.699
        Descendents:
-          Total RSS: 0.0
-          Private RSS: 0.0
-          Shared RSS: 0.0
+          Total RSS: 830.271
+          Private RSS: 708.19
+          Shared RSS: 122.081
        Combined:
-          Total RSS: 1.831
-          Private RSS: 0.135
-          Shared RSS: 1.696
+          Total RSS: 831.537
+          Private RSS: 708.563
+          Shared RSS: 122.974
     Max GPU RAM:
-       Unit: gigabytes
+       Unit: megabytes
        Main: 0.0
-       Descendents: 0.0
-       Combined: 0.0
+       Descendents: 314.0
+       Combined: 314.0
     Compute time:
        Unit: seconds
-       Time: 1.075
+       Time: 3.316
 
 
 By default, the computational-resource-usage statistics are printed to
@@ -380,7 +424,7 @@ that same content in a file.
 
 .. code:: none
 
-    $ gpu-tracker -e 'sleep 2' -o out.txt 
+    $ gpu-tracker -e 'bash example-script.sh' -o out.txt 
 
 
 .. code:: none
@@ -398,34 +442,34 @@ that same content in a file.
     Max RAM:
        Unit: gigabytes
        System capacity: 67.254
-       System: 4.567
+       System: 2.394
        Main:
-          Total RSS: 0.002
+          Total RSS: 0.003
           Private RSS: 0.0
-          Shared RSS: 0.002
+          Shared RSS: 0.003
        Descendents:
-          Total RSS: 0.0
-          Private RSS: 0.0
-          Shared RSS: 0.0
+          Total RSS: 0.831
+          Private RSS: 0.709
+          Shared RSS: 0.122
        Combined:
-          Total RSS: 0.002
-          Private RSS: 0.0
-          Shared RSS: 0.002
+          Total RSS: 0.832
+          Private RSS: 0.709
+          Shared RSS: 0.123
     Max GPU RAM:
        Unit: gigabytes
        Main: 0.0
-       Descendents: 0.0
-       Combined: 0.0
+       Descendents: 0.314
+       Combined: 0.314
     Compute time:
        Unit: hours
-       Time: 0.0
+       Time: 0.001
 
 By default, the format of the output is “text”. The ``-f`` or
 ``--format`` option can specify the format to be “json” instead.
 
 .. code:: none
 
-    $ gpu-tracker -e 'sleep 2' -f json
+    $ gpu-tracker -e 'bash example-script.sh' -f json
 
 
 .. code:: none
@@ -434,40 +478,40 @@ By default, the format of the output is “text”. The ``-f`` or
     {
      "max_ram": {
       "unit": "gigabytes",
-      "system_capacity": 67.254161408,
-      "system": 4.582764544000001,
+      "system_capacity": 67.254165504,
+      "system": 2.3758110720000003,
       "main": {
-       "total_rss": 0.001662976,
-       "private_rss": 0.00013516800000000002,
-       "shared_rss": 0.001527808
+       "total_rss": 0.0031457280000000004,
+       "private_rss": 0.000376832,
+       "shared_rss": 0.0027688960000000003
       },
       "descendents": {
-       "total_rss": 0.0,
-       "private_rss": 0.0,
-       "shared_rss": 0.0
+       "total_rss": 0.8303943680000001,
+       "private_rss": 0.708313088,
+       "shared_rss": 0.12208128000000001
       },
       "combined": {
-       "total_rss": 0.001662976,
-       "private_rss": 0.00013516800000000002,
-       "shared_rss": 0.001527808
+       "total_rss": 0.8316641280000001,
+       "private_rss": 0.7086899200000001,
+       "shared_rss": 0.122974208
       }
      },
      "max_gpu_ram": {
       "unit": "gigabytes",
       "main": 0.0,
-      "descendents": 0.0,
-      "combined": 0.0
+      "descendents": 0.314,
+      "combined": 0.314
      },
      "compute_time": {
       "unit": "hours",
-      "time": 0.00030033310254414875
+      "time": 0.0009229619635476007
      }
     }
 
 
 .. code:: none
 
-    $ gpu-tracker -e 'sleep 2' -f json -o out.json
+    $ gpu-tracker -e 'bash example-script.sh' -f json -o out.json
 
 
 .. code:: none
@@ -485,32 +529,32 @@ By default, the format of the output is “text”. The ``-f`` or
     {
      "max_ram": {
       "unit": "gigabytes",
-      "system_capacity": 67.254161408,
-      "system": 4.584312832,
+      "system_capacity": 67.254165504,
+      "system": 2.3479746560000003,
       "main": {
-       "total_rss": 0.0017162240000000001,
-       "private_rss": 0.00013516800000000002,
-       "shared_rss": 0.0015810560000000002
+       "total_rss": 0.0030228480000000003,
+       "private_rss": 0.000323584,
+       "shared_rss": 0.0026992640000000003
       },
       "descendents": {
-       "total_rss": 0.0,
-       "private_rss": 0.0,
-       "shared_rss": 0.0
+       "total_rss": 0.830509056,
+       "private_rss": 0.708481024,
+       "shared_rss": 0.12202803200000001
       },
       "combined": {
-       "total_rss": 0.0017162240000000001,
-       "private_rss": 0.00013516800000000002,
-       "shared_rss": 0.0015810560000000002
+       "total_rss": 0.831725568,
+       "private_rss": 0.708804608,
+       "shared_rss": 0.12292096000000001
       }
      },
      "max_gpu_ram": {
       "unit": "gigabytes",
       "main": 0.0,
-      "descendents": 0.0,
-      "combined": 0.0
+      "descendents": 0.314,
+      "combined": 0.314
      },
      "compute_time": {
       "unit": "hours",
-      "time": 0.0002998979224099053
+      "time": 0.000929061041937934
      }
     }
