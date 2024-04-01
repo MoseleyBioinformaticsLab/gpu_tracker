@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API &mdash; gpu_tracker 0.1.dev1+g614e390 documentation</title>
+  <title>API &mdash; gpu_tracker 0.1.dev1+gd5ae9d2 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=04cabcb0"></script>
+        <script src="_static/documentation_options.js?v=f0c79d5c"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -37,7 +37,7 @@
             gpu_tracker
           </a>
               <div class="version">
-                0.1.dev1+g614e390
+                0.1.dev1+gd5ae9d2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -52,17 +52,17 @@
 <li class="toctree-l1"><a class="reference internal" href="guide.html">User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.ComputeTime"><code class="docutils literal notranslate"><span class="pre">ComputeTime</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM"><code class="docutils literal notranslate"><span class="pre">MaxRAM</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.RSSValues"><code class="docutils literal notranslate"><span class="pre">RSSValues</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.Tracker"><code class="docutils literal notranslate"><span class="pre">Tracker</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.__str__"><code class="docutils literal notranslate"><span class="pre">Tracker.__str__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.start"><code class="docutils literal notranslate"><span class="pre">Tracker.start()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.stop"><code class="docutils literal notranslate"><span class="pre">Tracker.stop()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.__str__"><code class="docutils literal notranslate"><span class="pre">Tracker.__str__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.to_json"><code class="docutils literal notranslate"><span class="pre">Tracker.to_json()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.RSSValues"><code class="docutils literal notranslate"><span class="pre">RSSValues</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM"><code class="docutils literal notranslate"><span class="pre">MaxRAM</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.ComputeTime"><code class="docutils literal notranslate"><span class="pre">ComputeTime</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI</a></li>
@@ -97,65 +97,6 @@
 <span id="api"></span><h1>API<a class="headerlink" href="#module-gpu_tracker" title="Link to this heading"></a></h1>
 <p id="module-gpu_tracker.tracker">The <code class="docutils literal notranslate"><span class="pre">tracker</span></code> module contains the <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class which can alternatively be imported directly from the <code class="docutils literal notranslate"><span class="pre">gpu_tracker</span></code> package.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="gpu_tracker.tracker.ComputeTime">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.tracker.</span></span><span class="sig-name descname"><span class="pre">ComputeTime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#ComputeTime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.ComputeTime" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>unit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – </p></li>
-<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="gpu_tracker.tracker.MaxGPURAM">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.tracker.</span></span><span class="sig-name descname"><span class="pre">MaxGPURAM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descendents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combined</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#MaxGPURAM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.MaxGPURAM" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>unit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – </p></li>
-<li><p><strong>main</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
-<li><p><strong>descendents</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
-<li><p><strong>combined</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="gpu_tracker.tracker.MaxRAM">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.tracker.</span></span><span class="sig-name descname"><span class="pre">MaxRAM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit:</span> <span class="pre">'str'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_capacity:</span> <span class="pre">'float'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system:</span> <span class="pre">'float'</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main:</span> <span class="pre">'RSSValues'</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descendents:</span> <span class="pre">'RSSValues'</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combined:</span> <span class="pre">'RSSValues'</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#MaxRAM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.MaxRAM" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>unit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – </p></li>
-<li><p><strong>system_capacity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
-<li><p><strong>system</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
-<li><p><strong>main</strong> (<a class="reference internal" href="#gpu_tracker.tracker.RSSValues" title="gpu_tracker.tracker.RSSValues"><em>RSSValues</em></a>) – </p></li>
-<li><p><strong>descendents</strong> (<a class="reference internal" href="#gpu_tracker.tracker.RSSValues" title="gpu_tracker.tracker.RSSValues"><em>RSSValues</em></a>) – </p></li>
-<li><p><strong>combined</strong> (<a class="reference internal" href="#gpu_tracker.tracker.RSSValues" title="gpu_tracker.tracker.RSSValues"><em>RSSValues</em></a>) – </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="gpu_tracker.tracker.RSSValues">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.tracker.</span></span><span class="sig-name descname"><span class="pre">RSSValues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_rss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private_rss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shared_rss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#RSSValues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.RSSValues" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>total_rss</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
-<li><p><strong>private_rss</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
-<li><p><strong>shared_rss</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="gpu_tracker.tracker.Tracker">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.tracker.</span></span><span class="sig-name descname"><span class="pre">Tracker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sleep_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ram_unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gigabytes'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpu_ram_unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gigabytes'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'hours'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_join_attempts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">join_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kill_if_join_fails</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#Tracker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.Tracker" title="Link to this definition"></a></dt>
 <dd><p>Runs a thread in the background that tracks the compute time, maximum RAM, and maximum GPU RAM usage within a context manager or explicit <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code> methods.
@@ -185,17 +126,6 @@ Calculated quantities are scaled depending on the units chosen for them (e.g. me
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="gpu_tracker.tracker.Tracker.__str__">
-<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#Tracker.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.Tracker.__str__" title="Link to this definition"></a></dt>
-<dd><p>Constructs a string representation of the computational-resource-usage measurements and their units.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="gpu_tracker.tracker.Tracker.start">
 <span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#Tracker.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.Tracker.start" title="Link to this definition"></a></dt>
 <dd><p>Begins tracking for the duration of time until <code class="docutils literal notranslate"><span class="pre">stop()</span></code> is called. Equivalent to entering the context manager.</p>
@@ -208,11 +138,86 @@ Calculated quantities are scaled depending on the units chosen for them (e.g. me
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="gpu_tracker.tracker.Tracker.to_json">
-<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#Tracker.to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.Tracker.to_json" title="Link to this definition"></a></dt>
-<dd><p>Constructs a dictionary of the computational-resource-usage measurements and their units.</p>
+<dt class="sig sig-object py" id="gpu_tracker.tracker.Tracker.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#Tracker.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.Tracker.__str__" title="Link to this definition"></a></dt>
+<dd><p>Constructs a string representation of the computational-resource-usage measurements and their units.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="gpu_tracker.tracker.Tracker.to_json">
+<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#Tracker.to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.Tracker.to_json" title="Link to this definition"></a></dt>
+<dd><p>Constructs a dictionary of the computational-resource-usage measurements and their units.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gpu_tracker.tracker.RSSValues">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.tracker.</span></span><span class="sig-name descname"><span class="pre">RSSValues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_rss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private_rss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shared_rss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#RSSValues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.RSSValues" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>total_rss</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – The sum of <code class="docutils literal notranslate"><span class="pre">private_rss</span></code> and <code class="docutils literal notranslate"><span class="pre">shared_rss</span></code>.</p></li>
+<li><p><strong>private_rss</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – The RAM usage exclusive to a process.</p></li>
+<li><p><strong>shared_rss</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – The RAM usage of a process shared with at least one other process.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gpu_tracker.tracker.MaxRAM">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.tracker.</span></span><span class="sig-name descname"><span class="pre">MaxRAM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_capacity:</span> <span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main:</span> <span class="pre">~gpu_tracker.tracker.RSSValues</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descendents:</span> <span class="pre">~gpu_tracker.tracker.RSSValues</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combined:</span> <span class="pre">~gpu_tracker.tracker.RSSValues</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#MaxRAM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.MaxRAM" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>unit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The unit of measurement for RAM e.g. gigabytes.</p></li>
+<li><p><strong>system_capacity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – A constant value for the RAM capacity of the entire operating system.</p></li>
+<li><p><strong>system</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – The RAM usage across the entire operating system.</p></li>
+<li><p><strong>main</strong> (<a class="reference internal" href="#gpu_tracker.tracker.RSSValues" title="gpu_tracker.tracker.RSSValues"><em>RSSValues</em></a>) – The RAM usage of the main process.</p></li>
+<li><p><strong>descendents</strong> (<a class="reference internal" href="#gpu_tracker.tracker.RSSValues" title="gpu_tracker.tracker.RSSValues"><em>RSSValues</em></a>) – The summed RAM usage of the descendent processes (i.e. child processes, grandchild processes, etc.).</p></li>
+<li><p><strong>combined</strong> (<a class="reference internal" href="#gpu_tracker.tracker.RSSValues" title="gpu_tracker.tracker.RSSValues"><em>RSSValues</em></a>) – The summed RAM usage of both the main process and any descendent processes it may have.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gpu_tracker.tracker.MaxGPURAM">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.tracker.</span></span><span class="sig-name descname"><span class="pre">MaxGPURAM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">main</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descendents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combined</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#MaxGPURAM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.MaxGPURAM" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>unit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The unit of measurement for GPU RAM e.g. gigabytes.</p></li>
+<li><p><strong>main</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – The GPU RAM usage of the main process.</p></li>
+<li><p><strong>descendents</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – The summed GPU RAM usage of the descendent processes (i.e. child processes, grandchild processes, etc.).</p></li>
+<li><p><strong>combined</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – The summed GPU RAM usage of both the main process and any descendent processes it may have.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gpu_tracker.tracker.ComputeTime">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.tracker.</span></span><span class="sig-name descname"><span class="pre">ComputeTime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#ComputeTime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.ComputeTime" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>unit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The unit of measurement for compute time e.g. hours.</p></li>
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – The real compute time.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

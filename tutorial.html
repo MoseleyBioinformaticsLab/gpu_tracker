@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tutorial &mdash; gpu_tracker 0.1.dev1+g614e390 documentation</title>
+  <title>Tutorial &mdash; gpu_tracker 0.1.dev1+gd5ae9d2 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=04cabcb0"></script>
+        <script src="_static/documentation_options.js?v=f0c79d5c"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -37,7 +37,7 @@
             gpu_tracker
           </a>
               <div class="version">
-                0.1.dev1+g614e390
+                0.1.dev1+gd5ae9d2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -96,10 +96,7 @@ background. After calling <code class="docutils literal notranslate"><span class
 resource usage, followed by calling the <code class="docutils literal notranslate"><span class="pre">stop()</span></code> method. The compute
 time will be the time from the call to <code class="docutils literal notranslate"><span class="pre">start()</span></code> to the call to
 <code class="docutils literal notranslate"><span class="pre">stop()</span></code> and the RAM and GPU RAM quantities will be the amount of RAM
-used by the code that’s in between <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code>. The
-<code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class additionally has a <code class="docutils literal notranslate"><span class="pre">__str__</span></code> method so it can be
-printed as a string that formats the values and units of each
-computational resource.</p>
+used by the code that’s in between <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code>.</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gpu_tracker</span> <span class="k">as</span> <span class="nn">gput</span>
 </pre></div>
 </div>
@@ -107,25 +104,100 @@ computational resource.</p>
 <span class="n">tracker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 <span class="c1"># Perform expensive operations</span>
 <span class="n">tracker</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 0.067 gigabytes
-Max GPU RAM: 0.000 gigabytes
-Compute time: 0.000 hours
+<p>The <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class implements the <code class="docutils literal notranslate"><span class="pre">__str__</span></code> method so it can be
+printed as a string with the values and units of each computational
+resource formatted.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The equivalent can be accomplished using <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> as a context
-manager rather than explicitly calling <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code>.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM:
+   Unit: gigabytes
+   System capacity: 67.254
+   System: 4.545
+   Main:
+      Total RSS: 0.061
+      Private RSS: 0.05
+      Shared RSS: 0.011
+   Descendents:
+      Total RSS: 0.0
+      Private RSS: 0.0
+      Shared RSS: 0.0
+   Combined:
+      Total RSS: 0.063
+      Private RSS: 0.052
+      Shared RSS: 0.011
+Max GPU RAM:
+   Unit: gigabytes
+   Main: 0.0
+   Descendents: 0.0
+   Combined: 0.0
+Compute time:
+   Unit: hours
+   Time: 0.0
+</pre></div>
+</div>
+<p>The system capacity is a constant for the total RAM capacity across the
+entire operating system, not to be confused with the maximum system RAM
+which is the maximum OS RAM that was actually used over the duration of
+the computational-resource tracking. Both the RAM and GPU RAM are split
+up into 3 sections, namely the usage of the main process itself followed
+by the summed usage of any descendent processes it may have (i.e. child
+processes, grandchild processes, etc.), and combined usage which is the
+sum of the main and its descendent processes. RAM is divided further to
+include the private RSS (RAM usage unique to the process), shared RSS
+(RAM that’s shared by a process and at least one other process), and
+total RSS (the sum of private and shared RSS). The private and shared
+RSS values are only available on Linux distributions. So for non-linux
+operating systems, the privated and shared RSS will remain 0 and only
+the total RSS will be reported. Theoretically, the combined total RSS
+would never exceed the overall system RAM usage, but inaccuracies
+resulting from shared RSS can cause this to happen, especially for
+non-linux operating systems (see note below).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> assumes that GPU memory is not shared accross multiple
+processes and if it is, the reported GPU RAM of “descendent” and
+“combined” may be an overestimation.</p>
+<p>The compute time is the real time that the computational-resource
+tracking lasted (as compared to CPU time).</p>
+<p><strong>NOTE</strong> <em>The keywords “descendents” and “combined” in the output above
+indicate a sum of the RSS used by multiple processes. It’s important to
+keep in mind that on non-linux operating systems, this sum does not take
+into account shared memory but rather adds up the total RSS of all
+processes, which can lead to an overestimation. For Linux distributions,
+however, pieces of shared memory are only counted once.</em></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> can alternatively be used as a context manager rather
+than explicitly calling <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code>.</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gput</span><span class="o">.</span><span class="n">Tracker</span><span class="p">()</span> <span class="k">as</span> <span class="n">tracker</span><span class="p">:</span>
     <span class="c1"># Perform expensive operations</span>
     <span class="k">pass</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 0.067 gigabytes
-Max GPU RAM: 0.000 gigabytes
-Compute time: 0.000 hours
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM:
+   Unit: gigabytes
+   System capacity: 67.254
+   System: 4.549
+   Main:
+      Total RSS: 0.063
+      Private RSS: 0.052
+      Shared RSS: 0.011
+   Descendents:
+      Total RSS: 0.0
+      Private RSS: 0.0
+      Shared RSS: 0.0
+   Combined:
+      Total RSS: 0.063
+      Private RSS: 0.052
+      Shared RSS: 0.011
+Max GPU RAM:
+   Unit: gigabytes
+   Main: 0.0
+   Descendents: 0.0
+   Combined: 0.0
+Compute time:
+   Unit: hours
+   Time: 0.0
 </pre></div>
 </div>
 <p>The units of the computational resources can be modified as desired. For
@@ -137,30 +209,93 @@ the compute time in seconds:</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 67.391 megabytes
-Max GPU RAM: 0.000 kilobytes
-Compute time: 1.035 seconds
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM:
+   Unit: megabytes
+   System capacity: 67254.161
+   System: 4548.833
+   Main:
+      Total RSS: 63.279
+      Private RSS: 52.064
+      Shared RSS: 11.215
+   Descendents:
+      Total RSS: 0.0
+      Private RSS: 0.0
+      Shared RSS: 0.0
+   Combined:
+      Total RSS: 63.283
+      Private RSS: 52.068
+      Shared RSS: 11.215
+Max GPU RAM:
+   Unit: kilobytes
+   Main: 0.0
+   Descendents: 0.0
+   Combined: 0.0
+Compute time:
+   Unit: seconds
+   Time: 0.059
 </pre></div>
 </div>
-<p>The same information can be obtained in a dictionary via the
-<code class="docutils literal notranslate"><span class="pre">Tracker</span></code>’s <code class="docutils literal notranslate"><span class="pre">to_json()</span></code> method.</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+<p>The same information as the text format can be provided as a dictionary
+via the <code class="docutils literal notranslate"><span class="pre">to_json()</span></code> method of the <code class="docutils literal notranslate"><span class="pre">Tracker</span></code>.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">to_json</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{&#39;max_ram&#39;: 67.391488,
- &#39;ram_unit&#39;: &#39;megabytes&#39;,
- &#39;max_gpu_ram&#39;: 0.0,
- &#39;gpu_ram_unit&#39;: &#39;kilobytes&#39;,
- &#39;compute_time&#39;: 1.0349853038787842,
- &#39;time_unit&#39;: &#39;seconds&#39;}
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
+ &quot;max_ram&quot;: {
+  &quot;unit&quot;: &quot;megabytes&quot;,
+  &quot;system_capacity&quot;: 67254.161408,
+  &quot;system&quot;: 4548.83328,
+  &quot;main&quot;: {
+   &quot;total_rss&quot;: 63.279104000000004,
+   &quot;private_rss&quot;: 52.064256,
+   &quot;shared_rss&quot;: 11.214848
+  },
+  &quot;descendents&quot;: {
+   &quot;total_rss&quot;: 0.0,
+   &quot;private_rss&quot;: 0.0,
+   &quot;shared_rss&quot;: 0.0
+  },
+  &quot;combined&quot;: {
+   &quot;total_rss&quot;: 63.283199999999994,
+   &quot;private_rss&quot;: 52.068352,
+   &quot;shared_rss&quot;: 11.214848
+  }
+ },
+ &quot;max_gpu_ram&quot;: {
+  &quot;unit&quot;: &quot;kilobytes&quot;,
+  &quot;main&quot;: 0.0,
+  &quot;descendents&quot;: 0.0,
+  &quot;combined&quot;: 0.0
+ },
+ &quot;compute_time&quot;: {
+  &quot;unit&quot;: &quot;seconds&quot;,
+  &quot;time&quot;: 0.058912038803100586
+ }
+}
 </pre></div>
 </div>
-<p>Additionally, the individual measurements and units are available as
-attributes in the <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class.</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">max_ram</span><span class="p">,</span> <span class="n">tracker</span><span class="o">.</span><span class="n">ram_unit</span><span class="p">)</span>
+<p>The <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class additionally has fields that provide the usage
+information for each computational resource as python data classes.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span><span class="o">.</span><span class="n">max_ram</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>67.391488 megabytes
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>MaxRAM(unit=&#39;megabytes&#39;, system_capacity=67254.161408, system=4548.83328, main=RSSValues(total_rss=63.279104000000004, private_rss=52.064256, shared_rss=11.214848), descendents=RSSValues(total_rss=0.0, private_rss=0.0, shared_rss=0.0), combined=RSSValues(total_rss=63.283199999999994, private_rss=52.068352, shared_rss=11.214848))
+</pre></div>
+</div>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">trac</span>
+</pre></div>
+</div>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span><span class="o">.</span><span class="n">max_gpu_ram</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>MaxGPURAM(unit=&#39;kilobytes&#39;, main=0.0, descendents=0.0, combined=0.0)
+</pre></div>
+</div>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span><span class="o">.</span><span class="n">compute_time</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>ComputeTime(unit=&#39;seconds&#39;, time=0.058912038803100586)
 </pre></div>
 </div>
 </section>
@@ -176,7 +311,7 @@ help message.</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Tracks the computational resource usage (RAM, GPU RAM, and compute time) of a process corresponding to a given shell command.
 
 Usage:
-    gpu-tracker --execute=&lt;command&gt; [--output=&lt;output&gt;] [--format=&lt;format&gt;] [--st=&lt;sleep-time&gt;] [--ic] [--ru=&lt;ram-unit&gt;] [--gru=&lt;gpu-unit&gt;] [--tu=&lt;time-unit&gt;]
+    gpu-tracker --execute=&lt;command&gt; [--output=&lt;output&gt;] [--format=&lt;format&gt;] [--st=&lt;sleep-time&gt;] [--ru=&lt;ram-unit&gt;] [--gru=&lt;gpu-ram-unit&gt;] [--tu=&lt;time-unit&gt;]
 
 Options:
     -h --help               Show this help message.
@@ -184,7 +319,6 @@ Options:
     -o --output=&lt;output&gt;    File path to store the computational-resource-usage measurements. If not set, prints measurements to the screen.
     -f --format=&lt;format&gt;    File format of the output. Either &#39;json&#39; or &#39;text&#39;. Defaults to &#39;text&#39;.
     --st=&lt;sleep-time&gt;       The number of seconds to sleep in between usage-collection iterations.
-    --ic                    Stands for include-children; Whether to add the usage (RAM and GPU RAM) of child processes. Otherwise, only collects usage of the main process.
     --ru=&lt;ram-unit&gt;         One of &#39;bytes&#39;, &#39;kilobytes&#39;, &#39;megabytes&#39;, &#39;gigabytes&#39;, or &#39;terabytes&#39;.
     --gru=&lt;gpu-ram-unit&gt;    One of &#39;bytes&#39;, &#39;kilobytes&#39;, &#39;megabytes&#39;, &#39;gigabytes&#39;, or &#39;terabytes&#39;.
     --tu=&lt;time-unit&gt;        One of &#39;seconds&#39;, &#39;minutes&#39;, &#39;hours&#39;, or &#39;days&#39;.
@@ -199,20 +333,62 @@ status code is reported.</p>
 </pre></div>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Resource tracking complete. Process completed with status code: 0
-Max RAM: 0.002 gigabytes
-Max GPU RAM: 0.000 gigabytes
-Compute time: 0.001 hours
+Max RAM:
+   Unit: gigabytes
+   System capacity: 67.254
+   System: 4.548
+   Main:
+      Total RSS: 0.002
+      Private RSS: 0.0
+      Shared RSS: 0.002
+   Descendents:
+      Total RSS: 0.0
+      Private RSS: 0.0
+      Shared RSS: 0.0
+   Combined:
+      Total RSS: 0.002
+      Private RSS: 0.0
+      Shared RSS: 0.002
+Max GPU RAM:
+   Unit: gigabytes
+   Main: 0.0
+   Descendents: 0.0
+   Combined: 0.0
+Compute time:
+   Unit: hours
+   Time: 0.0
 </pre></div>
 </div>
-<p>Like with the API, the units can be modified. For example, –tu stands
-for time-unit and –ru stands for ram-unit.</p>
+<p>The units of the computational resources can be modified. For example,
+–tu stands for time-unit and –ru stands for ram-unit.</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ gpu-tracker -e &#39;sleep 2&#39; --tu=seconds --ru=megabytes
 </pre></div>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Resource tracking complete. Process completed with status code: 0
-Max RAM: 1.966 megabytes
-Max GPU RAM: 0.000 gigabytes
-Compute time: 2.045 seconds
+Max RAM:
+   Unit: megabytes
+   System capacity: 67254.161
+   System: 4550.529
+   Main:
+      Total RSS: 1.831
+      Private RSS: 0.135
+      Shared RSS: 1.696
+   Descendents:
+      Total RSS: 0.0
+      Private RSS: 0.0
+      Shared RSS: 0.0
+   Combined:
+      Total RSS: 1.831
+      Private RSS: 0.135
+      Shared RSS: 1.696
+Max GPU RAM:
+   Unit: gigabytes
+   Main: 0.0
+   Descendents: 0.0
+   Combined: 0.0
+Compute time:
+   Unit: seconds
+   Time: 1.075
 </pre></div>
 </div>
 <p>By default, the computational-resource-usage statistics are printed to
@@ -227,9 +403,30 @@ that same content in a file.</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cat out.txt
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM: 0.002 gigabytes
-Max GPU RAM: 0.000 gigabytes
-Compute time: 0.001 hours
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM:
+   Unit: gigabytes
+   System capacity: 67.254
+   System: 4.567
+   Main:
+      Total RSS: 0.002
+      Private RSS: 0.0
+      Shared RSS: 0.002
+   Descendents:
+      Total RSS: 0.0
+      Private RSS: 0.0
+      Shared RSS: 0.0
+   Combined:
+      Total RSS: 0.002
+      Private RSS: 0.0
+      Shared RSS: 0.002
+Max GPU RAM:
+   Unit: gigabytes
+   Main: 0.0
+   Descendents: 0.0
+   Combined: 0.0
+Compute time:
+   Unit: hours
+   Time: 0.0
 </pre></div>
 </div>
 <p>By default, the format of the output is “text”. The <code class="docutils literal notranslate"><span class="pre">-f</span></code> or
@@ -239,12 +436,36 @@ Compute time: 0.001 hours
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Resource tracking complete. Process completed with status code: 0
 {
- &quot;max_ram&quot;: 0.0019660800000000003,
- &quot;ram_unit&quot;: &quot;gigabytes&quot;,
- &quot;max_gpu_ram&quot;: 0.0,
- &quot;gpu_ram_unit&quot;: &quot;gigabytes&quot;,
- &quot;compute_time&quot;: 0.0005680449803670247,
- &quot;time_unit&quot;: &quot;hours&quot;
+ &quot;max_ram&quot;: {
+  &quot;unit&quot;: &quot;gigabytes&quot;,
+  &quot;system_capacity&quot;: 67.254161408,
+  &quot;system&quot;: 4.582764544000001,
+  &quot;main&quot;: {
+   &quot;total_rss&quot;: 0.001662976,
+   &quot;private_rss&quot;: 0.00013516800000000002,
+   &quot;shared_rss&quot;: 0.001527808
+  },
+  &quot;descendents&quot;: {
+   &quot;total_rss&quot;: 0.0,
+   &quot;private_rss&quot;: 0.0,
+   &quot;shared_rss&quot;: 0.0
+  },
+  &quot;combined&quot;: {
+   &quot;total_rss&quot;: 0.001662976,
+   &quot;private_rss&quot;: 0.00013516800000000002,
+   &quot;shared_rss&quot;: 0.001527808
+  }
+ },
+ &quot;max_gpu_ram&quot;: {
+  &quot;unit&quot;: &quot;gigabytes&quot;,
+  &quot;main&quot;: 0.0,
+  &quot;descendents&quot;: 0.0,
+  &quot;combined&quot;: 0.0
+ },
+ &quot;compute_time&quot;: {
+  &quot;unit&quot;: &quot;hours&quot;,
+  &quot;time&quot;: 0.00030033310254414875
+ }
 }
 </pre></div>
 </div>
@@ -258,12 +479,36 @@ Compute time: 0.001 hours
 </pre></div>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
- &quot;max_ram&quot;: 0.0019660800000000003,
- &quot;ram_unit&quot;: &quot;gigabytes&quot;,
- &quot;max_gpu_ram&quot;: 0.0,
- &quot;gpu_ram_unit&quot;: &quot;gigabytes&quot;,
- &quot;compute_time&quot;: 0.0005686806970172458,
- &quot;time_unit&quot;: &quot;hours&quot;
+ &quot;max_ram&quot;: {
+  &quot;unit&quot;: &quot;gigabytes&quot;,
+  &quot;system_capacity&quot;: 67.254161408,
+  &quot;system&quot;: 4.584312832,
+  &quot;main&quot;: {
+   &quot;total_rss&quot;: 0.0017162240000000001,
+   &quot;private_rss&quot;: 0.00013516800000000002,
+   &quot;shared_rss&quot;: 0.0015810560000000002
+  },
+  &quot;descendents&quot;: {
+   &quot;total_rss&quot;: 0.0,
+   &quot;private_rss&quot;: 0.0,
+   &quot;shared_rss&quot;: 0.0
+  },
+  &quot;combined&quot;: {
+   &quot;total_rss&quot;: 0.0017162240000000001,
+   &quot;private_rss&quot;: 0.00013516800000000002,
+   &quot;shared_rss&quot;: 0.0015810560000000002
+  }
+ },
+ &quot;max_gpu_ram&quot;: {
+  &quot;unit&quot;: &quot;gigabytes&quot;,
+  &quot;main&quot;: 0.0,
+  &quot;descendents&quot;: 0.0,
+  &quot;combined&quot;: 0.0
+ },
+ &quot;compute_time&quot;: {
+  &quot;unit&quot;: &quot;hours&quot;,
+  &quot;time&quot;: 0.0002998979224099053
+ }
 }
 </pre></div>
 </div>
