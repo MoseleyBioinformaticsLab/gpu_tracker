@@ -30,7 +30,7 @@ def main():
     option_map = {
         '--st': 'sleep_time',
         '--ru': 'ram_unit',
-        '--gu': 'gpu_unit',
+        '--gru': 'gpu_ram_unit',
         '--tu': 'time_unit'
     }
     kwargs = {
@@ -51,10 +51,9 @@ def main():
         process.wait()
     print(f'Resource tracking complete. Process completed with status code: {process.returncode}')
     if output_format == 'json':
-        # TODO just do JSON (no text) and add units to json object.
         output_str = json.dumps(tracker.to_json(), indent=1)
     elif output_format == 'text':
-        output_str = str(tracker) + '\n'
+        output_str = str(tracker)
     else:
         raise ValueError(f'"{output_format} is not a valid format. Valid values are "json" or "text".')
     if output is None:
