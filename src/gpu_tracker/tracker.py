@@ -21,7 +21,7 @@ class Tracker:
     :ivar MaxGPURAM max_gpu_ram: Description of the maximum GPU RAM usage of the process and any descendents it may have.
     :ivar ComputeTime compute_time: Description of the real compute time i.e. the duration of tracking.
     """
-    NO_PROCESS_WARNING = 'Attempted to obtain RAM information of a process that no longer exists.'
+    _NO_PROCESS_WARNING = 'Attempted to obtain RAM information of a process that no longer exists.'
 
     def __init__(
             self, sleep_time: float = 1.0, ram_unit: str = 'gigabytes', gpu_ram_unit: str = 'gigabytes', time_unit: str = 'hours',
@@ -70,7 +70,7 @@ class Tracker:
         self._main_process = psutil.Process(self.process_id)
         self._is_linux = platform.system().lower() == 'linux'
         self.max_ram = MaxRAM(unit=ram_unit, system_capacity=psutil.virtual_memory().total * self._ram_coefficient)
-        self.max_gpu_ram = MaxGPURAM(unit=gpu_ram_unit)
+        self.max_gpu_ram = MaxGPURAM(unit=gpu_ram_unit, system_capacity=self._system_gpu_ram(measurement='total'))
         self.compute_time = ComputeTime(unit=time_unit)
 
     @staticmethod
@@ -89,7 +89,7 @@ class Tracker:
                 try:
                     memory_maps_list.append(process.memory_maps(grouped=False))
                 except psutil.NoSuchProcess:
-                    log.warning(self.NO_PROCESS_WARNING)
+                    log.warning(self._NO_PROCESS_WARNING)
             private_rss = 0
             path_to_shared_rss = dict[str, float]()
             for memory_maps in memory_maps_list:
@@ -112,7 +112,7 @@ class Tracker:
                 try:
                     total_rss += process.memory_info().rss
                 except psutil.NoSuchProcess:
-                    log.warning(self.NO_PROCESS_WARNING)
+                    log.warning(self._NO_PROCESS_WARNING)
             total_rss *= self._ram_coefficient
         rss_values.total_rss = max(rss_values.total_rss, total_rss)
 
@@ -128,6 +128,14 @@ class Tracker:
         curr_gpu_ram *= self._gpu_ram_coefficient
         max_gpu_ram = getattr(self.max_gpu_ram, attr)
         setattr(self.max_gpu_ram, attr, max(max_gpu_ram, curr_gpu_ram))
+
+    def _system_gpu_ram(self, measurement: str) -> float:
+        command = f'nvidia-smi --query-gpu=memory.{measurement} --format=csv,noheader'
+        output = subp.check_output(command.split(), stderr=subp.STDOUT).decode()
+        output = output.strip().split('\n')
+        usages = [line.replace('MiB', '').strip() for line in output]
+        ram_sum = sum([int(usage) for usage in usages if usage != ''])
+        return ram_sum * self._gpu_ram_coefficient
 
     def _profile(self):
         """
@@ -153,6 +161,7 @@ class Tracker:
                     self._update_gpu_ram(attr='descendents', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
                     process_ids.add(self.process_id)
                     self._update_gpu_ram(attr='combined', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
+                self.max_gpu_ram.system = max(self.max_gpu_ram.system, self._system_gpu_ram(measurement='used'))
                 # Update compute time
                 self.compute_time.time = (time.time() - start_time) * self._time_coefficient
                 _testable_sleep(self.sleep_time)
@@ -268,6 +277,7 @@ class MaxRAM:
 
 @dclass.dataclass
 class MaxGPURAM:
+    # TODO make variables instead of parameters.
     """
     :param unit: The unit of measurement for GPU RAM e.g. gigabytes.
     :param main: The GPU RAM usage of the main process.
@@ -275,6 +285,8 @@ class MaxGPURAM:
     :param combined: The summed GPU RAM usage of both the main process and any descendent processes it may have.
     """
     unit: str
+    system_capacity: float
+    system: float = 0.
     main: float = 0.
     descendents: float = 0.
     combined: float = 0.
