@@ -16,6 +16,8 @@ Max RAM:
       Shared RSS: 0.022
 Max GPU RAM:
    Unit: kilobytes
+   System capacity: 24396000.0
+   System: 5800000.0
    Main: 1600000.0
    Descendents: 4300000.0
    Combined: 5800000.0

@@ -1,32 +1,34 @@
 {
-  "max_ram": {
-    "unit": "kilobytes",
-    "system_capacity": 67000000.0,
-    "system": 31000000.0,
-    "main": {
-      "total_rss": 550.5,
-      "private_rss": 0.0,
-      "shared_rss": 0.0
-    },
-    "descendents": {
-      "total_rss": 1257.05,
-      "private_rss": 0.0,
-      "shared_rss": 0.0
-    },
-    "combined": {
-      "total_rss": 1697.45,
-      "private_rss": 0.0,
-      "shared_rss": 0.0
-    }
+ "max_ram": {
+  "unit": "kilobytes",
+  "system_capacity": 67000000.0,
+  "system": 31000000.0,
+  "main": {
+   "total_rss": 550.5,
+   "private_rss": 0.0,
+   "shared_rss": 0.0
   },
-  "max_gpu_ram": {
-    "unit": "bytes",
-    "main": 1600000000.0,
-    "descendents": 4300000000.0,
-    "combined": 5800000000.0
+  "descendents": {
+   "total_rss": 1257.05,
+   "private_rss": 0.0,
+   "shared_rss": 0.0
   },
-  "compute_time": {
-    "unit": "days",
-    "time": 0.003472222222222222
+  "combined": {
+   "total_rss": 1697.45,
+   "private_rss": 0.0,
+   "shared_rss": 0.0
   }
+ },
+ "max_gpu_ram": {
+  "unit": "bytes",
+  "system_capacity": 24396000000.0,
+  "system": 5800000000.0,
+  "main": 1600000000.0,
+  "descendents": 4300000000.0,
+  "combined": 5800000000.0
+ },
+ "compute_time": {
+  "unit": "days",
+  "time": 0.003472222222222222
+ }
 }

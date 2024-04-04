@@ -106,9 +106,13 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
             mocker.MagicMock(total=67 * 1e9), mocker.MagicMock(used=30 * 1e9), mocker.MagicMock(used=31 * 1e9),
             mocker.MagicMock(used=29 * 1e9)])
     nvidia_smi_outputs = [
+        b'12198 MiB\n12198 MiB',
+        b'',
         b'',
         b'12,1600 MiB\n21,700 MiB\n22,200 MiB',
-        b'12,1500 MiB\n21,2100 MiB\n22,2200 MiB']
+        b'1600 MiB\n900 MiB',
+        b'12,1500 MiB\n21,2100 MiB\n22,2200 MiB',
+        b'1500 MiB\n4300 MiB']
     check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=nvidia_smi_outputs)
     time_mock = mocker.patch('gpu_tracker.tracker.time.time', side_effect=[800, 900, 1000, 1100])
     sleep_mock = mocker.patch('gpu_tracker.tracker._testable_sleep')
@@ -143,7 +147,7 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
         _assert_args_list(mock=process_mock.memory_info, expected_args_list=[()] * 6)
         _assert_args_list(mock=child1_mock.memory_info, expected_args_list=[()] * 6)
         _assert_args_list(mock=child2_mock.memory_info, expected_args_list=[()] * 6)
-    assert len(check_output_mock.call_args_list) == 3
+    assert len(check_output_mock.call_args_list) == 7
     _assert_args_list(mock=time_mock, expected_args_list=[()] * 4)
     _assert_args_list(mock=sleep_mock, expected_args_list=[(sleep_time,)] * 3)
     tracker._stop_event.set.assert_called_once_with()
