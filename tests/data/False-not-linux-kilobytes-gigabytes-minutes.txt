@@ -16,6 +16,8 @@ Max RAM:
       Shared RSS: 0.0
 Max GPU RAM:
    Unit: gigabytes
+   System capacity: 24.396
+   System: 5.8
    Main: 1.6
    Descendents: 4.3
    Combined: 5.8
