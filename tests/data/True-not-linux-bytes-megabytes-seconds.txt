@@ -21,6 +21,31 @@ Max GPU RAM:
    Main: 1600.0
    Descendents: 4300.0
    Combined: 5800.0
+CPU utilization:
+   System core count: 4
+   System:
+      Max core percent: 276.3
+      Max CPU percent: 69.075
+      Mean core percent: 261.967
+      Mean CPU percent: 65.492
+   Main:
+      Max core percent: 198.9
+      Max CPU percent: 49.725
+      Mean core percent: 119.7
+      Mean CPU percent: 29.925
+   Descendents:
+      Max core percent: 142.2
+      Max CPU percent: 35.55
+      Mean core percent: 129.733
+      Mean CPU percent: 32.433
+   Combined:
+      Max core percent: 311.6
+      Max CPU percent: 77.9
+      Mean core percent: 249.433
+      Mean CPU percent: 62.358
+   Main number of threads: 2
+   Descendents number of threads: 6
+   Combined number of threads: 8
 Compute time:
    Unit: seconds
    Time: 300.0
