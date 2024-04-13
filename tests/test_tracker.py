@@ -14,6 +14,10 @@ def get_use_context_manager(request) -> bool:
     yield request.param
 
 
+def double_list(_list: list) -> list:
+    return [item for item in _list for _ in range(2)]
+
+
 test_tracker_data = [
     ('bytes', 'megabytes', 'seconds'),
     ('kilobytes', 'gigabytes', 'minutes'),
@@ -72,7 +76,8 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
 
     def get_process_mock(
             pid: int, rams: list[int], private_dirty: list[list[int]], private_clean: list[list[int]], shared_dirty: list[list[int]],
-            shared_clean: list[list[int]], paths: list[list[str]], children: list[mocker.MagicMock] | None = None) -> mocker.MagicMock:
+            shared_clean: list[list[int]], paths: list[list[str]], cpu_percentages: list[float], num_threads: list[float],
+            children: list[mocker.MagicMock] | None = None) -> mocker.MagicMock:
         memory_maps_side_effect = list[list[mocker.MagicMock()]]()
         for private_dirty, private_clean, shared_dirty, shared_clean, paths in zip(
                 private_dirty, private_clean, shared_dirty, shared_clean, paths):
@@ -84,22 +89,28 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
                     path=path)
                 memory_map_mocks.append(memory_map_mock)
             memory_maps_side_effect.extend([memory_map_mocks, memory_map_mocks])
-        rams = [ram for ram in rams for _ in range(2)]
+        rams = double_list(rams)
+        cpu_percentages = double_list(cpu_percentages)
+        num_threads = double_list(num_threads)
         return mocker.MagicMock(
             pid=pid,
             memory_info=mocker.MagicMock(side_effect=[mocker.MagicMock(rss=ram) for ram in rams]),
-            memory_maps=mocker.MagicMock(side_effect=memory_maps_side_effect),
+            memory_maps=mocker.MagicMock(side_effect=memory_maps_side_effect), cpu_percent=mocker.MagicMock(side_effect=cpu_percentages),
+            num_threads=mocker.MagicMock(side_effect=num_threads),
             children=mocker.MagicMock(return_value=children) if children is not None else None)
 
     child1_mock = get_process_mock(
         pid=child1_id, rams=child1_rams, private_dirty=child1_private_dirty, private_clean=child1_private_clean,
-        shared_dirty=child1_shared_dirty, shared_clean=child1_shared_clean, paths=child1_paths)
+        shared_dirty=child1_shared_dirty, shared_clean=child1_shared_clean, paths=child1_paths, cpu_percentages=[88.7, 90.2, 98.7],
+        num_threads=[1, 2, 3])
     child2_mock = get_process_mock(
         pid=child2_id, rams=child2_rams, private_dirty=child2_private_dirty, private_clean=child2_private_clean,
-        shared_dirty=child2_shared_dirty, shared_clean=child2_shared_clean, paths=child2_paths)
+        shared_dirty=child2_shared_dirty, shared_clean=child2_shared_clean, paths=child2_paths, cpu_percentages=[45.6, 22.5, 43.5],
+        num_threads=[4, 2, 3])
     process_mock = get_process_mock(
         pid=process_id, rams=process_rams, private_dirty=process_private_dirty, private_clean=process_private_clean,
-        shared_dirty=process_shared_dirty, shared_clean=process_shared_clean, paths=process_paths, children=[child1_mock, child2_mock])
+        shared_dirty=process_shared_dirty, shared_clean=process_shared_clean, paths=process_paths, cpu_percentages=[60.4, 198.9, 99.8],
+        num_threads=[0, 0, 2], children=[child1_mock, child2_mock])
     ProcessMock = mocker.patch('gpu_tracker.tracker.psutil.Process', return_value=process_mock)
     virtual_memory_mock = mocker.patch(
         'gpu_tracker.tracker.psutil.virtual_memory', side_effect=[
@@ -114,6 +125,9 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
         b'12,1500 MiB\n21,2100 MiB\n22,2200 MiB',
         b'1500 MiB\n4300 MiB']
     check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=nvidia_smi_outputs)
+    cpu_count_mock = mocker.patch('gpu_tracker.tracker.psutil.cpu_count', return_value=4)
+    cpu_percent_mock = mocker.patch(
+        'gpu_tracker.tracker.psutil.cpu_percent', side_effect=[[67.5, 27.3, 77.8, 97.9], [57.6, 58.2, 23.5, 99.8], [78.3, 88.3, 87.2, 22.5]])
     time_mock = mocker.patch('gpu_tracker.tracker.time.time', side_effect=[800, 900, 1000, 1100])
     sleep_mock = mocker.patch('gpu_tracker.tracker._testable_sleep')
     log_spy = mocker.spy(gput.tracker.log, 'warning')
@@ -138,7 +152,7 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
     _assert_args_list(mock=tracker._stop_event.is_set, expected_args_list=[()] * 4)
     _assert_args_list(mock=getpid_mock, expected_args_list=[()])
     _assert_args_list(mock=ProcessMock, expected_args_list=[(process_id,)])
-    _assert_args_list(mock=process_mock.children, expected_args_list=[{'recursive': True}] * 8, use_kwargs=True)
+    _assert_args_list(mock=process_mock.children, expected_args_list=[{'recursive': True}] * 20, use_kwargs=True)
     if operating_system == 'Linux':
         _assert_args_list(mock=process_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
         _assert_args_list(mock=child1_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
@@ -154,6 +168,8 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
     tracker._thread.join.assert_called_once_with(timeout=join_timeout)
     _assert_args_list(mock=tracker._thread.is_alive, expected_args_list=[()] * 2)
     expected_measurements_file = f'tests/data/{use_context_manager}-{operating_system}-{ram_unit}-{gpu_ram_unit}-{time_unit}'
+    cpu_count_mock.assert_called_once_with()
+    _assert_args_list(cpu_percent_mock, [()] * 3)
     with open(f'{expected_measurements_file}.txt', 'r') as file:
         expected_tracker_str = file.read()
         assert expected_tracker_str == str(tracker)
