@@ -1,4 +1,4 @@
-name: build
+name: Pull request
 
 on:
   push:
@@ -18,12 +18,12 @@ jobs:
     runs-on: ${{matrix.os}}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install testing environment and kegg_pull package
+    - name: Install testing environment and gpu-tracker package
       run: bash tests/install.sh
     - name: Test with pytest
       run: bash tests/run.sh
