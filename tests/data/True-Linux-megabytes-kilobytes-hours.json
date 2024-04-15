@@ -1,1 +1,64 @@
-{"max_ram": {"unit": "megabytes", "system_capacity": 67000.0, "system": 31000.0, "main": {"total_rss": 0.016753999999999998, "private_rss": 0.006718, "shared_rss": 0.010036}, "descendents": {"total_rss": 0.030208, "private_rss": 0.013817999999999999, "shared_rss": 0.01639}, "combined": {"total_rss": 0.042552999999999994, "private_rss": 0.020536, "shared_rss": 0.022017}}, "max_gpu_ram": {"unit": "kilobytes", "system_capacity": 24396000.0, "system": 5800000.0, "main": 1600000.0, "descendents": 4300000.0, "combined": 5800000.0}, "cpu_utilization": {"system_core_count": 4, "system": {"max_core_percent": 276.3, "max_cpu_percent": 69.075, "mean_core_percent": 261.9666666666667, "mean_cpu_percent": 65.49166666666667}, "main": {"max_core_percent": 198.9, "max_cpu_percent": 49.725, "mean_core_percent": 119.7, "mean_cpu_percent": 29.925}, "descendents": {"max_core_percent": 142.2, "max_cpu_percent": 35.55, "mean_core_percent": 129.73333333333332, "mean_cpu_percent": 32.43333333333333}, "combined": {"max_core_percent": 311.6, "max_cpu_percent": 77.9, "mean_core_percent": 249.4333333333333, "mean_cpu_percent": 62.35833333333333}, "main_n_threads": 2, "descendents_n_threads": 6, "combined_n_threads": 8}, "compute_time": {"unit": "hours", "time": 0.08333333333333333}}
+{
+  "max_ram": {
+    "unit": "megabytes",
+    "system_capacity": 67000.0,
+    "system": 31000.0,
+    "main": {
+      "total_rss": 0.016753999999999998,
+      "private_rss": 0.006718,
+      "shared_rss": 0.010036
+    },
+    "descendents": {
+      "total_rss": 0.030208,
+      "private_rss": 0.013817999999999999,
+      "shared_rss": 0.01639
+    },
+    "combined": {
+      "total_rss": 0.042552999999999994,
+      "private_rss": 0.020536,
+      "shared_rss": 0.022017
+    }
+  },
+  "max_gpu_ram": {
+    "unit": "kilobytes",
+    "system_capacity": 24396000.0,
+    "system": 5800000.0,
+    "main": 1600000.0,
+    "descendents": 4300000.0,
+    "combined": 5800000.0
+  },
+  "cpu_utilization": {
+    "system_core_count": 4,
+    "system": {
+      "max_core_percent": 276.3,
+      "max_cpu_percent": 69.075,
+      "mean_core_percent": 261.9666666666667,
+      "mean_cpu_percent": 65.49166666666667
+    },
+    "main": {
+      "max_core_percent": 198.9,
+      "max_cpu_percent": 49.725,
+      "mean_core_percent": 119.7,
+      "mean_cpu_percent": 29.925
+    },
+    "descendents": {
+      "max_core_percent": 142.2,
+      "max_cpu_percent": 35.55,
+      "mean_core_percent": 129.73333333333332,
+      "mean_cpu_percent": 32.43333333333333
+    },
+    "combined": {
+      "max_core_percent": 311.6,
+      "max_cpu_percent": 77.9,
+      "mean_core_percent": 249.4333333333333,
+      "mean_cpu_percent": 62.35833333333333
+    },
+    "main_n_threads": 2,
+    "descendents_n_threads": 6,
+    "combined_n_threads": 8
+  },
+  "compute_time": {
+    "unit": "hours",
+    "time": 0.08333333333333333
+  }
+}

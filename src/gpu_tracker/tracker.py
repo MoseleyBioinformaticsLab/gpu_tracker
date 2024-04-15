@@ -334,7 +334,6 @@ class MaxRAM:
 
 @dclass.dataclass
 class MaxGPURAM:
-    # TODO make variables instead of parameters.
     """
     :param unit: The unit of measurement for GPU RAM e.g. gigabytes.
     :param main: The GPU RAM usage of the main process.
