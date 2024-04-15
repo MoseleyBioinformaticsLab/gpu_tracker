@@ -6,6 +6,7 @@ import platform
 import time
 import threading as thrd
 import os
+import typing as typ
 import psutil
 import subprocess as subp
 import logging as log
@@ -21,16 +22,16 @@ class Tracker:
     :ivar MaxGPURAM max_gpu_ram: Description of the maximum GPU RAM usage of the process and any descendents it may have.
     :ivar ComputeTime compute_time: Description of the real compute time i.e. the duration of tracking.
     """
-    _NO_PROCESS_WARNING = 'Attempted to obtain RAM information of a process that no longer exists.'
-
     def __init__(
             self, sleep_time: float = 1.0, ram_unit: str = 'gigabytes', gpu_ram_unit: str = 'gigabytes', time_unit: str = 'hours',
-            n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False, process_id: int | None = None):
+            disable_logs: bool = False, n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False,
+            process_id: int | None = None):
         """
         :param sleep_time: The number of seconds to sleep in between usage-collection iterations.
         :param ram_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
         :param gpu_ram_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
         :param time_unit: One of 'seconds', 'minutes', 'hours', or 'days'.
+        :param disable_logs: If set, warnings are suppressed during tracking. Otherwise, the Tracker logs warnings as usual.
         :param n_join_attempts: The number of times the tracker attempts to join its underlying thread.
         :param join_timeout: The amount of time the tracker waits for its underlying thread to join.
         :param kill_if_join_fails: If true, kill the process if the underlying thread fails to join.
@@ -63,6 +64,10 @@ class Tracker:
         }[time_unit]
         self._stop_event = thrd.Event()
         self._thread = thrd.Thread(target=self._profile)
+        self._core_percent_sums = {key: 0. for key in ['system', 'main', 'descendents', 'combined']}
+        self._cpu_percent_sums = {key: 0. for key in ['system', 'main', 'descendents', 'combined']}
+        self._tracking_iteration = 1
+        self.disable_logs = disable_logs
         self.n_join_attempts = n_join_attempts
         self.join_timeout = join_timeout
         self.kill_if_join_fails = kill_if_join_fails
@@ -71,7 +76,12 @@ class Tracker:
         self._is_linux = platform.system().lower() == 'linux'
         self.max_ram = MaxRAM(unit=ram_unit, system_capacity=psutil.virtual_memory().total * self._ram_coefficient)
         self.max_gpu_ram = MaxGPURAM(unit=gpu_ram_unit, system_capacity=self._system_gpu_ram(measurement='total'))
+        self.cpu_utilization = CPUUtilization(system_core_count=psutil.cpu_count())
         self.compute_time = ComputeTime(unit=time_unit)
+
+    def _log_warning(self, warning: str):
+        if not self.disable_logs:
+            log.warning(warning)
 
     @staticmethod
     def _validate_mem_unit(unit: str):
@@ -82,14 +92,21 @@ class Tracker:
         if unit not in valid_units:
             raise ValueError(f'"{unit}" is not a valid {unit_type} unit. Valid values are {", ".join(sorted(valid_units))}')
 
+    def _map_processes(self, processes: list[psutil.Process], map_func: typ.Callable[[psutil.Process], typ.Any]) -> list:
+        mapped_list = list[list]()
+        for process in processes:
+            try:
+                mapped_list.append(map_func(process))
+            except psutil.NoSuchProcess:
+                self._log_warning('Attempted to obtain usage information of a process that no longer exists.')
+        return mapped_list
+
     def _update_ram(self, rss_values: RSSValues, processes: list[psutil.Process]):
         if self._is_linux:
-            memory_maps_list = list[list]()
-            for process in processes:
-                try:
-                    memory_maps_list.append(process.memory_maps(grouped=False))
-                except psutil.NoSuchProcess:
-                    log.warning(self._NO_PROCESS_WARNING)
+            def get_memory_maps(process: psutil.Process) -> list:
+                return process.memory_maps(grouped=False)
+
+            memory_maps_list: list[list] = self._map_processes(processes, map_func=get_memory_maps)
             private_rss = 0
             path_to_shared_rss = dict[str, float]()
             for memory_maps in memory_maps_list:
@@ -107,12 +124,9 @@ class Tracker:
             rss_values.shared_rss = max(rss_values.shared_rss, shared_rss)
             total_rss = private_rss + shared_rss
         else:
-            total_rss = 0
-            for process in processes:
-                try:
-                    total_rss += process.memory_info().rss
-                except psutil.NoSuchProcess:
-                    log.warning(self._NO_PROCESS_WARNING)
+            def get_rss(process: psutil.Process) -> int:
+                return process.memory_info().rss
+            total_rss = sum(self._map_processes(processes, map_func=get_rss))
             total_rss *= self._ram_coefficient
         rss_values.total_rss = max(rss_values.total_rss, total_rss)
 
@@ -136,6 +150,35 @@ class Tracker:
         usages = [line.replace('MiB', '').strip() for line in output]
         ram_sum = sum([int(usage) for usage in usages if usage != ''])
         return ram_sum * self._gpu_ram_coefficient
+
+    def _update_cpu_utilization(self, percentages: list[float], attr: str):
+        cpu_percentages: CPUPercentages = getattr(self.cpu_utilization, attr)
+
+        def update_percentages(percent: float, percent_type: str, percent_sums: dict[str, float]):
+            percent_sums[attr] += percent
+            mean_percent = percent_sums[attr] / self._tracking_iteration
+            setattr(cpu_percentages, f'mean_{percent_type}_percent', mean_percent)
+            max_percent: float = getattr(cpu_percentages, f'max_{percent_type}_percent')
+            setattr(cpu_percentages, f'max_{percent_type}_percent', max(max_percent, percent))
+        core_percent = sum(percentages)
+        cpu_percent = core_percent / self.cpu_utilization.system_core_count
+        update_percentages(percent=core_percent, percent_type='core', percent_sums=self._core_percent_sums)
+        update_percentages(percent=cpu_percent, percent_type='cpu', percent_sums=self._cpu_percent_sums)
+
+    def _update_cpu_utilization_by_process(self, processes: list[psutil.Process], attr: str):
+        def get_cpu_percent(process: psutil.Process) -> float:
+            return process.cpu_percent()
+        percentages = self._map_processes(processes, map_func=get_cpu_percent)
+        self._update_cpu_utilization(percentages, attr)
+
+    def _update_n_threads(self, processes: list[psutil.Process], attr: str):
+        def get_n_threads(process: psutil.Process):
+            return process.num_threads()
+        n_threads_list = self._map_processes(processes, get_n_threads)
+        n_threads = sum(n_threads_list)
+        attr = f'{attr}_n_threads'
+        max_n_threads = getattr(self.cpu_utilization, attr)
+        setattr(self.cpu_utilization, attr, max(n_threads, max_n_threads))
 
     def _profile(self):
         """
@@ -162,14 +205,26 @@ class Tracker:
                     process_ids.add(self.process_id)
                     self._update_gpu_ram(attr='combined', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
                 self.max_gpu_ram.system = max(self.max_gpu_ram.system, self._system_gpu_ram(measurement='used'))
+                # Get the mean and maximum CPU usages.
+                # noinspection PyTypeChecker
+                system_core_percentages: list[float] = psutil.cpu_percent(percpu=True)
+                self._update_cpu_utilization(percentages=system_core_percentages, attr='system')
+                self._update_cpu_utilization_by_process(processes=[self._main_process], attr='main')
+                self._update_cpu_utilization_by_process(processes=self._main_process.children(recursive=True), attr='descendents')
+                self._update_cpu_utilization_by_process(
+                    processes=[self._main_process] + self._main_process.children(recursive=True), attr='combined')
+                self._update_n_threads(processes=[self._main_process], attr='main')
+                self._update_n_threads(processes=self._main_process.children(recursive=True), attr='descendents')
+                self._update_n_threads(processes=[self._main_process] + self._main_process.children(recursive=True), attr='combined')
                 # Update compute time
                 self.compute_time.time = (time.time() - start_time) * self._time_coefficient
+                self._tracking_iteration += 1
                 _testable_sleep(self.sleep_time)
             except psutil.NoSuchProcess:
-                log.warning('Failed to track a process that does not exist. '
-                            'This possibly resulted from the process completing before tracking could begin.')
+                self._log_warning('Failed to track a process that does not exist. '
+                                  'This possibly resulted from the process completing before tracking could begin.')
             except Exception as error:
-                log.warning('The following uncaught exception occurred in the Tracker\'s thread:')
+                self._log_warning('The following uncaught exception occurred in the Tracker\'s thread:')
                 print(error)
 
     def __enter__(self) -> Tracker:
@@ -220,7 +275,8 @@ class Tracker:
         return text.replace('max', 'Max').replace('ram', 'RAM').replace('unit', 'Unit').replace('system', 'System').replace(
             'compute', 'Compute').replace('time: ', 'Time: ').replace('rss', 'RSS').replace('total', 'Total').replace(
             'private', 'Private').replace('shared', 'Shared').replace('main', 'Main').replace('descendents', 'Descendents').replace(
-            'combined', 'Combined').replace('gpu', 'GPU')
+            'combined', 'Combined').replace('gpu', 'GPU').replace('mean', 'Mean').replace('cpu', 'CPU').replace(
+            'n threads', 'number of threads')
 
     @staticmethod
     def _format_float(dictionary: dict):
@@ -241,7 +297,8 @@ class Tracker:
         return {
             'max_ram': dclass.asdict(self.max_ram),
             'max_gpu_ram': dclass.asdict(self.max_gpu_ram),
-            'compute_time': dclass.asdict(self.compute_time),
+            'cpu_utilization': dclass.asdict(self.cpu_utilization),
+            'compute_time': dclass.asdict(self.compute_time)
         }
 
 
@@ -277,7 +334,6 @@ class MaxRAM:
 
 @dclass.dataclass
 class MaxGPURAM:
-    # TODO make variables instead of parameters.
     """
     :param unit: The unit of measurement for GPU RAM e.g. gigabytes.
     :param main: The GPU RAM usage of the main process.
@@ -290,6 +346,26 @@ class MaxGPURAM:
     main: float = 0.
     descendents: float = 0.
     combined: float = 0.
+
+
+@dclass.dataclass
+class CPUPercentages:
+    max_core_percent: float = 0.
+    max_cpu_percent: float = 0.
+    mean_core_percent: float = 0.
+    mean_cpu_percent: float = 0.
+
+
+@dclass.dataclass
+class CPUUtilization:
+    system_core_count: int
+    system: CPUPercentages = dclass.field(default_factory=CPUPercentages)
+    main: CPUPercentages = dclass.field(default_factory=CPUPercentages)
+    descendents: CPUPercentages = dclass.field(default_factory=CPUPercentages)
+    combined: CPUPercentages = dclass.field(default_factory=CPUPercentages)
+    main_n_threads: int = 0
+    descendents_n_threads: int = 0
+    combined_n_threads: int = 0
 
 
 @dclass.dataclass
