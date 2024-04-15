@@ -15,10 +15,6 @@ import sys
 
 
 class Tracker:
-    class State(enum.Enum):
-        NEW = 0
-        STARTED = 1
-        STOPPED = 2
     """
     Runs a thread in the background that tracks the compute time, maximum RAM, and maximum GPU RAM usage within a context manager or explicit ``start()`` and ``stop()`` methods.
     Calculated quantities are scaled depending on the units chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).
@@ -27,6 +23,12 @@ class Tracker:
     :ivar MaxGPURAM max_gpu_ram: Description of the maximum GPU RAM usage of the process and any descendents it may have.
     :ivar ComputeTime compute_time: Description of the real compute time i.e. the duration of tracking.
     """
+    class State(enum.Enum):
+        """The state of the Tracker."""
+        NEW = 0
+        STARTED = 1
+        STOPPED = 2
+
     def __init__(
             self, sleep_time: float = 1.0, ram_unit: str = 'gigabytes', gpu_ram_unit: str = 'gigabytes', time_unit: str = 'hours',
             disable_logs: bool = False, n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False,

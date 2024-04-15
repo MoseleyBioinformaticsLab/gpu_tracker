@@ -5,3 +5,4 @@ API
 
 .. automodule:: gpu_tracker.tracker
     :members:
+    :undoc-members:
