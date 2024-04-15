@@ -22,16 +22,16 @@ class Tracker:
     :ivar MaxGPURAM max_gpu_ram: Description of the maximum GPU RAM usage of the process and any descendents it may have.
     :ivar ComputeTime compute_time: Description of the real compute time i.e. the duration of tracking.
     """
-    _NO_PROCESS_WARNING = 'Attempted to obtain RAM information of a process that no longer exists.'
-
     def __init__(
             self, sleep_time: float = 1.0, ram_unit: str = 'gigabytes', gpu_ram_unit: str = 'gigabytes', time_unit: str = 'hours',
-            n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False, process_id: int | None = None):
+            disable_logs: bool = False, n_join_attempts: int = 5, join_timeout: float = 10.0, kill_if_join_fails: bool = False,
+            process_id: int | None = None):
         """
         :param sleep_time: The number of seconds to sleep in between usage-collection iterations.
         :param ram_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
         :param gpu_ram_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
         :param time_unit: One of 'seconds', 'minutes', 'hours', or 'days'.
+        :param disable_logs: If set, warnings are suppressed during tracking. Otherwise, the Tracker logs warnings as usual.
         :param n_join_attempts: The number of times the tracker attempts to join its underlying thread.
         :param join_timeout: The amount of time the tracker waits for its underlying thread to join.
         :param kill_if_join_fails: If true, kill the process if the underlying thread fails to join.
@@ -67,6 +67,7 @@ class Tracker:
         self._core_percent_sums = {key: 0. for key in ['system', 'main', 'descendents', 'combined']}
         self._cpu_percent_sums = {key: 0. for key in ['system', 'main', 'descendents', 'combined']}
         self._tracking_iteration = 1
+        self.disable_logs = disable_logs
         self.n_join_attempts = n_join_attempts
         self.join_timeout = join_timeout
         self.kill_if_join_fails = kill_if_join_fails
@@ -77,6 +78,10 @@ class Tracker:
         self.max_gpu_ram = MaxGPURAM(unit=gpu_ram_unit, system_capacity=self._system_gpu_ram(measurement='total'))
         self.cpu_utilization = CPUUtilization(system_core_count=psutil.cpu_count())
         self.compute_time = ComputeTime(unit=time_unit)
+
+    def _log_warning(self, warning: str):
+        if not self.disable_logs:
+            log.warning(warning)
 
     @staticmethod
     def _validate_mem_unit(unit: str):
@@ -93,7 +98,7 @@ class Tracker:
             try:
                 mapped_list.append(map_func(process))
             except psutil.NoSuchProcess:
-                log.warning(self._NO_PROCESS_WARNING)
+                self._log_warning('Attempted to obtain usage information of a process that no longer exists.')
         return mapped_list
 
     def _update_ram(self, rss_values: RSSValues, processes: list[psutil.Process]):
@@ -216,10 +221,10 @@ class Tracker:
                 self._tracking_iteration += 1
                 _testable_sleep(self.sleep_time)
             except psutil.NoSuchProcess:
-                log.warning('Failed to track a process that does not exist. '
-                            'This possibly resulted from the process completing before tracking could begin.')
+                self._log_warning('Failed to track a process that does not exist. '
+                                  'This possibly resulted from the process completing before tracking could begin.')
             except Exception as error:
-                log.warning('The following uncaught exception occurred in the Tracker\'s thread:')
+                self._log_warning('The following uncaught exception occurred in the Tracker\'s thread:')
                 print(error)
 
     def __enter__(self) -> Tracker:
