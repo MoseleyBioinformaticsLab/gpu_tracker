@@ -219,3 +219,27 @@ def test_validate_unit():
     with pt.raises(ValueError) as error:
         gput.Tracker(ram_unit='milibytes')
     assert str(error.value) == '"milibytes" is not a valid memory unit. Valid values are bytes, gigabytes, kilobytes, megabytes, terabytes'
+
+
+def test_state(mocker):
+    mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=[b''])
+    mocker.patch('gpu_tracker.tracker.platform.system', return_value='linux')
+
+    tracker = gput.Tracker()
+    assert tracker.__repr__() == 'State: NEW'
+    with pt.raises(RuntimeError) as error:
+        tracker.stop()
+    assert str(error.value) == 'Cannot stop tracking when tracking has not started yet.'
+    tracker.start()
+    assert tracker.__repr__() == 'State: STARTED'
+    with pt.raises(RuntimeError) as error:
+        tracker.start()
+    assert str(error.value) == 'Cannot start tracking when tracking has already started.'
+    tracker.stop()
+    assert tracker.__repr__() == 'State: STOPPED'
+    with pt.raises(RuntimeError) as error:
+        tracker.start()
+    assert str(error.value) == 'Cannot start tracking when tracking has already stopped.'
+    with pt.raises(RuntimeError) as error:
+        tracker.stop()
+    assert str(error.value) == 'Cannot stop tracking when tracking has already stopped.'

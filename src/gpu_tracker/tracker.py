@@ -10,10 +10,15 @@ import typing as typ
 import psutil
 import subprocess as subp
 import logging as log
+import enum
 import sys
 
 
 class Tracker:
+    class State(enum.Enum):
+        NEW = 0
+        STARTED = 1
+        STOPPED = 2
     """
     Runs a thread in the background that tracks the compute time, maximum RAM, and maximum GPU RAM usage within a context manager or explicit ``start()`` and ``stop()`` methods.
     Calculated quantities are scaled depending on the units chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).
@@ -78,6 +83,10 @@ class Tracker:
         self.max_gpu_ram = MaxGPURAM(unit=gpu_ram_unit, system_capacity=self._system_gpu_ram(measurement='total'))
         self.cpu_utilization = CPUUtilization(system_core_count=psutil.cpu_count())
         self.compute_time = ComputeTime(unit=time_unit)
+        self.state = Tracker.State.NEW
+
+    def __repr__(self):
+        return (f'State: {self.state.name}')
 
     def _log_warning(self, warning: str):
         if not self.disable_logs:
@@ -228,10 +237,19 @@ class Tracker:
                 print(error)
 
     def __enter__(self) -> Tracker:
+        if self.state == Tracker.State.STARTED:
+            raise RuntimeError('Cannot start tracking when tracking has already started.')
+        elif self.state == Tracker.State.STOPPED:
+            raise RuntimeError('Cannot start tracking when tracking has already stopped.')
+        self.state = Tracker.State.STARTED
         self._thread.start()
         return self
 
     def __exit__(self, *_):
+        if self.state == Tracker.State.NEW:
+            raise RuntimeError('Cannot stop tracking when tracking has not started yet.')
+        if self.state == Tracker.State.STOPPED:
+            raise RuntimeError('Cannot stop tracking when tracking has already stopped.')
         n_join_attempts = 0
         while n_join_attempts < self.n_join_attempts:
             self._stop_event.set()
@@ -248,6 +266,7 @@ class Tracker:
             if self.kill_if_join_fails:
                 log.warning('The thread failed to join and kill_if_join_fails is set. Exiting ...')
                 sys.exit(1)
+        self.state = Tracker.State.STOPPED
 
     def start(self):
         """
