@@ -9,8 +9,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/workflows/documentation.yml
       - uses: actions/checkout@v4
+      - uses: ./.github/workflows/documentation.yml
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
