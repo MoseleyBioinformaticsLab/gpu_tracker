@@ -2,7 +2,7 @@
 Tracks the computational resource usage (RAM, GPU RAM, and compute time) of a process corresponding to a given shell command.
 
 Usage:
-    gpu-tracker --execute=<command> [--output=<output>] [--format=<format>] [--st=<sleep-time>] [--ru=<ram-unit>] [--gru=<gpu-ram-unit>] [--tu=<time-unit>]
+    gpu-tracker --execute=<command> [--output=<output>] [--format=<format>] [--st=<sleep-time>] [--ru=<ram-unit>] [--gru=<gpu-ram-unit>] [--tu=<time-unit>] [--disable-logs]
 
 Options:
     -h --help               Show this help message.
@@ -13,6 +13,7 @@ Options:
     --ru=<ram-unit>         One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
     --gru=<gpu-ram-unit>    One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
     --tu=<time-unit>        One of 'seconds', 'minutes', 'hours', or 'days'.
+    --disable-logs          If set, warnings are suppressed during tracking. Otherwise, the Tracker logs warnings as usual.
 """
 import docopt as doc
 import subprocess as subp
@@ -31,7 +32,8 @@ def main():
         '--st': 'sleep_time',
         '--ru': 'ram_unit',
         '--gru': 'gpu_ram_unit',
-        '--tu': 'time_unit'
+        '--tu': 'time_unit',
+        '--disable-logs': 'disable_logs'
     }
     kwargs = {
         option_map[option]: value for option, value in args.items() if value is not None and option not in {
