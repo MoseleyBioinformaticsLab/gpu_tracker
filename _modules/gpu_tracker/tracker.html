@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gpu_tracker.tracker &mdash; gpu_tracker 0.1.dev1+ge099ae5 documentation</title>
+  <title>gpu_tracker.tracker &mdash; gpu_tracker 0.1.dev1+gf14dae9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=69d0d481"></script>
+        <script src="../../_static/documentation_options.js?v=73fcf54c"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -34,7 +34,7 @@
             gpu_tracker
           </a>
               <div class="version">
-                0.1.dev1+ge099ae5
+                0.1.dev1+gf14dae9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -94,11 +94,9 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 
 
+<div class="viewcode-block" id="Tracker">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.Tracker">[docs]</a>
 <span class="k">class</span> <span class="nc">Tracker</span><span class="p">:</span>
-    <span class="k">class</span> <span class="nc">State</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
-        <span class="n">NEW</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">STARTED</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">STOPPED</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Runs a thread in the background that tracks the compute time, maximum RAM, and maximum GPU RAM usage within a context manager or explicit ``start()`` and ``stop()`` methods.</span>
 <span class="sd">    Calculated quantities are scaled depending on the units chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).</span>
@@ -107,6 +105,15 @@
 <span class="sd">    :ivar MaxGPURAM max_gpu_ram: Description of the maximum GPU RAM usage of the process and any descendents it may have.</span>
 <span class="sd">    :ivar ComputeTime compute_time: Description of the real compute time i.e. the duration of tracking.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Tracker.State">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.Tracker.State">[docs]</a>
+    <span class="k">class</span> <span class="nc">State</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The state of the Tracker.&quot;&quot;&quot;</span>
+        <span class="n">NEW</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">STARTED</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">STOPPED</span> <span class="o">=</span> <span class="mi">2</span></div>
+
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">sleep_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">ram_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;gigabytes&#39;</span><span class="p">,</span> <span class="n">gpu_ram_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;gigabytes&#39;</span><span class="p">,</span> <span class="n">time_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;hours&#39;</span><span class="p">,</span>
             <span class="n">disable_logs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">n_join_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">join_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span> <span class="n">kill_if_join_fails</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -348,18 +355,26 @@
                 <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">Tracker</span><span class="o">.</span><span class="n">State</span><span class="o">.</span><span class="n">STOPPED</span>
 
+<div class="viewcode-block" id="Tracker.start">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.Tracker.start">[docs]</a>
     <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Begins tracking for the duration of time until ``stop()`` is called. Equivalent to entering the context manager.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span></div>
 
+
+<div class="viewcode-block" id="Tracker.stop">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.Tracker.stop">[docs]</a>
     <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Stop tracking. Equivalent to exiting the context manager.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">()</span></div>
 
+
+<div class="viewcode-block" id="Tracker.__str__">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.Tracker.__str__">[docs]</a>
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Constructs a string representation of the computational-resource-usage measurements and their units.</span>
@@ -375,7 +390,8 @@
             <span class="s1">&#39;compute&#39;</span><span class="p">,</span> <span class="s1">&#39;Compute&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;time: &#39;</span><span class="p">,</span> <span class="s1">&#39;Time: &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;rss&#39;</span><span class="p">,</span> <span class="s1">&#39;RSS&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;total&#39;</span><span class="p">,</span> <span class="s1">&#39;Total&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
             <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="s1">&#39;Private&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;shared&#39;</span><span class="p">,</span> <span class="s1">&#39;Shared&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;main&#39;</span><span class="p">,</span> <span class="s1">&#39;Main&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;descendents&#39;</span><span class="p">,</span> <span class="s1">&#39;Descendents&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
             <span class="s1">&#39;combined&#39;</span><span class="p">,</span> <span class="s1">&#39;Combined&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;gpu&#39;</span><span class="p">,</span> <span class="s1">&#39;GPU&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;Mean&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="s1">&#39;CPU&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
-            <span class="s1">&#39;n threads&#39;</span><span class="p">,</span> <span class="s1">&#39;number of threads&#39;</span><span class="p">)</span>
+            <span class="s1">&#39;n threads&#39;</span><span class="p">,</span> <span class="s1">&#39;number of threads&#39;</span><span class="p">)</span></div>
+
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_format_float</span><span class="p">(</span><span class="n">dictionary</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
@@ -389,6 +405,8 @@
             <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
                 <span class="n">Tracker</span><span class="o">.</span><span class="n">_format_float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
+<div class="viewcode-block" id="Tracker.to_json">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.tracker.Tracker.to_json">[docs]</a>
     <span class="k">def</span> <span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Constructs a dictionary of the computational-resource-usage measurements and their units.</span>
@@ -398,7 +416,9 @@
             <span class="s1">&#39;max_gpu_ram&#39;</span><span class="p">:</span> <span class="n">dclass</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_gpu_ram</span><span class="p">),</span>
             <span class="s1">&#39;cpu_utilization&#39;</span><span class="p">:</span> <span class="n">dclass</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_utilization</span><span class="p">),</span>
             <span class="s1">&#39;compute_time&#39;</span><span class="p">:</span> <span class="n">dclass</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_time</span><span class="p">)</span>
-        <span class="p">}</span>
+        <span class="p">}</span></div>
+</div>
+
 
 
 <div class="viewcode-block" id="RSSValues">
