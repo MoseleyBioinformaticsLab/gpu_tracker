@@ -10,14 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/workflows/documentation.yml
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - name: Install dependencies
         run: |
-          python3  -m pip install --upgrade pip
+          python3 -m pip install --upgrade pip
           python3 -m pip install build
           python3 -m pip install twine
       - name: Build package
@@ -29,7 +28,7 @@ jobs:
         with:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
-      - name: Publish package to PyPi
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+#      - name: Publish package to PyPi
+#        uses: pypa/gh-action-pypi-publish@release/v1
+#        with:
+#          password: ${{ secrets.PYPI_API_TOKEN }}
