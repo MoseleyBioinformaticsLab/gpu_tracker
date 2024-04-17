@@ -1,21 +1,19 @@
-name: Build and Publish Documentation
+name: Publish Documentation
 
 on:
   workflow_call:
 
 jobs:
-  build:
+  publish-documentation:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-tags: true
-
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-
     - name: Upgrade pip, install package, install requirements, build docs
       run: |
         pip install --upgrade pip
@@ -37,11 +35,9 @@ jobs:
         git config --global user.name "${GITHUB_ACTOR}"
         git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
         git clone "https://token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" --branch gh-pages --single-branch gh-pages
-        
         cp -r docs/_build/html/* gh-pages/
         cd gh-pages
         touch .nojekyll
-                
         git add .
         git commit -m "Update documentation." -a || true
         # The above command will fail if no changes were present, so we ignore
