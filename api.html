@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API &mdash; gpu_tracker 0.1.dev1+gfe7fbbf documentation</title>
+  <title>API &mdash; gpu_tracker 0.21 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,8 +15,8 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=153cce96"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/documentation_options.js?v=a53c679b"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -37,7 +37,7 @@
             gpu_tracker
           </a>
               <div class="version">
-                0.1.dev1+gfe7fbbf
+                0.21
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -177,7 +177,7 @@ Calculated quantities are scaled depending on the units chosen for them (e.g. me
 </dl>
 <dl class="py class">
 <dt class="sig sig-object py" id="gpu_tracker.tracker.Tracker.State">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">State</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#Tracker.State"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.Tracker.State" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">State</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#Tracker.State"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.Tracker.State" title="Link to this definition"></a></dt>
 <dd><p>The state of the Tracker.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="gpu_tracker.tracker.Tracker.State.NEW">
@@ -318,8 +318,8 @@ Calculated quantities are scaled depending on the units chosen for them (e.g. me
 <li><p><strong>main</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – The GPU RAM usage of the main process.</p></li>
 <li><p><strong>descendents</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – The summed GPU RAM usage of the descendent processes (i.e. child processes, grandchild processes, etc.).</p></li>
 <li><p><strong>combined</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – The summed GPU RAM usage of both the main process and any descendent processes it may have.</p></li>
-<li><p><strong>system_capacity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
-<li><p><strong>system</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
+<li><p><strong>system_capacity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>)</p></li>
+<li><p><strong>system</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -361,10 +361,10 @@ Calculated quantities are scaled depending on the units chosen for them (e.g. me
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>max_core_percent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
-<li><p><strong>max_cpu_percent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
-<li><p><strong>mean_core_percent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
-<li><p><strong>mean_cpu_percent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – </p></li>
+<li><p><strong>max_core_percent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>)</p></li>
+<li><p><strong>max_cpu_percent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>)</p></li>
+<li><p><strong>mean_core_percent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>)</p></li>
+<li><p><strong>mean_cpu_percent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -396,14 +396,14 @@ Calculated quantities are scaled depending on the units chosen for them (e.g. me
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>system_core_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – </p></li>
-<li><p><strong>system</strong> (<a class="reference internal" href="#gpu_tracker.tracker.CPUPercentages" title="gpu_tracker.tracker.CPUPercentages"><em>CPUPercentages</em></a>) – </p></li>
-<li><p><strong>main</strong> (<a class="reference internal" href="#gpu_tracker.tracker.CPUPercentages" title="gpu_tracker.tracker.CPUPercentages"><em>CPUPercentages</em></a>) – </p></li>
-<li><p><strong>descendents</strong> (<a class="reference internal" href="#gpu_tracker.tracker.CPUPercentages" title="gpu_tracker.tracker.CPUPercentages"><em>CPUPercentages</em></a>) – </p></li>
-<li><p><strong>combined</strong> (<a class="reference internal" href="#gpu_tracker.tracker.CPUPercentages" title="gpu_tracker.tracker.CPUPercentages"><em>CPUPercentages</em></a>) – </p></li>
-<li><p><strong>main_n_threads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – </p></li>
-<li><p><strong>descendents_n_threads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – </p></li>
-<li><p><strong>combined_n_threads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – </p></li>
+<li><p><strong>system_core_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>)</p></li>
+<li><p><strong>system</strong> (<a class="reference internal" href="#gpu_tracker.tracker.CPUPercentages" title="gpu_tracker.tracker.CPUPercentages"><em>CPUPercentages</em></a>)</p></li>
+<li><p><strong>main</strong> (<a class="reference internal" href="#gpu_tracker.tracker.CPUPercentages" title="gpu_tracker.tracker.CPUPercentages"><em>CPUPercentages</em></a>)</p></li>
+<li><p><strong>descendents</strong> (<a class="reference internal" href="#gpu_tracker.tracker.CPUPercentages" title="gpu_tracker.tracker.CPUPercentages"><em>CPUPercentages</em></a>)</p></li>
+<li><p><strong>combined</strong> (<a class="reference internal" href="#gpu_tracker.tracker.CPUPercentages" title="gpu_tracker.tracker.CPUPercentages"><em>CPUPercentages</em></a>)</p></li>
+<li><p><strong>main_n_threads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>)</p></li>
+<li><p><strong>descendents_n_threads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>)</p></li>
+<li><p><strong>combined_n_threads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>)</p></li>
 </ul>
 </dd>
 </dl>
