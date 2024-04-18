@@ -8,7 +8,7 @@ on:
         required: true
         type: string
     secrets:
-      PYPI_API_TOKEN:
+      API_TOKEN:
         required: true
 
 jobs:
@@ -28,5 +28,5 @@ jobs:
       - name: Publish package to a PyPi distribution
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+          password: ${{ secrets.API_TOKEN }}
           repository-url: ${{ inputs.repository_url }}
