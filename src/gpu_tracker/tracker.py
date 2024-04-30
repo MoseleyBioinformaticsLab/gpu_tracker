@@ -88,7 +88,7 @@ class Tracker:
         self.state = Tracker.State.NEW
 
     def __repr__(self):
-        return (f'State: {self.state.name}')
+        return f'State: {self.state.name}'
 
     def _log_warning(self, warning: str):
         if not self.disable_logs:
@@ -379,6 +379,7 @@ class CPUPercentages:
 
 @dclass.dataclass
 class CPUUtilization:
+    # TODO add :param: descriptions to this and the other data classes
     system_core_count: int
     system: CPUPercentages = dclass.field(default_factory=CPUPercentages)
     main: CPUPercentages = dclass.field(default_factory=CPUPercentages)
