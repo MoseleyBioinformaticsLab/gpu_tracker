@@ -1,6 +1,8 @@
 import typing as typ
 import gpu_tracker as gput
 import json
+import pickle as pkl
+import os
 import pytest as pt
 
 
@@ -28,6 +30,8 @@ test_tracker_data = [
 
 @pt.mark.parametrize('ram_unit,gpu_ram_unit,time_unit', test_tracker_data)
 def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_unit: str, gpu_ram_unit: str, time_unit: str):
+    tracking_process_pid = 666
+
     class EventMock:
         def __init__(self):
             self.count = 0
@@ -36,21 +40,24 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
 
         def is_set(self) -> bool:
             self.count += 1
-            return self.count > 3
+            return self.count == 3
 
-    class ThreadMock:
+    class MpProcessMock:
         def __init__(self, target: typ.Callable):
             self.target = target
             self.start = mocker.MagicMock(wraps=self.start)
             self.join = mocker.MagicMock()
             self.is_alive = mocker.MagicMock(return_value=False)
+            self.terminate = mocker.MagicMock()
+            self.close = mocker.MagicMock()
+            self.pid = tracking_process_pid
 
         def start(self):
             self.target()
 
-    system_mock = mocker.patch('gpu_tracker.tracker.platform.system', return_value=operating_system) 
-    EventMock = mocker.patch('gpu_tracker.tracker.thrd.Event', wraps=EventMock)
-    ThreadMock = mocker.patch('gpu_tracker.tracker.thrd.Thread', wraps=ThreadMock)
+    system_mock = mocker.patch('gpu_tracker.tracker.platform.system', return_value=operating_system)
+    EventMock = mocker.patch('gpu_tracker.tracker.mproc.Event', wraps=EventMock)
+    MpProcessMock = mocker.patch('gpu_tracker.tracker.mproc.Process', wraps=MpProcessMock)
     process_id = 12
     child1_id = 21
     child2_id = 22
@@ -110,8 +117,8 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
     process_mock = get_process_mock(
         pid=process_id, rams=process_rams, private_dirty=process_private_dirty, private_clean=process_private_clean,
         shared_dirty=process_shared_dirty, shared_clean=process_shared_clean, paths=process_paths, cpu_percentages=[60.4, 198.9, 99.8],
-        num_threads=[0, 0, 2], children=[child1_mock, child2_mock])
-    ProcessMock = mocker.patch('gpu_tracker.tracker.psutil.Process', return_value=process_mock)
+        num_threads=[0, 0, 2], children=[child1_mock, child2_mock, mocker.MagicMock(pid=tracking_process_pid)])
+    PsProcessMock = mocker.patch('gpu_tracker.tracker.psutil.Process', return_value=process_mock)
     virtual_memory_mock = mocker.patch(
         'gpu_tracker.tracker.psutil.virtual_memory', side_effect=[
             mocker.MagicMock(total=67 * 1e9), mocker.MagicMock(used=30 * 1e9), mocker.MagicMock(used=31 * 1e9),
@@ -128,7 +135,7 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
     cpu_count_mock = mocker.patch('gpu_tracker.tracker.psutil.cpu_count', return_value=4)
     cpu_percent_mock = mocker.patch(
         'gpu_tracker.tracker.psutil.cpu_percent', side_effect=[[67.5, 27.3, 77.8, 97.9], [57.6, 58.2, 23.5, 99.8], [78.3, 88.3, 87.2, 22.5]])
-    time_mock = mocker.patch('gpu_tracker.tracker.time.time', side_effect=[800, 900, 1000, 1100])
+    time_mock = mocker.patch('gpu_tracker.tracker._testable_time', side_effect=[800, 900, 1000, 1100, 0])
     sleep_mock = mocker.patch('gpu_tracker.tracker._testable_sleep')
     log_spy = mocker.spy(gput.tracker.log, 'warning')
     sleep_time = 1.5
@@ -143,15 +150,16 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
             sleep_time=sleep_time, join_timeout=join_timeout, ram_unit=ram_unit, gpu_ram_unit=gpu_ram_unit, time_unit=time_unit)
         tracker.start()
         tracker.stop()
+    assert not os.path.isfile(tracker._resource_usage_file)
     assert not log_spy.called
     _assert_args_list(virtual_memory_mock, [()] * 4)
     system_mock.assert_called_once_with()
     EventMock.assert_called_once_with()
-    ThreadMock.assert_called_once_with(target=tracker._profile)
-    tracker._thread.start.assert_called_once_with()
-    _assert_args_list(mock=tracker._stop_event.is_set, expected_args_list=[()] * 4)
+    MpProcessMock.assert_called_once_with(target=tracker._track)
+    tracker._tracking_process.start.assert_called_once_with()
+    _assert_args_list(mock=tracker._stop_event.is_set, expected_args_list=[()] * 3)
     _assert_args_list(mock=getpid_mock, expected_args_list=[()])
-    _assert_args_list(mock=ProcessMock, expected_args_list=[(process_id,)])
+    _assert_args_list(mock=PsProcessMock, expected_args_list=[(process_id,)])
     _assert_args_list(mock=process_mock.children, expected_args_list=[{'recursive': True}] * 20, use_kwargs=True)
     if operating_system == 'Linux':
         _assert_args_list(mock=process_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
@@ -162,14 +170,16 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
         _assert_args_list(mock=child1_mock.memory_info, expected_args_list=[()] * 6)
         _assert_args_list(mock=child2_mock.memory_info, expected_args_list=[()] * 6)
     assert len(check_output_mock.call_args_list) == 7
-    _assert_args_list(mock=time_mock, expected_args_list=[()] * 4)
-    _assert_args_list(mock=sleep_mock, expected_args_list=[(sleep_time,)] * 3)
+    _assert_args_list(mock=time_mock, expected_args_list=[()] * 5)
+    _assert_args_list(mock=sleep_mock, expected_args_list=[(sleep_time,)] * 2)
     tracker._stop_event.set.assert_called_once_with()
-    tracker._thread.join.assert_called_once_with(timeout=join_timeout)
-    _assert_args_list(mock=tracker._thread.is_alive, expected_args_list=[()] * 2)
-    expected_measurements_file = f'tests/data/{use_context_manager}-{operating_system}-{ram_unit}-{gpu_ram_unit}-{time_unit}'
+    tracker._tracking_process.join.assert_called_once_with(timeout=join_timeout)
+    _assert_args_list(mock=tracker._tracking_process.is_alive, expected_args_list=[()] * 2)
+    assert not tracker._tracking_process.terminate.called
+    tracker._tracking_process.close.assert_called_once_with()
     cpu_count_mock.assert_called_once_with()
     _assert_args_list(cpu_percent_mock, [()] * 3)
+    expected_measurements_file = f'tests/data/{use_context_manager}-{operating_system}-{ram_unit}-{gpu_ram_unit}-{time_unit}'
     with open(f'{expected_measurements_file}.txt', 'r') as file:
         expected_tracker_str = file.read()
         assert expected_tracker_str == str(tracker)
@@ -183,33 +193,37 @@ def _assert_args_list(mock, expected_args_list: list[tuple | dict], use_kwargs: 
     assert actual_args_list == expected_args_list
 
 
-@pt.mark.parametrize('kill_if_join_fails', [True, False])
-def test_warnings(mocker, kill_if_join_fails: bool, caplog):
+def test_warnings(mocker, caplog):
     n_join_attempts = 3
     join_timeout = 5.2
-    mocker.patch('gpu_tracker.tracker.thrd.Event', return_value=mocker.MagicMock(set=mocker.MagicMock()))
+    mocker.patch('gpu_tracker.tracker.mproc.Event', return_value=mocker.MagicMock(set=mocker.MagicMock()))
     mocker.patch(
-        'gpu_tracker.tracker.thrd.Thread',
-        return_value=mocker.MagicMock(start=mocker.MagicMock(), is_alive=mocker.MagicMock(return_value=True), join=mocker.MagicMock())
+        'gpu_tracker.tracker.mproc.Process',
+        return_value=mocker.MagicMock(is_alive=mocker.MagicMock(return_value=True))
     )
-    exit_mock = mocker.patch('gpu_tracker.tracker.sys.exit')
-    check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=[b''])
+    check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', return_value=b'')
     system_mock = mocker.patch('gpu_tracker.tracker.platform.system', return_value='linux')
-    with gput.Tracker(kill_if_join_fails=kill_if_join_fails, n_join_attempts=n_join_attempts, join_timeout=join_timeout) as tracker:
+    mocker.patch('gpu_tracker.tracker._testable_time', return_value=23.0)
+    mocker.patch('gpu_tracker.tracker.os.path.getmtime', return_value=12.0)
+    with gput.Tracker(n_join_attempts=n_join_attempts, join_timeout=join_timeout) as tracker:
+        with open(tracker._resource_usage_file, 'wb') as file:
+            # Create the resource usage file to avoid an error.
+            pkl.dump('', file)
         pass
     check_output_mock.assert_called_once()
     system_mock.assert_called_once()
     _assert_args_list(mock=tracker._stop_event.set, expected_args_list=[()] * n_join_attempts)
-    _assert_args_list(mock=tracker._thread.join, expected_args_list=[{'timeout': join_timeout}] * n_join_attempts, use_kwargs=True)
-    _assert_args_list(mock=tracker._thread.is_alive, expected_args_list=[()] * (n_join_attempts + 1))
-    expected_warnings = ['Thread is still alive after join timout. Attempting to join again...'] * n_join_attempts
+    _assert_args_list(
+        mock=tracker._tracking_process.join, expected_args_list=[{'timeout': join_timeout}] * n_join_attempts, use_kwargs=True)
+    _assert_args_list(mock=tracker._tracking_process.is_alive, expected_args_list=[()] * (n_join_attempts + 1))
+    tracker._tracking_process.terminate.assert_called_once()
+    tracker._tracking_process.close.assert_called_once()
+    expected_warnings = ['The tracking process is still alive after join timout. Attempting to join again...'] * n_join_attempts
     expected_warnings.append(
-        'Thread is still alive after 3 attempts to join. The thread will likely not end until the parent process ends.')
-    if kill_if_join_fails:
-        expected_warnings.append('The thread failed to join and kill_if_join_fails is set. Exiting ...')
-        exit_mock.assert_called_once_with(1)
-    else:
-        assert not exit_mock.called
+        'The tracking process is still alive after 3 attempts to join. Terminating the process by force...')
+    expected_warnings.append(
+        'Tracking is stopping and it has been 11.0 seconds since the temporary tracking results file was last updated. '
+        'Resource usage was not updated during that time.')
     for expected_warning, record in zip(expected_warnings, caplog.records):
         assert record.levelname == 'WARNING'
         assert record.message == expected_warning
@@ -222,9 +236,8 @@ def test_validate_unit():
 
 
 def test_state(mocker):
-    mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=[b''])
+    mocker.patch('gpu_tracker.tracker.subp.check_output', return_value=b'')
     mocker.patch('gpu_tracker.tracker.platform.system', return_value='linux')
-
     tracker = gput.Tracker()
     assert tracker.__repr__() == 'State: NEW'
     with pt.raises(RuntimeError) as error:
