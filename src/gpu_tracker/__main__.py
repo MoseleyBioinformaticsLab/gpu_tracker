@@ -2,10 +2,13 @@
 Tracks the computational resource usage (RAM, GPU RAM, and compute time) of a process corresponding to a given shell command.
 
 Usage:
+    gpu-tracker -h | --help
+    gpu-tracker -v | --version
     gpu-tracker --execute=<command> [--output=<output>] [--format=<format>] [--st=<sleep-time>] [--ru=<ram-unit>] [--gru=<gpu-ram-unit>] [--tu=<time-unit>] [--disable-logs]
 
 Options:
-    -h --help               Show this help message.
+    -h --help               Show this help message and exit.
+    -v --version            Show package version and exit.
     -e --execute=<command>  The command to run along with its arguments all within quotes e.g. "ls -l -a".
     -o --output=<output>    File path to store the computational-resource-usage measurements. If not set, prints measurements to the screen.
     -f --format=<format>    File format of the output. Either 'json' or 'text'. Defaults to 'text'.
@@ -21,10 +24,11 @@ import json
 import logging as log
 import sys
 from . import Tracker
+from . import __version__
 
 
 def main():
-    args = doc.docopt(__doc__)
+    args = doc.docopt(__doc__, version=__version__)
     command = args['--execute'].split(' ')
     output = args['--output']
     output_format = args['--format'] if args['--format'] is not None else 'text'
@@ -37,7 +41,7 @@ def main():
     }
     kwargs = {
         option_map[option]: value for option, value in args.items() if value is not None and option not in {
-            '--execute', '--output', '--format'}}
+            '--execute', '--output', '--format', '--help', '--version'}}
     if 'sleep_time' in kwargs.keys():
         kwargs['sleep_time'] = float(kwargs['sleep_time'])
     try:
