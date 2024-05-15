@@ -27,3 +27,8 @@ jobs:
       run: bash tests/install.sh
     - name: Test with pytest
       run: bash tests/run.sh
+    - name: Debug with tmate on failure
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
+      with:
+        limit-access-to-actor: true
