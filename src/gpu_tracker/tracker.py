@@ -435,6 +435,7 @@ class CPUPercentages:
 
 @dclass.dataclass
 class CPUUtilization:
+    # TODO add :param: descriptions to this and the other data classes
     system_core_count: int
     system: CPUPercentages = dclass.field(default_factory=CPUPercentages)
     main: CPUPercentages = dclass.field(default_factory=CPUPercentages)

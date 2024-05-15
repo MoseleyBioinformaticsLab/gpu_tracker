@@ -1,35 +1,44 @@
-name: Release the Next Version of the Package
+name: Package and Documentation Release
 
 on:
   release:
     types: [published]
-  workflow_dispatch:
 
 jobs:
-  deploy:
+  release-version:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/workflows/documentation.yml
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-      - name: Install dependencies
+      - id: parse-version
+        name: Parse release version
         run: |
-          python3  -m pip install --upgrade pip
-          python3 -m pip install build
-          python3 -m pip install twine
-      - name: Build package
-        run: python -m build
-      - name: Check package
-        run: python3 -m twine check dist/*
-      - name: Publish package to Test-PyPi
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository-url: https://test.pypi.org/legacy/
-      - name: Publish package to PyPi
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+          echo "version=${RELEASE_VERSION/v/}" >> "$GITHUB_OUTPUT"
+    env:
+      RELEASE_VERSION: ${{ github.event.release.tag_name }}
+    outputs:
+      version: ${{ steps.parse-version.outputs.version }}
+  publish-test-pypi:
+    uses: ./.github/workflows/pypi.yml
+    with:
+      repository_url: https://test.pypi.org/legacy/
+    secrets:
+      API_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
+  test-test-pypi:
+    needs: [release-version, publish-test-pypi]
+    uses: ./.github/workflows/tests.yml
+    with:
+      install_command: "python3 -m pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple gpu-tracker==${{ needs.release-version.outputs.version }}"
+  publish-pypi:
+    needs: test-test-pypi
+    uses: ./.github/workflows/pypi.yml
+    with:
+      repository_url: https://upload.pypi.org/legacy/
+    secrets:
+      API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+  test-pypi:
+    needs: [release-version, publish-pypi]
+    uses: ./.github/workflows/tests.yml
+    with:
+      install_command: "python3 -m pip install gpu-tracker==${{ needs.release-version.outputs.version }}"
+  publish-documentation:
+    needs: test-pypi
+    uses: ./.github/workflows/documentation.yml
