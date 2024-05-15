@@ -202,7 +202,7 @@ def _assert_args_list(mock, expected_args_list: list[tuple | dict], use_kwargs: 
 def test_warnings(mocker, caplog):
     n_join_attempts = 3
     join_timeout = 5.2
-    check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=FileNotFoundError)
+    subprocess_mock = mocker.patch('gpu_tracker.tracker.subp', check_output=mocker.MagicMock(side_effect=FileNotFoundError))
     mocker.patch('gpu_tracker.tracker.time', time=mocker.MagicMock(return_value=23.0))
     mocker.patch('gpu_tracker.tracker.os.path.getmtime', return_value=12.0)
     mocker.patch.object(gput.tracker._TrackingProcess, 'is_alive', return_value=True)
@@ -211,7 +211,7 @@ def test_warnings(mocker, caplog):
     close_spy = mocker.spy(gput.tracker._TrackingProcess, 'close')
     with gput.Tracker(n_join_attempts=n_join_attempts, join_timeout=join_timeout) as tracker:
         set_spy = mocker.spy(tracker._stop_event, 'set')
-    check_output_mock.assert_called_once()
+    subprocess_mock.check_output.assert_called_once()
     _assert_args_list(mock=set_spy, expected_args_list=[()] * n_join_attempts)
     _assert_args_list(
         mock=join_spy, expected_args_list=[{'timeout': join_timeout}] * n_join_attempts, use_kwargs=True)
