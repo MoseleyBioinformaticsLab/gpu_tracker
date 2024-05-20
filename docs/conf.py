@@ -66,3 +66,4 @@ intersphinx_mapping = {
 # https://www.sphinx-doc.org/en/master/usage/extensions/todo.html#configuration
 
 todo_include_todos = True
+latex_elements = {'preamble': r'\usepackage{pmboxdraw}'}

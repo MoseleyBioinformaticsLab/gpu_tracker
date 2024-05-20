@@ -427,6 +427,12 @@ class MaxGPURAM:
 
 @dclass.dataclass
 class CPUPercentages:
+    """
+    :param max_core_percent: The maximum sum of utilization percentages of the cores used at any given time.
+    :param max_cpu_percent: The maximum percentage utilization of the entire CPU (core percentage divided by the number of cores in the system).
+    :param mean_core_percent: The mean sum of utilization percentages of the cores used over time.
+    :param mean_cpu_percent: The mean percentage utilization of the entire CPU (core percentage divided by the number of cores in the system).
+    """
     max_core_percent: float = 0.
     max_cpu_percent: float = 0.
     mean_core_percent: float = 0.
@@ -435,7 +441,16 @@ class CPUPercentages:
 
 @dclass.dataclass
 class CPUUtilization:
-    # TODO add :param: descriptions to this and the other data classes
+    """
+    :param system_core_count: The number of cores available to the operating system.
+    :param system: The core and CPU utilization percentages of the entire system.
+    :param main: The core and CPU utilization percentages of the main process.
+    :param descendents: The core and CPU utilization percentages summed across descendent processes (i.e. child processes, grandchild processes, etc.).
+    :param combined: The core and CPU utilization percentages summed across both the descendent processes and the main process.
+    :param main_n_threads: The maximum detected number of threads used by the main process at any time.
+    :param descendents_n_threads: The maximum sum of threads used across the descendent processes at any time.
+    :param combined_n_threads: The maximum sum of threads used by both the main and descendent processes.
+    """
     system_core_count: int
     system: CPUPercentages = dclass.field(default_factory=CPUPercentages)
     main: CPUPercentages = dclass.field(default_factory=CPUPercentages)
@@ -458,6 +473,12 @@ class ComputeTime:
 
 @dclass.dataclass
 class ResourceUsage:
+    """
+    :param max_ram: The maximum RAM used at any point while tracking.
+    :param max_gpu_ram: The maximum GPU RAM used at any point while tracking.
+    :param cpu_utilization: The core and CPU utilization and maximum number of threads used while tracking.
+    :param compute_time: The real time spent tracking.
+    """
     max_ram: MaxRAM
     max_gpu_ram: MaxGPURAM
     cpu_utilization: CPUUtilization
