@@ -8,14 +8,14 @@ API
 
 The ``gpu_tracker`` package provides the ``Tracker`` class which uses a
 subprocess to measure computational resource usage, namely the compute
-time, CPU utilization, maximum RAM used, and maximum GPU RAM used. The
-``start()`` method starts this process which tracks usage in the
-background. After calling ``start()``, one can write the code for which
-resource usage is measured, followed by calling the ``stop()`` method.
-The compute time will be the time from the call to ``start()`` to the
-call to ``stop()`` and the RAM, GPU RAM, and CPU utilization quantities
-will be the respective computational resources used by the code that’s
-in between ``start()`` and ``stop()``.
+time, maximum CPU utilization, mean CPU utilization, maximum RAM used,
+and maximum GPU RAM used. The ``start()`` method starts this process
+which tracks usage in the background. After calling ``start()``, one can
+write the code for which resource usage is measured, followed by calling
+the ``stop()`` method. The compute time will be the time from the call
+to ``start()`` to the call to ``stop()`` and the RAM, GPU RAM, and CPU
+utilization quantities will be the respective computational resources
+used by the code that’s in between ``start()`` and ``stop()``.
 
 .. code:: python3
 
@@ -114,7 +114,7 @@ never exceed the overall system RAM usage, but inaccuracies resulting
 from shared RSS can cause this to happen, especially for non-linux
 operating systems (see note below).
 
-The ``Tracker`` assumes that GPU memory is not shared accross multiple
+The ``Tracker`` assumes that GPU memory is not shared across multiple
 processes and if it is, the reported GPU RAM of “descendent” and
 “combined” may be an overestimation.
 
@@ -128,7 +128,7 @@ highest percentage detected through the duration of tracking while the
 mean percent is the average of all the percentages detected over that
 duration. The CPU utilization concludes with the maximum number of
 threads used at any time for the main process and the sum of the threads
-used accross its descendent processes and combined.
+used across its descendent processes and combined.
 
 The compute time is the real time that the computational-resource
 tracking lasted (as compared to CPU time).

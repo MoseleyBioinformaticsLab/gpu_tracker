@@ -29,6 +29,7 @@ from . import __version__
 
 def main():
     args = doc.docopt(__doc__, version=__version__)
+    print(args['--execute'])
     command = args['--execute'].split(' ')
     output = args['--output']
     output_format = args['--format'] if args['--format'] is not None else 'text'

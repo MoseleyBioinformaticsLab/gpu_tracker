@@ -242,10 +242,10 @@ class _TrackingProcess(mproc.Process):
 
 class Tracker:
     """
-    Runs a sub-process that tracks computational resources of the calling process. Including the compute time, maximum RAM, and maximum GPU RAM usage within a context manager or explicit ``start()`` and ``stop()`` methods.
+    Runs a sub-process that tracks computational resources of the calling process. Including the compute time, maximum CPU utilization, mean CPU utilization, maximum RAM, and maximum GPU RAM used within a context manager or explicit calls to ``start()`` and ``stop()`` methods.
     Calculated quantities are scaled depending on the units chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).
 
-    :ivar resource_usage: Data class containing the max_ram (Description of the maximum RAM usage of the process, any descendents it may have, and the operating system overall), max_gpu_ram (Description of the maximum GPU RAM usage of the process and any descendents it may have), and compute_time (Description of the real compute time i.e. the duration of tracking) attributes.
+    :ivar ResourceUsage resource_usage: Data class containing the computational resource usage data collected by the tracking process.
     """
     _USAGE_FILE_TIME_DIFFERENCE = 10.0
 
@@ -382,6 +382,8 @@ class Tracker:
 @dclass.dataclass
 class RSSValues:
     """
+    The resident set size (RSS) i.e. memory used by a process or processes.
+
     :param total_rss: The sum of ``private_rss`` and ``shared_rss``.
     :param private_rss: The RAM usage exclusive to a process.
     :param shared_rss: The RAM usage of a process shared with at least one other process.
@@ -394,6 +396,8 @@ class RSSValues:
 @dclass.dataclass
 class MaxRAM:
     """
+    Information related to RAM including the maximum RAM used over a period of time.
+
     :param unit: The unit of measurement for RAM e.g. gigabytes.
     :param system_capacity: A constant value for the RAM capacity of the entire operating system.
     :param system: The RAM usage across the entire operating system.
@@ -412,7 +416,11 @@ class MaxRAM:
 @dclass.dataclass
 class MaxGPURAM:
     """
+    Information related to GPU RAM including the maximum GPU RAM used over a period of time.
+
     :param unit: The unit of measurement for GPU RAM e.g. gigabytes.
+    :param system_capacity: A constant value for the GPU RAM capacity of all the GPUs in the system.
+    :param system: The GPU RAM usage of all the GPUs in the system.
     :param main: The GPU RAM usage of the main process.
     :param descendents: The summed GPU RAM usage of the descendent processes (i.e. child processes, grandchild processes, etc.).
     :param combined: The summed GPU RAM usage of both the main process and any descendent processes it may have.
@@ -425,18 +433,30 @@ class MaxGPURAM:
     combined: float = 0.
 
 
+class GPUUtilization:
+    system_gpu_count: int
+    max_percent: float = 0
+    mean_percent: float = 0
+
+
 @dclass.dataclass
 class CPUPercentages:
     """
-    :param max_core_percent: The maximum sum of utilization percentages of the cores used at any given time.
-    :param max_cpu_percent: The maximum percentage utilization of the entire CPU (core percentage divided by the number of cores in the system).
-    :param mean_core_percent: The mean sum of utilization percentages of the cores used over time.
-    :param mean_cpu_percent: The mean percentage utilization of the entire CPU (core percentage divided by the number of cores in the system).
+    Utilization percentages of a core or specified group of cores (e.g. all the cores in the system, cores allocated by a job manager, the cores used by workers in a task, etc.).
+    Max refers to the highest value measured over a duration of time.
+    Mean refers to the average of the measured values during this time.
+    Sum refers to the sum of the percentages of the core(s) involved.
+    Hardware refers to this sum divided by the number of cores involved.
+
+    :param max_sum_percent: The maximum sum of utilization percentages of the core(s) used by the process(es) at any given time.
+    :param max_hardware_percent: The maximum utilization percentage of the core(s) as a whole (i.e. max_sum_percent divided by the number of cores involved).
+    :param mean_sum_percent: The mean sum of utilization percentages of the core(s) used by the process(es) over time.
+    :param mean_hardware_percent: The mean utilization percentage of the core(s) as a whole (i.e. mean_sum_percent divided by the number of cores involved).
     """
-    max_core_percent: float = 0.
-    max_cpu_percent: float = 0.
-    mean_core_percent: float = 0.
-    mean_cpu_percent: float = 0.
+    max_sum_percent: float = 0.
+    max_hardware_percent: float = 0.
+    mean_sum_percent: float = 0.
+    mean_hardware_percent: float = 0.
 
 
 @dclass.dataclass
@@ -474,6 +494,8 @@ class ComputeTime:
 @dclass.dataclass
 class ResourceUsage:
     """
+    Contains data for computational resource usage.
+
     :param max_ram: The maximum RAM used at any point while tracking.
     :param max_gpu_ram: The maximum GPU RAM used at any point while tracking.
     :param cpu_utilization: The core and CPU utilization and maximum number of threads used while tracking.
