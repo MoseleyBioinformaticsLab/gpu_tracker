@@ -40,11 +40,6 @@ class _TrackingProcess(mproc.Process):
         'days': 1 / (60 * 60 * 24)
     }
 
-    # TODO use the uuid field to determine the IDs of the GPUs.
-    #  Accept a list of GPUs by UUID.
-    #  If an invalid ID is provided, raise an exception informing the user that an ID was provided that is not available and then list the available UUIDs.
-    #  If there is no failure, do an info log informing the user of the UUIDs that they provided and all the ones that are available.
-
     def __init__(
             self, stop_event: mproc.Event, sleep_time: float, ram_unit: str, gpu_ram_unit: str, time_unit: str,
             n_expected_cores: int | None, gpu_uuids: set[str] | None, disable_logs: bool, main_process_id: int,
@@ -305,7 +300,7 @@ class Tracker:
 
     def __init__(
             self, sleep_time: float = 1.0, ram_unit: str = 'gigabytes', gpu_ram_unit: str = 'gigabytes', time_unit: str = 'hours',
-            n_expected_cores: int = None, gpu_uuids: set[str] = None, disable_logs: bool = False, process_id: int = None,  # TODO add example with n_expected_cores and gpu_uuids to tutorial!
+            n_expected_cores: int = None, gpu_uuids: set[str] = None, disable_logs: bool = False, process_id: int = None,
             n_join_attempts: int = 5, join_timeout: float = 10.0):
         """
         :param sleep_time: The number of seconds to sleep in between usage-collection iterations.
@@ -409,7 +404,7 @@ class Tracker:
             'compute', 'Compute').replace('time: ', 'Time: ').replace('rss', 'RSS').replace('total', 'Total').replace(
             'private', 'Private').replace('shared', 'Shared').replace('main', 'Main').replace('descendents', 'Descendents').replace(
             'combined', 'Combined').replace('gpu', 'GPU').replace('mean', 'Mean').replace('cpu', 'CPU').replace(
-            'n threads', 'number of threads')
+            'n threads', 'number of threads').replace('n expected', 'Number of expected')
 
     @staticmethod
     def _format_float(dictionary: dict):
