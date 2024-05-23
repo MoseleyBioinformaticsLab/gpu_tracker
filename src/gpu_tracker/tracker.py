@@ -13,6 +13,8 @@ import logging as log
 import enum
 import pickle as pkl
 import uuid
+import io
+import pandas as pd
 
 
 class _TrackingProcess(mproc.Process):
@@ -38,9 +40,15 @@ class _TrackingProcess(mproc.Process):
         'days': 1 / (60 * 60 * 24)
     }
 
+    # TODO use the uuid field to determine the IDs of the GPUs.
+    #  Accept a list of GPUs by UUID.
+    #  If an invalid ID is provided, raise an exception informing the user that an ID was provided that is not available and then list the available UUIDs.
+    #  If there is no failure, do an info log informing the user of the UUIDs that they provided and all the ones that are available.
+
     def __init__(
             self, stop_event: mproc.Event, sleep_time: float, ram_unit: str, gpu_ram_unit: str, time_unit: str,
-            disable_logs: bool, main_process_id: int, resource_usage_file: str, extraneous_process_ids: set[int]):
+            n_expected_cores: int | None, gpu_uuids: set[str] | None, disable_logs: bool, main_process_id: int,
+            resource_usage_file: str, extraneous_process_ids: set[int]):
         super().__init__()
         self._stop_event = stop_event
         if sleep_time < _TrackingProcess._CPU_PERCENT_INTERVAL:
@@ -55,8 +63,9 @@ class _TrackingProcess(mproc.Process):
             time_unit, _TrackingProcess._time_unit2coefficient, unit_type='time')
         self._disable_logs = disable_logs
         self._main_process_id = main_process_id
-        self._core_percent_sums = {key: 0. for key in ['system', 'main', 'descendents', 'combined']}
-        self._cpu_percent_sums = {key: 0. for key in ['system', 'main', 'descendents', 'combined']}
+        percent_keys = ['cpu_system', 'cpu_main', 'cpu_descendents', 'cpu_combined', 'gpu']
+        self._sum_percent_sums = {key: 0. for key in percent_keys}
+        self._hardware_percent_sums = {key: 0. for key in percent_keys}
         self._tracking_iteration = 1
         self._is_linux = platform.system().lower() == 'linux'
         self._nvidia_available = True
@@ -68,12 +77,32 @@ class _TrackingProcess(mproc.Process):
                 'The nvidia-smi command is not available. Please install the Nvidia drivers to track GPU usage. '
                 'Otherwise the Max GPU RAM values will remain 0.0')
         max_ram = MaxRAM(unit=ram_unit, system_capacity=psutil.virtual_memory().total * self._ram_coefficient)
-        max_gpu_ram = MaxGPURAM(
-            unit=gpu_ram_unit, system_capacity=self._system_gpu_ram(measurement='total') if self._nvidia_available else 0.0)
-        cpu_utilization = CPUUtilization(system_core_count=psutil.cpu_count())
+        system_core_count = psutil.cpu_count()
+        cpu_utilization = CPUUtilization(
+            system_core_count=system_core_count,
+            n_expected_cores=n_expected_cores if n_expected_cores is not None else system_core_count)
+        if self._nvidia_available:
+            gpu_info = _TrackingProcess._system_gpu_info(fields='uuid,memory.total')
+            gpu_ram_system_capacity = self._system_gpu_ram(gpu_info=gpu_info, measurement='total')
+            max_gpu_ram = MaxGPURAM(unit=gpu_ram_unit, system_capacity=gpu_ram_system_capacity)
+            all_uuids = set(gpu_info['uuid'])
+            if gpu_uuids is None:
+                self._gpu_uuids = all_uuids
+            else:
+                if len(gpu_uuids) == 0:
+                    raise ValueError('gpu_uuids is not None but the set is empty. Please provide a set of at least one GPU UUID.')
+                for gpu_uuid in gpu_uuids:
+                    if gpu_uuid not in all_uuids:
+                        raise ValueError(f'GPU UUID of {gpu_uuid} is not valid. Available UUIDs are: {", ".join(all_uuids)}')
+                self._gpu_uuids = gpu_uuids
+            gpu_utilization = GPUUtilization(system_gpu_count=len(all_uuids), n_expected_gpus=len(self._gpu_uuids))
+        else:
+            max_gpu_ram = MaxGPURAM(unit=gpu_ram_unit, system_capacity=0.0)
+            gpu_utilization = GPUUtilization(system_gpu_count=0, n_expected_gpus=0)
         compute_time = ComputeTime(unit=time_unit)
         self._resource_usage = ResourceUsage(
-            max_ram=max_ram, max_gpu_ram=max_gpu_ram, cpu_utilization=cpu_utilization, compute_time=compute_time)
+            max_ram=max_ram, max_gpu_ram=max_gpu_ram, cpu_utilization=cpu_utilization, gpu_utilization=gpu_utilization,
+            compute_time=compute_time)
         self._resource_usage_file = resource_usage_file
         self._extraneous_process_ids = extraneous_process_ids
 
@@ -125,21 +154,39 @@ class _TrackingProcess(mproc.Process):
                                              nvidia_smi_output=nvidia_smi_output)
                         process_ids.add(self._main_process_id)
                         self._update_gpu_ram(attr='combined', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
-                    self._resource_usage.max_gpu_ram.system = max(
-                        self._resource_usage.max_gpu_ram.system, self._system_gpu_ram(measurement='used'))
+
+                    gpu_info = _TrackingProcess._system_gpu_info(fields='uuid,memory.used,utilization.gpu')
+                    system_gpu_ram = self._system_gpu_ram(gpu_info, measurement='used')
+                    self._resource_usage.max_gpu_ram.system = max(self._resource_usage.max_gpu_ram.system, system_gpu_ram)
+                    gpu_info = gpu_info.loc[gpu_info['uuid'].apply(lambda gpu_uuid: gpu_uuid in self._gpu_uuids)]
+                    gpu_percentages = [float(percentage) for percentage in gpu_info['utilization.gpu']]
+                    self._update_processing_unit_utilization(
+                        current_percentages=gpu_percentages,
+                        processing_unit_percentages=self._resource_usage.gpu_utilization.gpu_percentages, percent_key='gpu',
+                        n_hardware_units=self._resource_usage.gpu_utilization.n_expected_gpus)
+
                 # Get the mean and maximum CPU usages.
                 self._update_n_threads(processes=[main_process], attr='main')
                 self._update_n_threads(processes=descendent_processes, attr='descendents')
                 self._update_n_threads(processes=combined_processes, attr='combined')
                 # noinspection PyTypeChecker
                 system_core_percentages: list[float] = psutil.cpu_percent(percpu=True)
-                self._update_cpu_utilization(percentages=system_core_percentages, attr='system')
+                cpu_utilization = self._resource_usage.cpu_utilization
+                self._update_processing_unit_utilization(
+                    current_percentages=system_core_percentages, processing_unit_percentages=cpu_utilization.system,
+                    percent_key='cpu_system', n_hardware_units=cpu_utilization.system_core_count)
                 time.sleep(_TrackingProcess._CPU_PERCENT_INTERVAL)
                 main_percentage = main_process.cpu_percent()
                 descendent_percentages = self._map_processes(processes=descendent_processes, map_func=get_cpu_percent)
-                self._update_cpu_utilization(percentages=[main_percentage], attr='main')
-                self._update_cpu_utilization(percentages=descendent_percentages, attr='descendents')
-                self._update_cpu_utilization(percentages=[main_percentage] + descendent_percentages, attr='combined')
+                self._update_processing_unit_utilization(
+                    current_percentages=[main_percentage], processing_unit_percentages=cpu_utilization.main, percent_key='cpu_main',
+                    n_hardware_units=cpu_utilization.n_expected_cores)
+                self._update_processing_unit_utilization(
+                    current_percentages=descendent_percentages, processing_unit_percentages=cpu_utilization.descendents,
+                    percent_key='cpu_descendents', n_hardware_units=cpu_utilization.n_expected_cores)
+                self._update_processing_unit_utilization(
+                    current_percentages=[main_percentage] + descendent_percentages, processing_unit_percentages=cpu_utilization.combined,
+                    percent_key='cpu_combined', n_hardware_units=cpu_utilization.n_expected_cores)
                 # Update compute time.
                 self._resource_usage.compute_time.time = (time.time() - start_time) * self._time_coefficient
                 self._tracking_iteration += 1
@@ -198,28 +245,29 @@ class _TrackingProcess(mproc.Process):
         max_gpu_ram = getattr(self._resource_usage.max_gpu_ram, attr)
         setattr(self._resource_usage.max_gpu_ram, attr, max(max_gpu_ram, curr_gpu_ram))
 
-    def _system_gpu_ram(self, measurement: str) -> float:
-        command = f'nvidia-smi --query-gpu=memory.{measurement} --format=csv,noheader'
+    @staticmethod
+    def _system_gpu_info(fields: str) -> pd.DataFrame:
+        command = f'nvidia-smi --query-gpu={fields}, --format=csv'
         output = subp.check_output(command.split(), stderr=subp.STDOUT).decode()
-        output = output.strip().split('\n')
-        usages = [line.replace('MiB', '').strip() for line in output]
-        ram_sum = sum([int(usage) for usage in usages if usage != ''])
-        return ram_sum * self._gpu_ram_coefficient
+        return pd.DataFrame(io.StringIO(output))
 
-    def _update_cpu_utilization(self, percentages: list[float], attr: str):
-        cpu_percentages: CPUPercentages = getattr(self._resource_usage.cpu_utilization, attr)
+    def _system_gpu_ram(self, gpu_info: pd.DataFrame, measurement: str) -> float:
+        gpu_rams = gpu_info[f'memory.{measurement}']
+        gpu_rams = gpu_rams.apply(lambda ram: int(ram.replace('MiB', '').strip()))
+        return sum(gpu_rams) * self._gpu_ram_coefficient
 
-        def update_percentages(percent: float, percent_type: str, percent_sums: dict[str, float]):
-            percent_sums[attr] += percent
-            mean_percent = percent_sums[attr] / self._tracking_iteration
-            setattr(cpu_percentages, f'mean_{percent_type}_percent', mean_percent)
-            max_percent: float = getattr(cpu_percentages, f'max_{percent_type}_percent')
-            setattr(cpu_percentages, f'max_{percent_type}_percent', max(max_percent, percent))
-
-        core_percent = sum(percentages)
-        cpu_percent = core_percent / self._resource_usage.cpu_utilization.system_core_count
-        update_percentages(percent=core_percent, percent_type='core', percent_sums=self._core_percent_sums)
-        update_percentages(percent=cpu_percent, percent_type='cpu', percent_sums=self._cpu_percent_sums)
+    def _update_processing_unit_utilization(
+            self, current_percentages: list[float], processing_unit_percentages: ProcessingUnitPercentages,
+            percent_key: str, n_hardware_units: int):
+        sum_percent = sum(current_percentages)
+        hardware_percent = sum_percent / n_hardware_units
+        for percent, percent_sums, percent_type in (
+                (sum_percent, self._sum_percent_sums, 'sum'), (hardware_percent, self._hardware_percent_sums, 'hardware')):
+            percent_sums[percent_key] += percent
+            mean_percent = percent_sums[percent_key] / self._tracking_iteration
+            setattr(processing_unit_percentages, f'mean_{percent_type}_percent', mean_percent)
+            max_percent: float = getattr(processing_unit_percentages, f'max_{percent_type}_percent')
+            setattr(processing_unit_percentages, f'max_{percent_type}_percent', max(max_percent, percent))
 
     def _update_n_threads(self, processes: list[psutil.Process], attr: str):
         n_threads_list = self._map_processes(processes, map_func=lambda process: process.num_threads())
@@ -257,12 +305,15 @@ class Tracker:
 
     def __init__(
             self, sleep_time: float = 1.0, ram_unit: str = 'gigabytes', gpu_ram_unit: str = 'gigabytes', time_unit: str = 'hours',
-            disable_logs: bool = False, process_id: int | None = None, n_join_attempts: int = 5, join_timeout: float = 10.0):
+            n_expected_cores: int = None, gpu_uuids: set[str] = None, disable_logs: bool = False, process_id: int = None,  # TODO add example with n_expected_cores and gpu_uuids to tutorial!
+            n_join_attempts: int = 5, join_timeout: float = 10.0):
         """
         :param sleep_time: The number of seconds to sleep in between usage-collection iterations.
         :param ram_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
         :param gpu_ram_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
         :param time_unit: One of 'seconds', 'minutes', 'hours', or 'days'.
+        :param n_expected_cores: The number of cores expected to be used during tracking (e.g. number of processes spawned, number of parallelized threads, etc.). Used as the denominator when calculating the hardware percentages of the CPU utilization (except for system-wide CPU utilization which always divides by all the cores in the system). Defaults to all the cores in the system.
+        :param gpu_uuids: The UUIDs of the GPUs to track utilization for. The length of this set is used as the denominator when calculating the hardware percentages of the GPU utilization (i.e. n_expected_gpus). Defaults to all the GPUs in the system.
         :param disable_logs: If set, warnings are suppressed during tracking. Otherwise, the Tracker logs warnings as usual.
         :param process_id: The ID of the process to track. Defaults to the current process.
         :param n_join_attempts: The number of times the tracker attempts to join its underlying sub-process.
@@ -279,7 +330,7 @@ class Tracker:
         extraneous_ids = {process.pid for process in current_process.children()} - legit_child_ids
         self._resource_usage_file = f'.{uuid.uuid1()}.pkl'
         self._tracking_process = _TrackingProcess(
-            self._stop_event, sleep_time, ram_unit, gpu_ram_unit, time_unit, disable_logs,
+            self._stop_event, sleep_time, ram_unit, gpu_ram_unit, time_unit, n_expected_cores, gpu_uuids, disable_logs,
             process_id if process_id is not None else current_process_id, self._resource_usage_file, extraneous_ids)
         self.resource_usage = None
         self.n_join_attempts = n_join_attempts
@@ -433,23 +484,17 @@ class MaxGPURAM:
     combined: float = 0.
 
 
-class GPUUtilization:
-    system_gpu_count: int
-    max_percent: float = 0
-    mean_percent: float = 0
-
-
 @dclass.dataclass
-class CPUPercentages:
+class ProcessingUnitPercentages:
     """
-    Utilization percentages of a core or specified group of cores (e.g. all the cores in the system, cores allocated by a job manager, the cores used by workers in a task, etc.).
+    Utilization percentages of one or more processing units (i.e. GPUs or CPU cores).
     Max refers to the highest value measured over a duration of time.
     Mean refers to the average of the measured values during this time.
-    Sum refers to the sum of the percentages of the core(s) involved.
-    Hardware refers to this sum divided by the number of cores involved.
+    Sum refers to the sum of the percentages of the processing units involved. If there is only one unit in question, this is the percentage of just that unit.
+    Hardware refers to this sum divided by the number of units involved. If there is only one unit in question, this is the same as the sum.
 
-    :param max_sum_percent: The maximum sum of utilization percentages of the core(s) used by the process(es) at any given time.
-    :param max_hardware_percent: The maximum utilization percentage of the core(s) as a whole (i.e. max_sum_percent divided by the number of cores involved).
+    :param max_sum_percent: The maximum sum of utilization percentages of the processing units at any given time.
+    :param max_hardware_percent: The maximum utilization percentage of the group of units as a whole (i.e. max_sum_percent divided by the number of units involved).
     :param mean_sum_percent: The mean sum of utilization percentages of the core(s) used by the process(es) over time.
     :param mean_hardware_percent: The mean utilization percentage of the core(s) as a whole (i.e. mean_sum_percent divided by the number of cores involved).
     """
@@ -462,28 +507,50 @@ class CPUPercentages:
 @dclass.dataclass
 class CPUUtilization:
     """
-    :param system_core_count: The number of cores available to the operating system.
-    :param system: The core and CPU utilization percentages of the entire system.
-    :param main: The core and CPU utilization percentages of the main process.
-    :param descendents: The core and CPU utilization percentages summed across descendent processes (i.e. child processes, grandchild processes, etc.).
-    :param combined: The core and CPU utilization percentages summed across both the descendent processes and the main process.
+    Information related to CPU usage, including core utilization percentages of the main process and any descendent processes it may have as well as system-wide utilization.
+    The system hardware utilization percentages are strictly divided by the total number of cores in the system while that of the main, descendent, and combined processes can be divided by the expected number of cores used in a task.
+
+    :param system_core_count: The number of cores available to the entire operating system.
+    :param n_expected_cores: The number of cores expected to be used by the main process and/or any descendent processes it may have.
+    :param system: The utilization percentages of all the cores in the entire operating system.
+    :param main: The utilization percentages of the cores used by the main process.
+    :param descendents: The utilization percentages summed across descendent processes (i.e. child processes, grandchild processes, etc.).
+    :param combined: The utilization percentages summed across both the descendent processes and the main process.
     :param main_n_threads: The maximum detected number of threads used by the main process at any time.
     :param descendents_n_threads: The maximum sum of threads used across the descendent processes at any time.
     :param combined_n_threads: The maximum sum of threads used by both the main and descendent processes.
     """
     system_core_count: int
-    system: CPUPercentages = dclass.field(default_factory=CPUPercentages)
-    main: CPUPercentages = dclass.field(default_factory=CPUPercentages)
-    descendents: CPUPercentages = dclass.field(default_factory=CPUPercentages)
-    combined: CPUPercentages = dclass.field(default_factory=CPUPercentages)
+    n_expected_cores: int
+    system: ProcessingUnitPercentages = dclass.field(default_factory=ProcessingUnitPercentages)
+    main: ProcessingUnitPercentages = dclass.field(default_factory=ProcessingUnitPercentages)
+    descendents: ProcessingUnitPercentages = dclass.field(default_factory=ProcessingUnitPercentages)
+    combined: ProcessingUnitPercentages = dclass.field(default_factory=ProcessingUnitPercentages)
     main_n_threads: int = 0
     descendents_n_threads: int = 0
     combined_n_threads: int = 0
 
 
 @dclass.dataclass
+class GPUUtilization:
+    """
+    Utilization percentages of one or more GPUs being tracked.
+    Hardware percentages are the summed percentages divided by the number of GPUs being tracked.
+
+    :param system_gpu_count: The number of GPUs in the system.
+    :param n_expected_gpus: The number of GPUs to be tracked (e.g. GPUs actually used while there may be other GPUs in the system).
+    :param gpu_percentages: The utilization percentages of the GPU(s) being tracked.
+    """
+    system_gpu_count: int
+    n_expected_gpus: int
+    gpu_percentages: ProcessingUnitPercentages = dclass.field(default_factory=ProcessingUnitPercentages)
+
+
+@dclass.dataclass
 class ComputeTime:
     """
+    The time it takes for a task to complete.
+
     :param unit: The unit of measurement for compute time e.g. hours.
     :param time: The real compute time.
     """
@@ -498,10 +565,12 @@ class ResourceUsage:
 
     :param max_ram: The maximum RAM used at any point while tracking.
     :param max_gpu_ram: The maximum GPU RAM used at any point while tracking.
-    :param cpu_utilization: The core and CPU utilization and maximum number of threads used while tracking.
+    :param cpu_utilization: Core counts, utilization percentages of cores and maximum number of threads used while tracking.
+    :param gpu_utilization: GPU counts and utilization percentages of the GPU(s).
     :param compute_time: The real time spent tracking.
     """
     max_ram: MaxRAM
     max_gpu_ram: MaxGPURAM
     cpu_utilization: CPUUtilization
+    gpu_utilization: GPUUtilization
     compute_time: ComputeTime
