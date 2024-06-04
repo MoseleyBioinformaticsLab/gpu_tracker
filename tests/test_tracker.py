@@ -19,15 +19,17 @@ def multiply_list(_list: list, multiple=2) -> list:
 
 
 test_tracker_data = [
-    ('bytes', 'megabytes', 'seconds'),
-    ('kilobytes', 'gigabytes', 'minutes'),
-    ('megabytes', 'kilobytes', 'hours'),
-    ('kilobytes', 'bytes', 'days')
+    ('bytes', 'megabytes', 'seconds', None, 3),
+    ('kilobytes', 'gigabytes', 'minutes', {'gpu-id1'}, 2),
+    ('megabytes', 'kilobytes', 'hours', {'gpu-id1', 'gpu-id2'}, 1),
+    ('kilobytes', 'bytes', 'days', {'gpu-id1', 'gpu-id2', 'gpu-id3'}, None)
 ]
 
 
-@pt.mark.parametrize('ram_unit,gpu_ram_unit,time_unit', test_tracker_data)
-def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_unit: str, gpu_ram_unit: str, time_unit: str):
+@pt.mark.parametrize('ram_unit,gpu_ram_unit,time_unit,gpu_uuids,n_expected_cores', test_tracker_data)
+def test_tracker(
+        mocker, use_context_manager: bool, operating_system: str, ram_unit: str, gpu_ram_unit: str, time_unit: str, gpu_uuids: set[str],
+        n_expected_cores: int):
     class EventMock:
         def __init__(self):
             self.count = 0
@@ -126,13 +128,13 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
             mocker.MagicMock(used=29 * 1e9)])
     nvidia_smi_outputs = [
         b'',
-        b'12198 MiB\n12198 MiB',
-        b'',
-        b'',
-        b'12,1600 MiB\n21,700 MiB\n22,200 MiB',
-        b'1600 MiB\n900 MiB',
-        b'12,1500 MiB\n21,2100 MiB\n22,2200 MiB',
-        b'1500 MiB\n4300 MiB']
+        b' uuid,memory.total [MiB]\ngpu-id1,12198 MiB\ngpu-id2,12198 MiB\ngpu-id3 , 12198MiB',
+        b'pid, used_gpu_memory [MiB]\n',
+        b'uuid, memory.used [MiB], utilization.gpu [%]\ngpu-id1, 0 MiB, 0 %\ngpu-id2 , 0 MiB, 0 %\ngpu-id3 , 0 MiB, 0 %',
+        b'pid, used_gpu_memory [MiB]\n12,1600 MiB\n21,700 MiB\n22,200 MiB',
+        b'uuid, memory.used [MiB], utilization.gpu [%]\ngpu-id1, 1600 MiB,75 %\ngpu-id2,900 MiB , 50 %\n gpu-id3, 500 MiB, 25 %',
+        b'pid, used_gpu_memory [MiB]\n12,1500 MiB\n21,2100 MiB\n22,2200 MiB',
+        b'uuid, memory.used [MiB], utilization.gpu [%]\ngpu-id1, 1500 MiB, 55 %\n gpu-id2, 4300 MiB, 45%\ngpu-id3,700MiB,35%']
     check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=nvidia_smi_outputs)
     cpu_count_mock = mocker.patch('gpu_tracker.tracker.psutil.cpu_count', return_value=4)
     cpu_percent_mock = mocker.patch(
@@ -146,11 +148,12 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
     if use_context_manager:
         with gput.Tracker(
                 sleep_time=sleep_time, join_timeout=join_timeout, ram_unit=ram_unit, gpu_ram_unit=gpu_ram_unit,
-                time_unit=time_unit) as tracker:
+                time_unit=time_unit, gpu_uuids=gpu_uuids, n_expected_cores=n_expected_cores) as tracker:
             pass
     else:
         tracker = gput.Tracker(
-            sleep_time=sleep_time, join_timeout=join_timeout, ram_unit=ram_unit, gpu_ram_unit=gpu_ram_unit, time_unit=time_unit)
+            sleep_time=sleep_time, join_timeout=join_timeout, ram_unit=ram_unit, gpu_ram_unit=gpu_ram_unit, time_unit=time_unit,
+            gpu_uuids=gpu_uuids, n_expected_cores=n_expected_cores)
         tracker.start()
         tracker.stop()
     assert start_mock.called
@@ -233,13 +236,24 @@ def test_warnings(mocker, caplog):
     assert not os.path.isfile(tracker._resource_usage_file)
 
 
-def test_validate_unit():
+def test_validate_arguments(mocker):
     with pt.raises(ValueError) as error:
         gput.Tracker(sleep_time=0.0)
     assert str(error.value) == 'Sleep time of 0.0 is invalid. Must be at least 0.1 seconds.'
     with pt.raises(ValueError) as error:
         gput.Tracker(ram_unit='milibytes')
     assert str(error.value) == '"milibytes" is not a valid RAM unit. Valid values are bytes, gigabytes, kilobytes, megabytes, terabytes'
+    subprocess_mock = mocker.patch(
+        'gpu_tracker.tracker.subp', check_output=mocker.MagicMock(
+            side_effect=[b'', b'uuid ,memory.total [MiB] \ngpu-id1,2048 MiB\ngpu-id2,2048 MiB', b'', b'uuid ,memory.total [MiB] ']))
+    with pt.raises(ValueError) as error:
+        gput.Tracker(gpu_uuids={'invalid-id'})
+    assert len(subprocess_mock.check_output.call_args_list) == 2
+    assert str(error.value) == 'GPU UUID of invalid-id is not valid. Available UUIDs are: gpu-id1, gpu-id2'
+    with pt.raises(ValueError) as error:
+        gput.Tracker(gpu_uuids=set[str]())
+    assert len(subprocess_mock.check_output.call_args_list) == 4
+    assert str(error.value) == 'gpu_uuids is not None but the set is empty. Please provide a set of at least one GPU UUID.'
 
 
 def test_state(mocker):

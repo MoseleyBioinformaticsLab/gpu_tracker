@@ -77,8 +77,8 @@ class _TrackingProcess(mproc.Process):
             system_core_count=system_core_count,
             n_expected_cores=n_expected_cores if n_expected_cores is not None else system_core_count)
         if self._nvidia_available:
-            gpu_info = _TrackingProcess._system_gpu_info(fields='uuid,memory.total')
-            gpu_ram_system_capacity = self._system_gpu_ram(gpu_info=gpu_info, measurement='total')
+            gpu_info = _TrackingProcess._query_gpu(nvidia_command='--query-gpu=uuid,memory.total')
+            gpu_ram_system_capacity = self._get_gpu_ram(gpu_info=gpu_info, column='memory.total')
             max_gpu_ram = MaxGPURAM(unit=gpu_ram_unit, system_capacity=gpu_ram_system_capacity)
             all_uuids = set(gpu_info['uuid'])
             if gpu_uuids is None:
@@ -88,7 +88,7 @@ class _TrackingProcess(mproc.Process):
                     raise ValueError('gpu_uuids is not None but the set is empty. Please provide a set of at least one GPU UUID.')
                 for gpu_uuid in gpu_uuids:
                     if gpu_uuid not in all_uuids:
-                        raise ValueError(f'GPU UUID of {gpu_uuid} is not valid. Available UUIDs are: {", ".join(all_uuids)}')
+                        raise ValueError(f'GPU UUID of {gpu_uuid} is not valid. Available UUIDs are: {", ".join(sorted(all_uuids))}')
                 self._gpu_uuids = gpu_uuids
             gpu_utilization = GPUUtilization(system_gpu_count=len(all_uuids), n_expected_gpus=len(self._gpu_uuids))
         else:
@@ -137,24 +137,19 @@ class _TrackingProcess(mproc.Process):
                     self._resource_usage.max_ram.system, psutil.virtual_memory().used * self._ram_coefficient)
                 # Get the maximum GPU RAM usage if available.
                 if self._nvidia_available:
-                    memory_used_command = 'nvidia-smi --query-compute-apps=pid,used_gpu_memory --format=csv,noheader'
-                    nvidia_smi_output = subp.check_output(memory_used_command.split(), stderr=subp.STDOUT).decode()
-                    if nvidia_smi_output:
+                    gpu_info = _TrackingProcess._query_gpu(nvidia_command='--query-compute-apps=pid,used_gpu_memory')
+                    if len(gpu_info):
                         process_ids = {self._main_process_id}
-                        self._update_gpu_ram(attr='main', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
-                        process_ids = {
-                            process_id for process_id in self._map_processes(
-                                processes=descendent_processes, map_func=lambda process: process.pid)}
-                        self._update_gpu_ram(attr='descendents', process_ids=process_ids,
-                                             nvidia_smi_output=nvidia_smi_output)
+                        self._update_gpu_ram(attr='main', process_ids=process_ids, gpu_info=gpu_info)
+                        process_ids = set(self._map_processes(processes=descendent_processes, map_func=lambda process: process.pid))
+                        self._update_gpu_ram(attr='descendents', process_ids=process_ids, gpu_info=gpu_info)
                         process_ids.add(self._main_process_id)
-                        self._update_gpu_ram(attr='combined', process_ids=process_ids, nvidia_smi_output=nvidia_smi_output)
-
-                    gpu_info = _TrackingProcess._system_gpu_info(fields='uuid,memory.used,utilization.gpu')
-                    system_gpu_ram = self._system_gpu_ram(gpu_info, measurement='used')
+                        self._update_gpu_ram(attr='combined', process_ids=process_ids, gpu_info=gpu_info)
+                    gpu_info = _TrackingProcess._query_gpu(nvidia_command='--query-gpu=uuid,memory.used,utilization.gpu')
+                    system_gpu_ram = self._get_gpu_ram(gpu_info, column='memory.used')
                     self._resource_usage.max_gpu_ram.system = max(self._resource_usage.max_gpu_ram.system, system_gpu_ram)
                     gpu_info = gpu_info.loc[gpu_info['uuid'].apply(lambda gpu_uuid: gpu_uuid in self._gpu_uuids)]
-                    gpu_percentages = [float(percentage) for percentage in gpu_info['utilization.gpu']]
+                    gpu_percentages = [float(percentage.replace('%', '').strip()) for percentage in gpu_info['utilization.gpu']]
                     self._update_processing_unit_utilization(
                         current_percentages=gpu_percentages,
                         processing_unit_percentages=self._resource_usage.gpu_utilization.gpu_percentages, percent_key='gpu',
@@ -227,27 +222,22 @@ class _TrackingProcess(mproc.Process):
             total_rss *= self._ram_coefficient
         rss_values.total_rss = max(rss_values.total_rss, total_rss)
 
-    def _update_gpu_ram(self, attr: str, process_ids: set[int], nvidia_smi_output: str):
-        nvidia_smi_output = nvidia_smi_output.strip().split('\n')
-        curr_gpu_ram = 0
-        for process_info in nvidia_smi_output:
-            pid, megabytes_used = process_info.strip().split(',')
-            pid = int(pid.strip())
-            if pid in process_ids:
-                megabytes_used = int(megabytes_used.replace('MiB', '').strip())
-                curr_gpu_ram += megabytes_used
-        curr_gpu_ram *= self._gpu_ram_coefficient
+    def _update_gpu_ram(self, attr: str, process_ids: set[int], gpu_info: pd.DataFrame):
+        gpu_info = gpu_info.loc[[pid in process_ids for pid in gpu_info['pid']]]
+        gpu_ram = self._get_gpu_ram(gpu_info, column='used_gpu_memory')
         max_gpu_ram = getattr(self._resource_usage.max_gpu_ram, attr)
-        setattr(self._resource_usage.max_gpu_ram, attr, max(max_gpu_ram, curr_gpu_ram))
+        setattr(self._resource_usage.max_gpu_ram, attr, max(max_gpu_ram, gpu_ram))
 
     @staticmethod
-    def _system_gpu_info(fields: str) -> pd.DataFrame:
-        command = f'nvidia-smi --query-gpu={fields}, --format=csv'
+    def _query_gpu(nvidia_command: str) -> pd.DataFrame:
+        command = f'nvidia-smi {nvidia_command} --format=csv'
         output = subp.check_output(command.split(), stderr=subp.STDOUT).decode()
-        return pd.DataFrame(io.StringIO(output))
+        gpu_info = pd.read_csv(io.StringIO(output))
+        gpu_info.columns = [col.replace('[MiB]', '').replace('[%]', '').strip() for col in gpu_info.columns]
+        return gpu_info.applymap(lambda value: value.strip() if type(value) is str else value)
 
-    def _system_gpu_ram(self, gpu_info: pd.DataFrame, measurement: str) -> float:
-        gpu_rams = gpu_info[f'memory.{measurement}']
+    def _get_gpu_ram(self, gpu_info: pd.DataFrame, column: str) -> float:
+        gpu_rams = gpu_info[column]
         gpu_rams = gpu_rams.apply(lambda ram: int(ram.replace('MiB', '').strip()))
         return sum(gpu_rams) * self._gpu_ram_coefficient
 
@@ -323,7 +313,7 @@ class Tracker:
         legit_child_ids = {process.pid for process in current_process.children()}
         self._stop_event = mproc.Event()
         extraneous_ids = {process.pid for process in current_process.children()} - legit_child_ids
-        self._resource_usage_file = f'.{uuid.uuid1()}.pkl'
+        self._resource_usage_file = f'.gpu-tracker_{uuid.uuid1()}.pkl'
         self._tracking_process = _TrackingProcess(
             self._stop_event, sleep_time, ram_unit, gpu_ram_unit, time_unit, n_expected_cores, gpu_uuids, disable_logs,
             process_id if process_id is not None else current_process_id, self._resource_usage_file, extraneous_ids)
