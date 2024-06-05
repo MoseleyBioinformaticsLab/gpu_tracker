@@ -64,7 +64,8 @@ def main():
     elif output_format == 'text':
         output_str = str(tracker)
     else:
-        raise ValueError(f'"{output_format} is not a valid format. Valid values are "json" or "text".')
+        log.error(f'"{output_format}" is not a valid format. Valid values are "json" or "text".')
+        sys.exit(1)
     if output is None:
         print(output_str)
     else:

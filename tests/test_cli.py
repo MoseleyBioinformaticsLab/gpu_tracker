@@ -5,12 +5,12 @@ import utils
 
 
 @pt.fixture(name='format_', params=['text', 'json', None])
-def get_format(request) -> str:
+def get_format(request) -> str | None:
     yield request.param
 
 
 @pt.fixture(name='output', params=['my-file', None])
-def get_output(request) -> str:
+def get_output(request) -> str | None:
     yield request.param
 
 
@@ -56,3 +56,28 @@ def test_main(mocker, argv: list[str], command: list[str], kwargs: dict, format_
             assert output_str == file.read()
         os.remove(output)
     utils.assert_args_list(print_mock, print_args)
+
+
+error_data = [
+    (['-e '], 'Empty command provided.'), (['-e', 'my-command'], 'Command not found: "my-command"'),
+    (['-e', 'my-command'], f'The following error occurred when starting the command "my-command":'),
+    (['-e', 'my-command', '-f', 'invalid-format'], '"invalid-format" is not a valid format. Valid values are "json" or "text".')]
+
+
+@pt.mark.parametrize('argv,error_message', error_data)
+def test_errors(mocker, argv: list[str], error_message: str):
+    argv = ['gpu-tracker'] + argv
+    mocker.patch('sys.argv', argv)
+    if 'Command not found' in error_message:
+        popen_side_effect = FileNotFoundError
+    elif 'The following error occurred' in error_message:
+        popen_side_effect = Exception
+    else:
+        popen_side_effect = mocker.MagicMock()
+    mocker.patch('gpu_tracker.__main__.subp.Popen', side_effect=popen_side_effect)
+    log_mock = mocker.patch('gpu_tracker.__main__.log', error=mocker.MagicMock())
+    mocker.patch('gpu_tracker.__main__.Tracker')
+    with pt.raises(SystemExit) as error:
+        cli.main()
+    assert str(error.value) == '1'
+    log_mock.error.assert_called_once_with(error_message)

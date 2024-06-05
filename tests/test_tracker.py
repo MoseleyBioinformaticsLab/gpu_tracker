@@ -1,8 +1,12 @@
 import gpu_tracker as gput
+import psutil
 import json
 import os
 import pytest as pt
 import utils
+
+nvidia_smi_unavailable_message = 'The nvidia-smi command is not available. Please install the Nvidia drivers to track GPU usage. ' \
+                                 'Otherwise the Max GPU RAM values will remain 0.0'
 
 
 @pt.fixture(name='operating_system', params=['Linux', 'not-linux'])
@@ -198,7 +202,7 @@ def test_tracker(
         assert expected_measurements == tracker.to_json()
 
 
-def test_warnings(mocker, caplog):
+def test_main_process_warnings(mocker, caplog):
     n_join_attempts = 3
     join_timeout = 5.2
     subprocess_mock = mocker.patch('gpu_tracker.tracker.subp', check_output=mocker.MagicMock(side_effect=FileNotFoundError))
@@ -217,19 +221,62 @@ def test_warnings(mocker, caplog):
     utils.assert_args_list(mock=tracker._tracking_process.is_alive, expected_args_list=[()] * (n_join_attempts + 1))
     terminate_spy.assert_called_once()
     close_spy.assert_called_once()
-    expected_warnings = [
-        'The nvidia-smi command is not available. Please install the Nvidia drivers to track GPU usage. '
-        'Otherwise the Max GPU RAM values will remain 0.0']
+    expected_warnings = [nvidia_smi_unavailable_message]
     expected_warnings += ['The tracking process is still alive after join timout. Attempting to join again...'] * n_join_attempts
     expected_warnings.append(
         'The tracking process is still alive after 3 attempts to join. Terminating the process by force...')
     expected_warnings.append(
         'Tracking is stopping and it has been 11.0 seconds since the temporary tracking results file was last updated. '
         'Resource usage was not updated during that time.')
+    assert not os.path.isfile(tracker._resource_usage_file)
+    _assert_warnings(caplog, expected_warnings)
+
+
+def _assert_warnings(caplog, expected_warnings: list[str]):
     for expected_warning, record in zip(expected_warnings, caplog.records):
         assert record.levelname == 'WARNING'
         assert record.message == expected_warning
-    assert not os.path.isfile(tracker._resource_usage_file)
+
+
+@pt.fixture(name='disable_logs', params=[True, False])
+def get_disable_logs(request) -> bool:
+    yield request.param
+
+
+def test_tracking_process_warnings(mocker, disable_logs: bool, caplog):
+    main_process_id = 666
+    child_process_id = 777
+    error_message = 'Unexpected error'
+    ProcessMock = mocker.patch(
+        'gpu_tracker.tracker.psutil.Process',
+        side_effect=[
+            mocker.MagicMock(), psutil.NoSuchProcess(pid=666), mocker.MagicMock(),
+            mocker.MagicMock(children=mocker.MagicMock(
+                side_effect=[psutil.NoSuchProcess(child_process_id), RuntimeError(error_message)]))])
+    subprocess_mock = mocker.patch('gpu_tracker.tracker.subp', check_output=mocker.MagicMock(side_effect=FileNotFoundError))
+    log_spy = mocker.spy(gput.tracker.log, 'warning')
+    tracker = gput.Tracker(process_id=main_process_id, disable_logs=disable_logs)
+    tracker._tracking_process.run()
+    os.remove(tracker._resource_usage_file)
+    mocker.patch(
+        'gpu_tracker.tracker.mproc.Event', return_value=mocker.MagicMock(is_set=mocker.MagicMock(side_effect=[False, False, True])))
+    print_mock = mocker.patch('builtins.print')
+    tracker = gput.Tracker(process_id=main_process_id, disable_logs=disable_logs)
+    tracker._tracking_process.run()
+    os.remove(tracker._resource_usage_file)
+    utils.assert_args_list(ProcessMock, [(os.getpid(),), (main_process_id,), (os.getpid(),), (main_process_id,)])
+    [printed] = print_mock.call_args_list
+    [printed] = printed.args
+    assert error_message == str(printed)
+    assert len(subprocess_mock.check_output.call_args_list) == 2
+    if disable_logs:
+        assert not log_spy.called
+    else:
+        expected_warnings = [
+            nvidia_smi_unavailable_message, 'The target process of ID 666 ended before tracking could begin.', nvidia_smi_unavailable_message,
+            'Failed to track a process (PID: 777) that does not exist. This possibly resulted from the process completing before it could be tracked.',
+            'The following uncaught exception occurred in the tracking process:']
+        _assert_warnings(caplog, expected_warnings)
 
 
 def test_validate_arguments(mocker):

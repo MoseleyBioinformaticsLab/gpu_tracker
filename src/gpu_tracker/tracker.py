@@ -136,7 +136,7 @@ class _TrackingProcess(mproc.Process):
                 self._resource_usage.max_ram.system = max(
                     self._resource_usage.max_ram.system, psutil.virtual_memory().used * self._ram_coefficient)
                 # Get the maximum GPU RAM usage if available.
-                if self._nvidia_available:
+                if self._nvidia_available:  # pragma: nocover
                     gpu_info = _TrackingProcess._query_gpu(nvidia_command='--query-compute-apps=pid,used_gpu_memory')
                     if len(gpu_info):
                         process_ids = {self._main_process_id}
@@ -193,8 +193,8 @@ class _TrackingProcess(mproc.Process):
         for process in processes:
             try:
                 mapped_list.append(map_func(process))
-            except psutil.NoSuchProcess:
-                self._log_warning('Attempted to obtain usage information of a process that no longer exists.')
+            except psutil.NoSuchProcess:  # pragma: nocover
+                self._log_warning('Attempted to obtain usage information of a process that no longer exists.')  # pragma: nocover
         return mapped_list
 
     def _update_ram(self, rss_values: RSSValues, processes: list[psutil.Process]):
@@ -364,7 +364,7 @@ class Tracker:
                     f'last updated. Resource usage was not updated during that time.')
             os.remove(self._resource_usage_file)
         else:
-            raise RuntimeError('The temporary tracking results file does not exist. Tracking results cannot be obtained.')
+            raise RuntimeError('The temporary tracking results file does not exist. Tracking results cannot be obtained.')  # pragma: nocover
         self.state = Tracker.State.STOPPED
 
     def start(self):
