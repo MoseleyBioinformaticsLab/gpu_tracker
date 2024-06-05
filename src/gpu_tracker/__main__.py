@@ -29,8 +29,7 @@ from . import __version__
 
 def main():
     args = doc.docopt(__doc__, version=__version__)
-    print(args['--execute'])
-    command = args['--execute'].split(' ')
+    command = args['--execute'].split()
     output = args['--output']
     output_format = args['--format'] if args['--format'] is not None else 'text'
     option_map = {
@@ -45,6 +44,9 @@ def main():
             '--execute', '--output', '--format', '--help', '--version'}}
     if 'sleep_time' in kwargs.keys():
         kwargs['sleep_time'] = float(kwargs['sleep_time'])
+    if len(command) == 0:
+        log.error('Empty command provided.')
+        sys.exit(1)
     try:
         process = subp.Popen(command)
     except FileNotFoundError:

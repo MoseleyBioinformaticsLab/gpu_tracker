@@ -2,6 +2,7 @@ import gpu_tracker as gput
 import json
 import os
 import pytest as pt
+import utils
 
 
 @pt.fixture(name='operating_system', params=['Linux', 'not-linux'])
@@ -159,35 +160,35 @@ def test_tracker(
     assert start_mock.called
     assert not os.path.isfile(tracker._resource_usage_file)
     assert not log_spy.called
-    _assert_args_list(virtual_memory_mock, [()] * 4)
+    utils.assert_args_list(virtual_memory_mock, [()] * 4)
     system_mock.assert_called_once_with()
     EventMock.assert_called_once_with()
-    _assert_args_list(mock=tracker._stop_event.is_set, expected_args_list=[()] * 4)
-    _assert_args_list(mock=PsProcessMock, expected_args_list=[(main_process_id,)] * 2)
-    _assert_args_list(current_process_mock.children, [()] * 2)
-    _assert_args_list(mock=main_process_mock.children, expected_args_list=[{'recursive': True}] * 3, use_kwargs=True)
+    utils.assert_args_list(mock=tracker._stop_event.is_set, expected_args_list=[()] * 4)
+    utils.assert_args_list(mock=PsProcessMock, expected_args_list=[(main_process_id,)] * 2)
+    utils.assert_args_list(current_process_mock.children, [()] * 2)
+    utils.assert_args_list(mock=main_process_mock.children, expected_args_list=[{'recursive': True}] * 3, use_kwargs=True)
     if operating_system == 'Linux':
-        _assert_args_list(mock=main_process_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
-        _assert_args_list(mock=child1_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
-        _assert_args_list(mock=child2_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
+        utils.assert_args_list(mock=main_process_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
+        utils.assert_args_list(mock=child1_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
+        utils.assert_args_list(mock=child2_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
     else:
-        _assert_args_list(mock=main_process_mock.memory_info, expected_args_list=[()] * 6)
-        _assert_args_list(mock=child1_mock.memory_info, expected_args_list=[()] * 6)
-        _assert_args_list(mock=child2_mock.memory_info, expected_args_list=[()] * 6)
+        utils.assert_args_list(mock=main_process_mock.memory_info, expected_args_list=[()] * 6)
+        utils.assert_args_list(mock=child1_mock.memory_info, expected_args_list=[()] * 6)
+        utils.assert_args_list(mock=child2_mock.memory_info, expected_args_list=[()] * 6)
     assert len(check_output_mock.call_args_list) == 8
     os_mock.getpid.assert_called_once_with()
-    _assert_args_list(mock=time_mock.time, expected_args_list=[()] * 5)
+    utils.assert_args_list(mock=time_mock.time, expected_args_list=[()] * 5)
     cpu_percent_interval = gput.tracker._TrackingProcess._CPU_PERCENT_INTERVAL
     true_sleep_time = sleep_time - cpu_percent_interval
-    _assert_args_list(
+    utils.assert_args_list(
         mock=time_mock.sleep, expected_args_list=[(cpu_percent_interval,), (true_sleep_time,)] * 3)
     tracker._stop_event.set.assert_called_once_with()
     tracker._tracking_process.join.assert_called_once_with(timeout=join_timeout)
-    _assert_args_list(mock=tracker._tracking_process.is_alive, expected_args_list=[()] * 2)
+    utils.assert_args_list(mock=tracker._tracking_process.is_alive, expected_args_list=[()] * 2)
     assert not tracker._tracking_process.terminate.called
     tracker._tracking_process.close.assert_called_once_with()
     cpu_count_mock.assert_called_once_with()
-    _assert_args_list(cpu_percent_mock, [()] * 3)
+    utils.assert_args_list(cpu_percent_mock, [()] * 3)
     expected_measurements_file = f'tests/data/{use_context_manager}-{operating_system}-{ram_unit}-{gpu_ram_unit}-{time_unit}'
     with open(f'{expected_measurements_file}.txt', 'r') as file:
         expected_tracker_str = file.read()
@@ -195,11 +196,6 @@ def test_tracker(
     with open(f'{expected_measurements_file}.json', 'r') as file:
         expected_measurements = json.load(file)
         assert expected_measurements == tracker.to_json()
-
-
-def _assert_args_list(mock, expected_args_list: list[tuple | dict], use_kwargs: bool = False):
-    actual_args_list = [call.kwargs if use_kwargs else call.args for call in mock.call_args_list]
-    assert actual_args_list == expected_args_list
 
 
 def test_warnings(mocker, caplog):
@@ -215,10 +211,10 @@ def test_warnings(mocker, caplog):
     with gput.Tracker(n_join_attempts=n_join_attempts, join_timeout=join_timeout) as tracker:
         set_spy = mocker.spy(tracker._stop_event, 'set')
     subprocess_mock.check_output.assert_called_once()
-    _assert_args_list(mock=set_spy, expected_args_list=[()] * n_join_attempts)
-    _assert_args_list(
+    utils.assert_args_list(mock=set_spy, expected_args_list=[()] * n_join_attempts)
+    utils.assert_args_list(
         mock=join_spy, expected_args_list=[{'timeout': join_timeout}] * n_join_attempts, use_kwargs=True)
-    _assert_args_list(mock=tracker._tracking_process.is_alive, expected_args_list=[()] * (n_join_attempts + 1))
+    utils.assert_args_list(mock=tracker._tracking_process.is_alive, expected_args_list=[()] * (n_join_attempts + 1))
     terminate_spy.assert_called_once()
     close_spy.assert_called_once()
     expected_warnings = [

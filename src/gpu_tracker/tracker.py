@@ -234,7 +234,7 @@ class _TrackingProcess(mproc.Process):
         output = subp.check_output(command.split(), stderr=subp.STDOUT).decode()
         gpu_info = pd.read_csv(io.StringIO(output))
         gpu_info.columns = [col.replace('[MiB]', '').replace('[%]', '').strip() for col in gpu_info.columns]
-        return gpu_info.applymap(lambda value: value.strip() if type(value) is str else value)
+        return gpu_info.map(lambda value: value.strip() if type(value) is str else value)
 
     def _get_gpu_ram(self, gpu_info: pd.DataFrame, column: str) -> float:
         gpu_rams = gpu_info[column]
