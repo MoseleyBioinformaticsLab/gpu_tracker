@@ -480,8 +480,8 @@ class ProcessingUnitPercentages:
 
     :param max_sum_percent: The maximum sum of utilization percentages of the processing units at any given time.
     :param max_hardware_percent: The maximum utilization percentage of the group of units as a whole (i.e. max_sum_percent divided by the number of units involved).
-    :param mean_sum_percent: The mean sum of utilization percentages of the core(s) used by the process(es) over time.
-    :param mean_hardware_percent: The mean utilization percentage of the core(s) as a whole (i.e. mean_sum_percent divided by the number of cores involved).
+    :param mean_sum_percent: The mean sum of utilization percentages of the processing units used by the process(es) over time.
+    :param mean_hardware_percent: The mean utilization percentage of the group of units as a whole (i.e. mean_sum_percent divided by the number of units involved).
     """
     max_sum_percent: float = 0.
     max_hardware_percent: float = 0.

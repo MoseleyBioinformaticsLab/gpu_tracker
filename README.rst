@@ -3,7 +3,7 @@ gpu_tracker
 ###########
 Description
 -----------
-The ``gpu_tracker`` package provides a ``Tracker`` class and a commandline-interface that tracks (profiles) the usage of compute time, CPU utilization, maximum RAM, and maximum GPU RAM.
+The ``gpu_tracker`` package provides a ``Tracker`` class and a commandline-interface that tracks (profiles) the usage of compute time, CPU utilization, maximum RAM, GPU utilization, and maximum GPU RAM.
 The compute time is a measurement of the real time taken by the task as opposed to the CPU-utilization time.
 The GPU tracking is for Nvidia GPUs and uses the ``nvidia-smi`` command. If the Nvidia drivers have not been installed, then the max GPU RAM is not tracked and measurements are reported as 0.
 Computational resources are tracked throughout the duration of a context manager or the duration of explicit calls to the ``start()`` and ``stop()`` methods of the ``Tracker`` class.

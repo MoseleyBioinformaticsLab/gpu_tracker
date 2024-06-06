@@ -20,8 +20,11 @@ test_data = [
     (['--execute=my-command arg1  arg2', '--st=0.4'], ['my-command', 'arg1', 'arg2'], {'disable_logs': False, 'sleep_time': 0.4}),
     (
         ['-e', 'my-command', '--gru=megabytes', '--tu=days'], ['my-command'],
-        {'disable_logs': False, 'gpu_ram_unit': 'megabytes', 'time_unit': 'days'}
-    )]
+        {'disable_logs': False, 'gpu_ram_unit': 'megabytes', 'time_unit': 'days'}),
+    (
+        ['-e', 'my-command', '--nec=3', '--guuids=gpu-id1,gpu-id2,gpu-id3'], ['my-command'],
+        {'disable_logs': False, 'n_expected_cores': 3, 'gpu_uuids': {'gpu-id1', 'gpu-id2', 'gpu-id3'}}),
+    (['-e', 'my-command', '--guuids=gpu-id1'], ['my-command'], {'disable_logs': False, 'gpu_uuids': {'gpu-id1'}})]
 
 
 @pt.mark.parametrize('argv,command,kwargs', test_data)
