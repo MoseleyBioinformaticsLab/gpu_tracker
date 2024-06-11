@@ -148,7 +148,7 @@ processes and combined.
 The GPU utilization is similar to the CPU utilization but rather than
 being based on utilization of processes, it can only measure the
 utilization percentages of the GPUs themselves, regardless of what
-processes are using them. To ameliorate this limiation, the optional
+processes are using them. To ameliorate this limitation, the optional
 ``gpu_uuids`` parameter can be set to specify which GPUs to measure
 utilization for (defaults to all the GPUs in the system). The system GPU
 count is the total number of GPUs in the system. The sum percent is the
