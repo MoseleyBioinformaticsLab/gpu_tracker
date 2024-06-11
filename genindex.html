@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; gpu_tracker 0.21 documentation</title>
+  <title>Index &mdash; gpu_tracker 3.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=a53c679b"></script>
+        <script src="_static/documentation_options.js?v=acc74ff5"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -34,7 +34,7 @@
             gpu_tracker
           </a>
               <div class="version">
-                0.21
+                3.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -112,13 +112,15 @@
         <li><a href="api.html#gpu_tracker.tracker.MaxRAM.combined">(gpu_tracker.tracker.MaxRAM attribute)</a>
 </li>
       </ul></li>
+      <li><a href="api.html#gpu_tracker.tracker.CPUUtilization.combined_n_threads">combined_n_threads (gpu_tracker.tracker.CPUUtilization attribute)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gpu_tracker.tracker.CPUUtilization.combined_n_threads">combined_n_threads (gpu_tracker.tracker.CPUUtilization attribute)</a>
+      <li><a href="api.html#gpu_tracker.tracker.ResourceUsage.compute_time">compute_time (gpu_tracker.tracker.ResourceUsage attribute)</a>
 </li>
       <li><a href="api.html#gpu_tracker.tracker.ComputeTime">ComputeTime (class in gpu_tracker.tracker)</a>
 </li>
-      <li><a href="api.html#gpu_tracker.tracker.CPUPercentages">CPUPercentages (class in gpu_tracker.tracker)</a>
+      <li><a href="api.html#gpu_tracker.tracker.ResourceUsage.cpu_utilization">cpu_utilization (gpu_tracker.tracker.ResourceUsage attribute)</a>
 </li>
       <li><a href="api.html#gpu_tracker.tracker.CPUUtilization">CPUUtilization (class in gpu_tracker.tracker)</a>
 </li>
@@ -146,6 +148,8 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gpu_tracker.tracker.GPUUtilization.gpu_percentages">gpu_percentages (gpu_tracker.tracker.GPUUtilization attribute)</a>
+</li>
       <li>
     gpu_tracker
 
@@ -162,6 +166,10 @@
         <li><a href="api.html#module-gpu_tracker.tracker">module</a>
 </li>
       </ul></li>
+      <li><a href="api.html#gpu_tracker.tracker.ResourceUsage.gpu_utilization">gpu_utilization (gpu_tracker.tracker.ResourceUsage attribute)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.tracker.GPUUtilization">GPUUtilization (class in gpu_tracker.tracker)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -178,19 +186,23 @@
       </ul></li>
       <li><a href="api.html#gpu_tracker.tracker.CPUUtilization.main_n_threads">main_n_threads (gpu_tracker.tracker.CPUUtilization attribute)</a>
 </li>
-      <li><a href="api.html#gpu_tracker.tracker.CPUPercentages.max_core_percent">max_core_percent (gpu_tracker.tracker.CPUPercentages attribute)</a>
+      <li><a href="api.html#gpu_tracker.tracker.ResourceUsage.max_gpu_ram">max_gpu_ram (gpu_tracker.tracker.ResourceUsage attribute)</a>
 </li>
-      <li><a href="api.html#gpu_tracker.tracker.CPUPercentages.max_cpu_percent">max_cpu_percent (gpu_tracker.tracker.CPUPercentages attribute)</a>
+      <li><a href="api.html#gpu_tracker.tracker.ProcessingUnitPercentages.max_hardware_percent">max_hardware_percent (gpu_tracker.tracker.ProcessingUnitPercentages attribute)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.tracker.ResourceUsage.max_ram">max_ram (gpu_tracker.tracker.ResourceUsage attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gpu_tracker.tracker.ProcessingUnitPercentages.max_sum_percent">max_sum_percent (gpu_tracker.tracker.ProcessingUnitPercentages attribute)</a>
+</li>
       <li><a href="api.html#gpu_tracker.tracker.MaxGPURAM">MaxGPURAM (class in gpu_tracker.tracker)</a>
 </li>
       <li><a href="api.html#gpu_tracker.tracker.MaxRAM">MaxRAM (class in gpu_tracker.tracker)</a>
 </li>
-      <li><a href="api.html#gpu_tracker.tracker.CPUPercentages.mean_core_percent">mean_core_percent (gpu_tracker.tracker.CPUPercentages attribute)</a>
+      <li><a href="api.html#gpu_tracker.tracker.ProcessingUnitPercentages.mean_hardware_percent">mean_hardware_percent (gpu_tracker.tracker.ProcessingUnitPercentages attribute)</a>
 </li>
-      <li><a href="api.html#gpu_tracker.tracker.CPUPercentages.mean_cpu_percent">mean_cpu_percent (gpu_tracker.tracker.CPUPercentages attribute)</a>
+      <li><a href="api.html#gpu_tracker.tracker.ProcessingUnitPercentages.mean_sum_percent">mean_sum_percent (gpu_tracker.tracker.ProcessingUnitPercentages attribute)</a>
 </li>
       <li>
     module
@@ -207,6 +219,12 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gpu_tracker.tracker.CPUUtilization.n_expected_cores">n_expected_cores (gpu_tracker.tracker.CPUUtilization attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gpu_tracker.tracker.GPUUtilization.n_expected_gpus">n_expected_gpus (gpu_tracker.tracker.GPUUtilization attribute)</a>
+</li>
       <li><a href="api.html#gpu_tracker.tracker.Tracker.State.NEW">NEW (gpu_tracker.tracker.Tracker.State attribute)</a>
 </li>
   </ul></td>
@@ -218,10 +236,18 @@
       <li><a href="api.html#gpu_tracker.tracker.RSSValues.private_rss">private_rss (gpu_tracker.tracker.RSSValues attribute)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gpu_tracker.tracker.ProcessingUnitPercentages">ProcessingUnitPercentages (class in gpu_tracker.tracker)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gpu_tracker.tracker.ResourceUsage">ResourceUsage (class in gpu_tracker.tracker)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gpu_tracker.tracker.RSSValues">RSSValues (class in gpu_tracker.tracker)</a>
 </li>
@@ -241,8 +267,6 @@
 </li>
       <li><a href="api.html#gpu_tracker.tracker.Tracker.State.STOPPED">STOPPED (gpu_tracker.tracker.Tracker.State attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gpu_tracker.tracker.CPUUtilization.system">system (gpu_tracker.tracker.CPUUtilization attribute)</a>
 
       <ul>
@@ -251,6 +275,8 @@
         <li><a href="api.html#gpu_tracker.tracker.MaxRAM.system">(gpu_tracker.tracker.MaxRAM attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gpu_tracker.tracker.MaxGPURAM.system_capacity">system_capacity (gpu_tracker.tracker.MaxGPURAM attribute)</a>
 
       <ul>
@@ -258,6 +284,8 @@
 </li>
       </ul></li>
       <li><a href="api.html#gpu_tracker.tracker.CPUUtilization.system_core_count">system_core_count (gpu_tracker.tracker.CPUUtilization attribute)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.tracker.GPUUtilization.system_gpu_count">system_gpu_count (gpu_tracker.tracker.GPUUtilization attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -303,7 +331,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Erik Huckvale, Hunter Moseley.</p>
+    <p>&#169; Copyright 2024, Erik Huckvale, Hunter N. B. Moseley.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
