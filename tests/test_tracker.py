@@ -1,7 +1,12 @@
 import gpu_tracker as gput
+import psutil
 import json
 import os
 import pytest as pt
+import utils
+
+nvidia_smi_unavailable_message = 'The nvidia-smi command is not available. Please install the Nvidia drivers to track GPU usage. ' \
+                                 'Otherwise the Max GPU RAM values will remain 0.0'
 
 
 @pt.fixture(name='operating_system', params=['Linux', 'not-linux'])
@@ -19,15 +24,17 @@ def multiply_list(_list: list, multiple=2) -> list:
 
 
 test_tracker_data = [
-    ('bytes', 'megabytes', 'seconds'),
-    ('kilobytes', 'gigabytes', 'minutes'),
-    ('megabytes', 'kilobytes', 'hours'),
-    ('kilobytes', 'bytes', 'days')
+    ('bytes', 'megabytes', 'seconds', None, 3),
+    ('kilobytes', 'gigabytes', 'minutes', {'gpu-id1'}, 2),
+    ('megabytes', 'kilobytes', 'hours', {'gpu-id1', 'gpu-id2'}, 1),
+    ('kilobytes', 'bytes', 'days', {'gpu-id1', 'gpu-id2', 'gpu-id3'}, None)
 ]
 
 
-@pt.mark.parametrize('ram_unit,gpu_ram_unit,time_unit', test_tracker_data)
-def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_unit: str, gpu_ram_unit: str, time_unit: str):
+@pt.mark.parametrize('ram_unit,gpu_ram_unit,time_unit,gpu_uuids,n_expected_cores', test_tracker_data)
+def test_tracker(
+        mocker, use_context_manager: bool, operating_system: str, ram_unit: str, gpu_ram_unit: str, time_unit: str, gpu_uuids: set[str],
+        n_expected_cores: int):
     class EventMock:
         def __init__(self):
             self.count = 0
@@ -126,13 +133,13 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
             mocker.MagicMock(used=29 * 1e9)])
     nvidia_smi_outputs = [
         b'',
-        b'12198 MiB\n12198 MiB',
-        b'',
-        b'',
-        b'12,1600 MiB\n21,700 MiB\n22,200 MiB',
-        b'1600 MiB\n900 MiB',
-        b'12,1500 MiB\n21,2100 MiB\n22,2200 MiB',
-        b'1500 MiB\n4300 MiB']
+        b' uuid,memory.total [MiB]\ngpu-id1,12198 MiB\ngpu-id2,12198 MiB\ngpu-id3 , 12198MiB',
+        b'pid, used_gpu_memory [MiB]\n',
+        b'uuid, memory.used [MiB], utilization.gpu [%]\ngpu-id1, 0 MiB, 0 %\ngpu-id2 , 0 MiB, 0 %\ngpu-id3 , 0 MiB, 0 %',
+        b'pid, used_gpu_memory [MiB]\n12,1600 MiB\n21,700 MiB\n22,200 MiB',
+        b'uuid, memory.used [MiB], utilization.gpu [%]\ngpu-id1, 1600 MiB,75 %\ngpu-id2,900 MiB , 50 %\n gpu-id3, 500 MiB, 25 %',
+        b'pid, used_gpu_memory [MiB]\n12,1500 MiB\n21,2100 MiB\n22,2200 MiB',
+        b'uuid, memory.used [MiB], utilization.gpu [%]\ngpu-id1, 1500 MiB, 55 %\n gpu-id2, 4300 MiB, 45%\ngpu-id3,700MiB,35%']
     check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=nvidia_smi_outputs)
     cpu_count_mock = mocker.patch('gpu_tracker.tracker.psutil.cpu_count', return_value=4)
     cpu_percent_mock = mocker.patch(
@@ -146,45 +153,46 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
     if use_context_manager:
         with gput.Tracker(
                 sleep_time=sleep_time, join_timeout=join_timeout, ram_unit=ram_unit, gpu_ram_unit=gpu_ram_unit,
-                time_unit=time_unit) as tracker:
+                time_unit=time_unit, gpu_uuids=gpu_uuids, n_expected_cores=n_expected_cores) as tracker:
             pass
     else:
         tracker = gput.Tracker(
-            sleep_time=sleep_time, join_timeout=join_timeout, ram_unit=ram_unit, gpu_ram_unit=gpu_ram_unit, time_unit=time_unit)
+            sleep_time=sleep_time, join_timeout=join_timeout, ram_unit=ram_unit, gpu_ram_unit=gpu_ram_unit, time_unit=time_unit,
+            gpu_uuids=gpu_uuids, n_expected_cores=n_expected_cores)
         tracker.start()
         tracker.stop()
     assert start_mock.called
     assert not os.path.isfile(tracker._resource_usage_file)
     assert not log_spy.called
-    _assert_args_list(virtual_memory_mock, [()] * 4)
+    utils.assert_args_list(virtual_memory_mock, [()] * 4)
     system_mock.assert_called_once_with()
     EventMock.assert_called_once_with()
-    _assert_args_list(mock=tracker._stop_event.is_set, expected_args_list=[()] * 4)
-    _assert_args_list(mock=PsProcessMock, expected_args_list=[(main_process_id,)] * 2)
-    _assert_args_list(current_process_mock.children, [()] * 2)
-    _assert_args_list(mock=main_process_mock.children, expected_args_list=[{'recursive': True}] * 3, use_kwargs=True)
+    utils.assert_args_list(mock=tracker._stop_event.is_set, expected_args_list=[()] * 4)
+    utils.assert_args_list(mock=PsProcessMock, expected_args_list=[(main_process_id,)] * 2)
+    utils.assert_args_list(current_process_mock.children, [()] * 2)
+    utils.assert_args_list(mock=main_process_mock.children, expected_args_list=[{'recursive': True}] * 3, use_kwargs=True)
     if operating_system == 'Linux':
-        _assert_args_list(mock=main_process_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
-        _assert_args_list(mock=child1_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
-        _assert_args_list(mock=child2_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
+        utils.assert_args_list(mock=main_process_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
+        utils.assert_args_list(mock=child1_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
+        utils.assert_args_list(mock=child2_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
     else:
-        _assert_args_list(mock=main_process_mock.memory_info, expected_args_list=[()] * 6)
-        _assert_args_list(mock=child1_mock.memory_info, expected_args_list=[()] * 6)
-        _assert_args_list(mock=child2_mock.memory_info, expected_args_list=[()] * 6)
+        utils.assert_args_list(mock=main_process_mock.memory_info, expected_args_list=[()] * 6)
+        utils.assert_args_list(mock=child1_mock.memory_info, expected_args_list=[()] * 6)
+        utils.assert_args_list(mock=child2_mock.memory_info, expected_args_list=[()] * 6)
     assert len(check_output_mock.call_args_list) == 8
     os_mock.getpid.assert_called_once_with()
-    _assert_args_list(mock=time_mock.time, expected_args_list=[()] * 5)
+    utils.assert_args_list(mock=time_mock.time, expected_args_list=[()] * 5)
     cpu_percent_interval = gput.tracker._TrackingProcess._CPU_PERCENT_INTERVAL
     true_sleep_time = sleep_time - cpu_percent_interval
-    _assert_args_list(
+    utils.assert_args_list(
         mock=time_mock.sleep, expected_args_list=[(cpu_percent_interval,), (true_sleep_time,)] * 3)
     tracker._stop_event.set.assert_called_once_with()
     tracker._tracking_process.join.assert_called_once_with(timeout=join_timeout)
-    _assert_args_list(mock=tracker._tracking_process.is_alive, expected_args_list=[()] * 2)
+    utils.assert_args_list(mock=tracker._tracking_process.is_alive, expected_args_list=[()] * 2)
     assert not tracker._tracking_process.terminate.called
     tracker._tracking_process.close.assert_called_once_with()
     cpu_count_mock.assert_called_once_with()
-    _assert_args_list(cpu_percent_mock, [()] * 3)
+    utils.assert_args_list(cpu_percent_mock, [()] * 3)
     expected_measurements_file = f'tests/data/{use_context_manager}-{operating_system}-{ram_unit}-{gpu_ram_unit}-{time_unit}'
     with open(f'{expected_measurements_file}.txt', 'r') as file:
         expected_tracker_str = file.read()
@@ -194,12 +202,7 @@ def test_tracker(mocker, use_context_manager: bool, operating_system: str, ram_u
         assert expected_measurements == tracker.to_json()
 
 
-def _assert_args_list(mock, expected_args_list: list[tuple | dict], use_kwargs: bool = False):
-    actual_args_list = [call.kwargs if use_kwargs else call.args for call in mock.call_args_list]
-    assert actual_args_list == expected_args_list
-
-
-def test_warnings(mocker, caplog):
+def test_main_process_warnings(mocker, caplog):
     n_join_attempts = 3
     join_timeout = 5.2
     subprocess_mock = mocker.patch('gpu_tracker.tracker.subp', check_output=mocker.MagicMock(side_effect=FileNotFoundError))
@@ -212,34 +215,88 @@ def test_warnings(mocker, caplog):
     with gput.Tracker(n_join_attempts=n_join_attempts, join_timeout=join_timeout) as tracker:
         set_spy = mocker.spy(tracker._stop_event, 'set')
     subprocess_mock.check_output.assert_called_once()
-    _assert_args_list(mock=set_spy, expected_args_list=[()] * n_join_attempts)
-    _assert_args_list(
+    utils.assert_args_list(mock=set_spy, expected_args_list=[()] * n_join_attempts)
+    utils.assert_args_list(
         mock=join_spy, expected_args_list=[{'timeout': join_timeout}] * n_join_attempts, use_kwargs=True)
-    _assert_args_list(mock=tracker._tracking_process.is_alive, expected_args_list=[()] * (n_join_attempts + 1))
+    utils.assert_args_list(mock=tracker._tracking_process.is_alive, expected_args_list=[()] * (n_join_attempts + 1))
     terminate_spy.assert_called_once()
     close_spy.assert_called_once()
-    expected_warnings = [
-        'The nvidia-smi command is not available. Please install the Nvidia drivers to track GPU usage. '
-        'Otherwise the Max GPU RAM values will remain 0.0']
+    expected_warnings = [nvidia_smi_unavailable_message]
     expected_warnings += ['The tracking process is still alive after join timout. Attempting to join again...'] * n_join_attempts
     expected_warnings.append(
         'The tracking process is still alive after 3 attempts to join. Terminating the process by force...')
     expected_warnings.append(
         'Tracking is stopping and it has been 11.0 seconds since the temporary tracking results file was last updated. '
         'Resource usage was not updated during that time.')
+    assert not os.path.isfile(tracker._resource_usage_file)
+    _assert_warnings(caplog, expected_warnings)
+
+
+def _assert_warnings(caplog, expected_warnings: list[str]):
     for expected_warning, record in zip(expected_warnings, caplog.records):
         assert record.levelname == 'WARNING'
         assert record.message == expected_warning
-    assert not os.path.isfile(tracker._resource_usage_file)
 
 
-def test_validate_unit():
+@pt.fixture(name='disable_logs', params=[True, False])
+def get_disable_logs(request) -> bool:
+    yield request.param
+
+
+def test_tracking_process_warnings(mocker, disable_logs: bool, caplog):
+    main_process_id = 666
+    child_process_id = 777
+    error_message = 'Unexpected error'
+    ProcessMock = mocker.patch(
+        'gpu_tracker.tracker.psutil.Process',
+        side_effect=[
+            mocker.MagicMock(), psutil.NoSuchProcess(pid=666), mocker.MagicMock(),
+            mocker.MagicMock(children=mocker.MagicMock(
+                side_effect=[psutil.NoSuchProcess(child_process_id), RuntimeError(error_message)]))])
+    subprocess_mock = mocker.patch('gpu_tracker.tracker.subp', check_output=mocker.MagicMock(side_effect=FileNotFoundError))
+    log_spy = mocker.spy(gput.tracker.log, 'warning')
+    tracker = gput.Tracker(process_id=main_process_id, disable_logs=disable_logs)
+    tracker._tracking_process.run()
+    os.remove(tracker._resource_usage_file)
+    mocker.patch(
+        'gpu_tracker.tracker.mproc.Event', return_value=mocker.MagicMock(is_set=mocker.MagicMock(side_effect=[False, False, True])))
+    print_mock = mocker.patch('builtins.print')
+    tracker = gput.Tracker(process_id=main_process_id, disable_logs=disable_logs)
+    tracker._tracking_process.run()
+    os.remove(tracker._resource_usage_file)
+    utils.assert_args_list(ProcessMock, [(os.getpid(),), (main_process_id,), (os.getpid(),), (main_process_id,)])
+    [printed] = print_mock.call_args_list
+    [printed] = printed.args
+    assert error_message == str(printed)
+    assert len(subprocess_mock.check_output.call_args_list) == 2
+    if disable_logs:
+        assert not log_spy.called
+    else:
+        expected_warnings = [
+            nvidia_smi_unavailable_message, 'The target process of ID 666 ended before tracking could begin.', nvidia_smi_unavailable_message,
+            'Failed to track a process (PID: 777) that does not exist. This possibly resulted from the process completing before it could be tracked.',
+            'The following uncaught exception occurred in the tracking process:']
+        _assert_warnings(caplog, expected_warnings)
+
+
+def test_validate_arguments(mocker):
     with pt.raises(ValueError) as error:
         gput.Tracker(sleep_time=0.0)
     assert str(error.value) == 'Sleep time of 0.0 is invalid. Must be at least 0.1 seconds.'
     with pt.raises(ValueError) as error:
         gput.Tracker(ram_unit='milibytes')
     assert str(error.value) == '"milibytes" is not a valid RAM unit. Valid values are bytes, gigabytes, kilobytes, megabytes, terabytes'
+    subprocess_mock = mocker.patch(
+        'gpu_tracker.tracker.subp', check_output=mocker.MagicMock(
+            side_effect=[b'', b'uuid ,memory.total [MiB] \ngpu-id1,2048 MiB\ngpu-id2,2048 MiB', b'', b'uuid ,memory.total [MiB] ']))
+    with pt.raises(ValueError) as error:
+        gput.Tracker(gpu_uuids={'invalid-id'})
+    assert len(subprocess_mock.check_output.call_args_list) == 2
+    assert str(error.value) == 'GPU UUID of invalid-id is not valid. Available UUIDs are: gpu-id1, gpu-id2'
+    with pt.raises(ValueError) as error:
+        gput.Tracker(gpu_uuids=set[str]())
+    assert len(subprocess_mock.check_output.call_args_list) == 4
+    assert str(error.value) == 'gpu_uuids is not None but the set is empty. Please provide a set of at least one GPU UUID.'
 
 
 def test_state(mocker):

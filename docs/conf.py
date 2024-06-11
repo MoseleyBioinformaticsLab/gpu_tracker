@@ -14,8 +14,8 @@ from gpu_tracker import __version__
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'gpu_tracker'
-copyright = '2024, Erik Huckvale, Hunter Moseley'
-author = 'Erik Huckvale, Hunter Moseley'
+copyright = '2024, Erik Huckvale, Hunter N. B. Moseley'
+author = 'Erik Huckvale, Hunter N. B. Moseley'
 version = __version__
 release = __version__
 

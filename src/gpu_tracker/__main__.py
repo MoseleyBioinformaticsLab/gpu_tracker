@@ -1,10 +1,10 @@
 """
-Tracks the computational resource usage (RAM, GPU RAM, and compute time) of a process corresponding to a given shell command.
+Tracks the computational resource usage (RAM, GPU RAM, CPU utilization, GPU utilization, and compute time) of a process corresponding to a given shell command.
 
 Usage:
     gpu-tracker -h | --help
     gpu-tracker -v | --version
-    gpu-tracker --execute=<command> [--output=<output>] [--format=<format>] [--st=<sleep-time>] [--ru=<ram-unit>] [--gru=<gpu-ram-unit>] [--tu=<time-unit>] [--disable-logs]
+    gpu-tracker --execute=<command> [--output=<output>] [--format=<format>] [--st=<sleep-time>] [--ru=<ram-unit>] [--gru=<gpu-ram-unit>] [--tu=<time-unit>] [--nec=<num-cores>] [--guuids=<gpu-uuids>] [--disable-logs]
 
 Options:
     -h --help               Show this help message and exit.
@@ -16,6 +16,8 @@ Options:
     --ru=<ram-unit>         One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
     --gru=<gpu-ram-unit>    One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
     --tu=<time-unit>        One of 'seconds', 'minutes', 'hours', or 'days'.
+    --nec=<num-cores>       The number of cores expected to be used. Defaults to the number of cores in the entire operating system.
+    --guuids=<gpu-uuids>    Comma separated list of the UUIDs of the GPUs for which to track utilization e.g. gpu-uuid1,gpu-uuid2,etc. Defaults to all the GPUs in the system.
     --disable-logs          If set, warnings are suppressed during tracking. Otherwise, the Tracker logs warnings as usual.
 """
 import docopt as doc
@@ -29,7 +31,7 @@ from . import __version__
 
 def main():
     args = doc.docopt(__doc__, version=__version__)
-    command = args['--execute'].split(' ')
+    command = args['--execute'].split()
     output = args['--output']
     output_format = args['--format'] if args['--format'] is not None else 'text'
     option_map = {
@@ -37,6 +39,8 @@ def main():
         '--ru': 'ram_unit',
         '--gru': 'gpu_ram_unit',
         '--tu': 'time_unit',
+        '--nec': 'n_expected_cores',
+        '--guuids': 'gpu_uuids',
         '--disable-logs': 'disable_logs'
     }
     kwargs = {
@@ -44,6 +48,13 @@ def main():
             '--execute', '--output', '--format', '--help', '--version'}}
     if 'sleep_time' in kwargs.keys():
         kwargs['sleep_time'] = float(kwargs['sleep_time'])
+    if 'n_expected_cores' in kwargs.keys():
+        kwargs['n_expected_cores'] = int(kwargs['n_expected_cores'])
+    if 'gpu_uuids' in kwargs.keys():
+        kwargs['gpu_uuids'] = set(kwargs['gpu_uuids'].split(','))
+    if len(command) == 0:
+        log.error('Empty command provided.')
+        sys.exit(1)
     try:
         process = subp.Popen(command)
     except FileNotFoundError:
@@ -61,7 +72,8 @@ def main():
     elif output_format == 'text':
         output_str = str(tracker)
     else:
-        raise ValueError(f'"{output_format} is not a valid format. Valid values are "json" or "text".')
+        log.error(f'"{output_format}" is not a valid format. Valid values are "json" or "text".')
+        sys.exit(1)
     if output is None:
         print(output_str)
     else:

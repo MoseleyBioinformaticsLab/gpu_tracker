@@ -21,41 +21,52 @@
   },
   "max_gpu_ram": {
     "unit": "gigabytes",
-    "system_capacity": 24.396,
-    "system": 5.8,
+    "system_capacity": 36.594,
+    "system": 6.5,
     "main": 1.6,
     "descendents": 4.3,
     "combined": 5.8
   },
   "cpu_utilization": {
     "system_core_count": 4,
+    "n_expected_cores": 2,
     "system": {
-      "max_core_percent": 276.3,
-      "max_cpu_percent": 69.075,
-      "mean_core_percent": 261.9666666666667,
-      "mean_cpu_percent": 65.49166666666667
+      "max_sum_percent": 276.3,
+      "max_hardware_percent": 69.075,
+      "mean_sum_percent": 261.9666666666667,
+      "mean_hardware_percent": 65.49166666666667
     },
     "main": {
-      "max_core_percent": 198.9,
-      "max_cpu_percent": 49.725,
-      "mean_core_percent": 119.7,
-      "mean_cpu_percent": 29.925
+      "max_sum_percent": 198.9,
+      "max_hardware_percent": 99.45,
+      "mean_sum_percent": 119.7,
+      "mean_hardware_percent": 59.85
     },
     "descendents": {
-      "max_core_percent": 142.2,
-      "max_cpu_percent": 35.55,
-      "mean_core_percent": 129.73333333333332,
-      "mean_cpu_percent": 32.43333333333333
+      "max_sum_percent": 142.2,
+      "max_hardware_percent": 71.1,
+      "mean_sum_percent": 129.73333333333332,
+      "mean_hardware_percent": 64.86666666666666
     },
     "combined": {
-      "max_core_percent": 311.6,
-      "max_cpu_percent": 77.9,
-      "mean_core_percent": 249.4333333333333,
-      "mean_cpu_percent": 62.35833333333333
+      "max_sum_percent": 311.6,
+      "max_hardware_percent": 155.8,
+      "mean_sum_percent": 249.4333333333333,
+      "mean_hardware_percent": 124.71666666666665
     },
     "main_n_threads": 2,
     "descendents_n_threads": 6,
     "combined_n_threads": 8
+  },
+  "gpu_utilization": {
+    "system_gpu_count": 3,
+    "n_expected_gpus": 1,
+    "gpu_percentages": {
+      "max_sum_percent": 75.0,
+      "max_hardware_percent": 75.0,
+      "mean_sum_percent": 43.333333333333336,
+      "mean_hardware_percent": 43.333333333333336
+    }
   },
   "compute_time": {
     "unit": "minutes",
