@@ -58,7 +58,7 @@ class _TrackingProcess(mproc.Process):
             time_unit, _TrackingProcess._time_unit2coefficient, unit_type='time')
         self._disable_logs = disable_logs
         self._main_process_id = main_process_id
-        percent_keys = ['cpu_system', 'cpu_main', 'cpu_descendents', 'cpu_combined', 'gpu']
+        percent_keys = ['cpu_system', 'cpu_main', 'cpu_descendants', 'cpu_combined', 'gpu']
         self._sum_percent_sums = {key: 0. for key in percent_keys}
         self._hardware_percent_sums = {key: 0. for key in percent_keys}
         self._tracking_iteration = 1
@@ -125,20 +125,20 @@ class _TrackingProcess(mproc.Process):
                 # Tracking has completed.
                 break
             try:
-                descendent_processes = [
+                descendant_processes = [
                     process for process in main_process.children(recursive=True) if process.pid not in self._extraneous_process_ids]
                 # The first call to cpu_percent returns a meaningless value of 0.0 and should be ignored.
                 # And it's recommended to wait a specified amount of time after the first call to cpu_percent.
                 # See https://psutil.readthedocs.io/en/latest/#psutil.Process.cpu_percent
-                self._map_processes(processes=[main_process] + descendent_processes, map_func=get_cpu_percent)
+                self._map_processes(processes=[main_process] + descendant_processes, map_func=get_cpu_percent)
                 # Get the maximum RAM usage.
                 ram_map_func = get_memory_maps if self._is_linux else get_rss
                 main_ram = self._map_processes([main_process], map_func=ram_map_func)
-                descendents_ram = self._map_processes(descendent_processes, map_func=ram_map_func)
-                combined_ram = main_ram + descendents_ram
+                descendants_ram = self._map_processes(descendant_processes, map_func=ram_map_func)
+                combined_ram = main_ram + descendants_ram
                 kwarg = 'memory_maps_list' if self._is_linux else 'rss_list'
                 self._update_ram(rss_values=self._resource_usage.max_ram.main, **{kwarg: main_ram})
-                self._update_ram(rss_values=self._resource_usage.max_ram.descendents, **{kwarg: descendents_ram})
+                self._update_ram(rss_values=self._resource_usage.max_ram.descendants, **{kwarg: descendants_ram})
                 self._update_ram(rss_values=self._resource_usage.max_ram.combined, **{kwarg: combined_ram})
                 self._resource_usage.max_ram.system = max(
                     self._resource_usage.max_ram.system, psutil.virtual_memory().used * self._ram_coefficient)
@@ -148,8 +148,8 @@ class _TrackingProcess(mproc.Process):
                     if len(gpu_info):
                         process_ids = {self._main_process_id}
                         self._update_gpu_ram(attr='main', process_ids=process_ids, gpu_info=gpu_info)
-                        process_ids = set(self._map_processes(processes=descendent_processes, map_func=lambda process: process.pid))
-                        self._update_gpu_ram(attr='descendents', process_ids=process_ids, gpu_info=gpu_info)
+                        process_ids = set(self._map_processes(processes=descendant_processes, map_func=lambda process: process.pid))
+                        self._update_gpu_ram(attr='descendants', process_ids=process_ids, gpu_info=gpu_info)
                         process_ids.add(self._main_process_id)
                         self._update_gpu_ram(attr='combined', process_ids=process_ids, gpu_info=gpu_info)
                     gpu_info = _TrackingProcess._query_gpu(nvidia_command='--query-gpu=uuid,memory.used,utilization.gpu')
@@ -164,10 +164,10 @@ class _TrackingProcess(mproc.Process):
 
                 # Get the mean and maximum CPU usages.
                 main_n_threads = self._map_processes([main_process], map_func=get_n_threads)
-                descendent_n_threads = self._map_processes(descendent_processes, map_func=get_n_threads)
+                descendant_n_threads = self._map_processes(descendant_processes, map_func=get_n_threads)
                 self._update_n_threads(n_threads_list=main_n_threads, attr='main')
-                self._update_n_threads(n_threads_list=descendent_n_threads, attr='descendents')
-                self._update_n_threads(n_threads_list=main_n_threads + descendent_n_threads, attr='combined')
+                self._update_n_threads(n_threads_list=descendant_n_threads, attr='descendants')
+                self._update_n_threads(n_threads_list=main_n_threads + descendant_n_threads, attr='combined')
                 # noinspection PyTypeChecker
                 system_core_percentages: list[float] = psutil.cpu_percent(percpu=True)
                 cpu_utilization = self._resource_usage.cpu_utilization
@@ -176,15 +176,15 @@ class _TrackingProcess(mproc.Process):
                     percent_key='cpu_system', n_hardware_units=cpu_utilization.system_core_count)
                 time.sleep(_TrackingProcess._CPU_PERCENT_INTERVAL)
                 main_percentage = self._map_processes([main_process], map_func=get_cpu_percent)
-                descendent_percentages = self._map_processes(processes=descendent_processes, map_func=get_cpu_percent)
+                descendant_percentages = self._map_processes(processes=descendant_processes, map_func=get_cpu_percent)
                 self._update_processing_unit_utilization(
                     current_percentages=main_percentage, processing_unit_percentages=cpu_utilization.main, percent_key='cpu_main',
                     n_hardware_units=cpu_utilization.n_expected_cores)
                 self._update_processing_unit_utilization(
-                    current_percentages=descendent_percentages, processing_unit_percentages=cpu_utilization.descendents,
-                    percent_key='cpu_descendents', n_hardware_units=cpu_utilization.n_expected_cores)
+                    current_percentages=descendant_percentages, processing_unit_percentages=cpu_utilization.descendants,
+                    percent_key='cpu_descendants', n_hardware_units=cpu_utilization.n_expected_cores)
                 self._update_processing_unit_utilization(
-                    current_percentages=main_percentage + descendent_percentages, processing_unit_percentages=cpu_utilization.combined,
+                    current_percentages=main_percentage + descendant_percentages, processing_unit_percentages=cpu_utilization.combined,
                     percent_key='cpu_combined', n_hardware_units=cpu_utilization.n_expected_cores)
                 # Update compute time.
                 self._resource_usage.compute_time.time = (time.time() - start_time) * self._time_coefficient
@@ -398,7 +398,7 @@ class Tracker:
         text = text.replace(': {', ':').replace('{', '').replace('}', '').replace('_', ' ').replace('"', '').replace(',', '')
         return text.replace('max', 'Max').replace('ram', 'RAM').replace('unit', 'Unit').replace('system', 'System').replace(
             'compute', 'Compute').replace('time: ', 'Time: ').replace('rss', 'RSS').replace('total', 'Total').replace(
-            'private', 'Private').replace('shared', 'Shared').replace('main', 'Main').replace('descendents', 'Descendents').replace(
+            'private', 'Private').replace('shared', 'Shared').replace('main', 'Main').replace('descendants', 'Descendants').replace(
             'combined', 'Combined').replace('gpu', 'GPU').replace('mean', 'Mean').replace('cpu', 'CPU').replace(
             'n threads', 'number of threads').replace('n expected', 'Number of expected')
 
@@ -444,14 +444,14 @@ class MaxRAM:
     :param system_capacity: A constant value for the RAM capacity of the entire operating system.
     :param system: The RAM usage across the entire operating system.
     :param main: The RAM usage of the main process.
-    :param descendents: The summed RAM usage of the descendent processes (i.e. child processes, grandchild processes, etc.).
-    :param combined: The summed RAM usage of both the main process and any descendent processes it may have.
+    :param descendants: The summed RAM usage of the descendant processes (i.e. child processes, grandchild processes, etc.).
+    :param combined: The summed RAM usage of both the main process and any descendant processes it may have.
     """
     unit: str
     system_capacity: float
     system: float = 0.
     main: RSSValues = dclass.field(default_factory=RSSValues)
-    descendents: RSSValues = dclass.field(default_factory=RSSValues)
+    descendants: RSSValues = dclass.field(default_factory=RSSValues)
     combined: RSSValues = dclass.field(default_factory=RSSValues)
 
 
@@ -464,14 +464,14 @@ class MaxGPURAM:
     :param system_capacity: A constant value for the GPU RAM capacity of all the GPUs in the system.
     :param system: The GPU RAM usage of all the GPUs in the system.
     :param main: The GPU RAM usage of the main process.
-    :param descendents: The summed GPU RAM usage of the descendent processes (i.e. child processes, grandchild processes, etc.).
-    :param combined: The summed GPU RAM usage of both the main process and any descendent processes it may have.
+    :param descendants: The summed GPU RAM usage of the descendant processes (i.e. child processes, grandchild processes, etc.).
+    :param combined: The summed GPU RAM usage of both the main process and any descendant processes it may have.
     """
     unit: str
     system_capacity: float
     system: float = 0.
     main: float = 0.
-    descendents: float = 0.
+    descendants: float = 0.
     combined: float = 0.
 
 
@@ -498,27 +498,27 @@ class ProcessingUnitPercentages:
 @dclass.dataclass
 class CPUUtilization:
     """
-    Information related to CPU usage, including core utilization percentages of the main process and any descendent processes it may have as well as system-wide utilization.
-    The system hardware utilization percentages are strictly divided by the total number of cores in the system while that of the main, descendent, and combined processes can be divided by the expected number of cores used in a task.
+    Information related to CPU usage, including core utilization percentages of the main process and any descendant processes it may have as well as system-wide utilization.
+    The system hardware utilization percentages are strictly divided by the total number of cores in the system while that of the main, descendant, and combined processes can be divided by the expected number of cores used in a task.
 
     :param system_core_count: The number of cores available to the entire operating system.
-    :param n_expected_cores: The number of cores expected to be used by the main process and/or any descendent processes it may have.
+    :param n_expected_cores: The number of cores expected to be used by the main process and/or any descendant processes it may have.
     :param system: The utilization percentages of all the cores in the entire operating system.
     :param main: The utilization percentages of the cores used by the main process.
-    :param descendents: The utilization percentages summed across descendent processes (i.e. child processes, grandchild processes, etc.).
-    :param combined: The utilization percentages summed across both the descendent processes and the main process.
+    :param descendants: The utilization percentages summed across descendant processes (i.e. child processes, grandchild processes, etc.).
+    :param combined: The utilization percentages summed across both the descendant processes and the main process.
     :param main_n_threads: The maximum detected number of threads used by the main process at any time.
-    :param descendents_n_threads: The maximum sum of threads used across the descendent processes at any time.
-    :param combined_n_threads: The maximum sum of threads used by both the main and descendent processes.
+    :param descendants_n_threads: The maximum sum of threads used across the descendant processes at any time.
+    :param combined_n_threads: The maximum sum of threads used by both the main and descendant processes.
     """
     system_core_count: int
     n_expected_cores: int
     system: ProcessingUnitPercentages = dclass.field(default_factory=ProcessingUnitPercentages)
     main: ProcessingUnitPercentages = dclass.field(default_factory=ProcessingUnitPercentages)
-    descendents: ProcessingUnitPercentages = dclass.field(default_factory=ProcessingUnitPercentages)
+    descendants: ProcessingUnitPercentages = dclass.field(default_factory=ProcessingUnitPercentages)
     combined: ProcessingUnitPercentages = dclass.field(default_factory=ProcessingUnitPercentages)
     main_n_threads: int = 0
-    descendents_n_threads: int = 0
+    descendants_n_threads: int = 0
     combined_n_threads: int = 0
 
 
