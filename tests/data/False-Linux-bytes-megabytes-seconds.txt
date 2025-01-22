@@ -6,7 +6,7 @@ Max RAM:
       Total RSS: 16754.0
       Private RSS: 6718.0
       Shared RSS: 10036.0
-   Descendents:
+   Descendants:
       Total RSS: 30208.0
       Private RSS: 13818.0
       Shared RSS: 16390.0
@@ -19,7 +19,7 @@ Max GPU RAM:
    System capacity: 36594.0
    System: 6500.0
    Main: 1600.0
-   Descendents: 4300.0
+   Descendants: 4300.0
    Combined: 5800.0
 CPU utilization:
    System core count: 4
@@ -34,7 +34,7 @@ CPU utilization:
       Max hardware percent: 66.3
       Mean sum percent: 119.7
       Mean hardware percent: 39.9
-   Descendents:
+   Descendants:
       Max sum percent: 142.2
       Max hardware percent: 47.4
       Mean sum percent: 129.733
@@ -45,7 +45,7 @@ CPU utilization:
       Mean sum percent: 249.433
       Mean hardware percent: 83.144
    Main number of threads: 2
-   Descendents number of threads: 6
+   Descendants number of threads: 6
    Combined number of threads: 8
 GPU utilization:
    System GPU count: 3

@@ -49,7 +49,7 @@ resource formatted.
           Total RSS: 0.914
           Private RSS: 0.753
           Shared RSS: 0.161
-       Descendents:
+       Descendants:
           Total RSS: 0.0
           Private RSS: 0.0
           Shared RSS: 0.0
@@ -62,7 +62,7 @@ resource formatted.
        System capacity: 2.048
        System: 0.353
        Main: 0.277
-       Descendents: 0.0
+       Descendants: 0.0
        Combined: 0.277
     CPU utilization:
        System core count: 12
@@ -77,7 +77,7 @@ resource formatted.
           Max hardware percent: 101.2
           Mean sum percent: 93.158
           Mean hardware percent: 93.158
-       Descendents:
+       Descendants:
           Max sum percent: 0.0
           Max hardware percent: 0.0
           Mean sum percent: 0.0
@@ -88,7 +88,7 @@ resource formatted.
           Mean sum percent: 93.158
           Mean hardware percent: 93.158
        Main number of threads: 24
-       Descendents number of threads: 0
+       Descendants number of threads: 0
        Combined number of threads: 24
     GPU utilization:
        System GPU count: 1
@@ -111,9 +111,9 @@ confused with the system field, which measures the maximum RAM / GPU RAM
 (operating system wide) that was actually used over the duration of the
 computational-resource tracking. Both the RAM and GPU RAM have 3
 additional fields, namely the usage of the main process itself followed
-by the summed usage of any descendent processes it may have (i.e. child
+by the summed usage of any descendant processes it may have (i.e. child
 processes, grandchild processes, etc.), and combined usage which is the
-sum of the main and its descendent processes. RAM is divided further to
+sum of the main and its descendant processes. RAM is divided further to
 include the private RSS (RAM usage unique to the process), shared RSS
 (RAM that’s shared by a process and at least one other process), and
 total RSS (the sum of private and shared RSS). The private and shared
@@ -125,24 +125,24 @@ from shared RSS can cause this to happen, especially for non-linux
 operating systems (see note below).
 
 The ``Tracker`` assumes that GPU memory is not shared across multiple
-processes and if it is, the reported GPU RAM of “descendent” and
+processes and if it is, the reported GPU RAM of “descendant” and
 “combined” may be an overestimation.
 
 The CPU utilization includes the system core count field which is the
 total number of cores available system-wide. Utilization is measured for
-the main process, its descendents, the main process and its descendents
+the main process, its descendants, the main process and its descendants
 combined, and CPU utilization across the entire system. The sum percent
 is the sum of the percentages of all the cores being used. The hardware
 percent is that divided by the expected number of cores being used
 i.e. the optional ``n_expected_cores`` parameter (defaults to the number
-of cores in the entire system) for the main, descendents, and combined
+of cores in the entire system) for the main, descendants, and combined
 measurements. For the system measurements, hardware percent is divided
 by the total number of cores in the system regardless of the value of
 ``n_expected_cores``. The max percent is the highest percentage detected
 through the duration of tracking while the mean percent is the average
 of all the percentages detected over that duration. The CPU utilization
 concludes with the maximum number of threads used at any time for the
-main process and the sum of the threads used across its descendent
+main process and the sum of the threads used across its descendant
 processes and combined.
 
 The GPU utilization is similar to the CPU utilization but rather than
@@ -160,7 +160,7 @@ mean of both the sum and hardware percentages are provided.
 The compute time is the real time that the computational-resource
 tracking lasted (as compared to CPU time).
 
-**NOTE** *The keywords “descendents” and “combined” in the output above
+**NOTE** *The keywords “descendants” and “combined” in the output above
 indicate a sum of the RSS used by multiple processes. It’s important to
 keep in mind that on non-linux operating systems, this sum does not take
 into account shared memory but rather adds up the total RSS of all
@@ -196,7 +196,7 @@ the compute time in seconds:
           Total RSS: 890.704
           Private RSS: 674.058
           Shared RSS: 216.924
-       Descendents:
+       Descendants:
           Total RSS: 0.0
           Private RSS: 0.0
           Shared RSS: 0.0
@@ -209,7 +209,7 @@ the compute time in seconds:
        System capacity: 2048.0
        System: 353.0
        Main: 277.0
-       Descendents: 0.0
+       Descendants: 0.0
        Combined: 277.0
     CPU utilization:
        System core count: 12
@@ -224,7 +224,7 @@ the compute time in seconds:
           Max hardware percent: 8.55
           Mean sum percent: 91.258
           Mean hardware percent: 7.605
-       Descendents:
+       Descendants:
           Max sum percent: 0.0
           Max hardware percent: 0.0
           Mean sum percent: 0.0
@@ -235,7 +235,7 @@ the compute time in seconds:
           Mean sum percent: 91.258
           Mean hardware percent: 7.605
        Main number of threads: 24
-       Descendents number of threads: 0
+       Descendants number of threads: 0
        Combined number of threads: 24
     GPU utilization:
        System GPU count: 1
@@ -271,7 +271,7 @@ via the ``to_json()`` method of the ``Tracker``.
        "private_rss": 674.05824,
        "shared_rss": 216.92416
       },
-      "descendents": {
+      "descendants": {
        "total_rss": 0.0,
        "private_rss": 0.0,
        "shared_rss": 0.0
@@ -287,7 +287,7 @@ via the ``to_json()`` method of the ``Tracker``.
       "system_capacity": 2048.0,
       "system": 353.0,
       "main": 277.0,
-      "descendents": 0.0,
+      "descendants": 0.0,
       "combined": 277.0
      },
      "cpu_utilization": {
@@ -305,7 +305,7 @@ via the ``to_json()`` method of the ``Tracker``.
        "mean_sum_percent": 91.25833333333334,
        "mean_hardware_percent": 7.604861111111112
       },
-      "descendents": {
+      "descendants": {
        "max_sum_percent": 0.0,
        "max_hardware_percent": 0.0,
        "mean_sum_percent": 0.0,
@@ -318,7 +318,7 @@ via the ``to_json()`` method of the ``Tracker``.
        "mean_hardware_percent": 7.604861111111112
       },
       "main_n_threads": 24,
-      "descendents_n_threads": 0,
+      "descendants_n_threads": 0,
       "combined_n_threads": 24
      },
      "gpu_utilization": {
@@ -351,7 +351,7 @@ information for each individual computational resource.
 
 .. code:: none
 
-    MaxRAM(unit='megabytes', system_capacity=63088.2304, system=2399.9201279999997, main=RSSValues(total_rss=890.7038719999999, private_rss=674.05824, shared_rss=216.92416), descendents=RSSValues(total_rss=0.0, private_rss=0.0, shared_rss=0.0), combined=RSSValues(total_rss=901.2633599999999, private_rss=684.6177279999999, shared_rss=216.67839999999998))
+    MaxRAM(unit='megabytes', system_capacity=63088.2304, system=2399.9201279999997, main=RSSValues(total_rss=890.7038719999999, private_rss=674.05824, shared_rss=216.92416), descendants=RSSValues(total_rss=0.0, private_rss=0.0, shared_rss=0.0), combined=RSSValues(total_rss=901.2633599999999, private_rss=684.6177279999999, shared_rss=216.67839999999998))
 
 
 
@@ -403,7 +403,7 @@ information for each individual computational resource.
 
 .. code:: none
 
-    MaxGPURAM(unit='megabytes', system_capacity=2048.0, system=353.0, main=277.0, descendents=0.0, combined=277.0)
+    MaxGPURAM(unit='megabytes', system_capacity=2048.0, system=353.0, main=277.0, descendants=0.0, combined=277.0)
 
 
 
@@ -441,7 +441,7 @@ to the point of failure, use a try/except block like so:
     0.277
 
 
-Below is an example of using a child process. Notice the descendents
+Below is an example of using a child process. Notice the descendants
 fields are now non-zero.
 
 .. code:: python3
@@ -467,7 +467,7 @@ fields are now non-zero.
           Total RSS: 0.844
           Private RSS: 0.525
           Shared RSS: 0.319
-       Descendents:
+       Descendants:
           Total RSS: 0.831
           Private RSS: 0.704
           Shared RSS: 0.127
@@ -480,7 +480,7 @@ fields are now non-zero.
        System capacity: 2.048
        System: 0.631
        Main: 0.277
-       Descendents: 0.277
+       Descendants: 0.277
        Combined: 0.554
     CPU utilization:
        System core count: 12
@@ -495,7 +495,7 @@ fields are now non-zero.
           Max hardware percent: 51.9
           Mean sum percent: 66.009
           Mean hardware percent: 33.005
-       Descendents:
+       Descendants:
           Max sum percent: 308.5
           Max hardware percent: 154.25
           Mean sum percent: 117.109
@@ -506,7 +506,7 @@ fields are now non-zero.
           Mean sum percent: 183.118
           Mean hardware percent: 91.559
        Main number of threads: 24
-       Descendents number of threads: 16
+       Descendants number of threads: 16
        Combined number of threads: 40
     GPU utilization:
        System GPU count: 1
@@ -580,7 +580,7 @@ completes, its status code is reported.
           Total RSS: 0.003
           Private RSS: 0.0
           Shared RSS: 0.003
-       Descendents:
+       Descendants:
           Total RSS: 0.917
           Private RSS: 0.905
           Shared RSS: 0.012
@@ -593,7 +593,7 @@ completes, its status code is reported.
        System capacity: 2.048
        System: 0.193
        Main: 0.0
-       Descendents: 0.117
+       Descendants: 0.117
        Combined: 0.117
     CPU utilization:
        System core count: 12
@@ -608,7 +608,7 @@ completes, its status code is reported.
           Max hardware percent: 0.0
           Mean sum percent: 0.0
           Mean hardware percent: 0.0
-       Descendents:
+       Descendants:
           Max sum percent: 493.1
           Max hardware percent: 41.092
           Mean sum percent: 134.427
@@ -619,7 +619,7 @@ completes, its status code is reported.
           Mean sum percent: 134.427
           Mean hardware percent: 11.202
        Main number of threads: 1
-       Descendents number of threads: 15
+       Descendants number of threads: 15
        Combined number of threads: 16
     GPU utilization:
        System GPU count: 1
@@ -635,7 +635,7 @@ completes, its status code is reported.
 
 
 *Notice that the RAM and GPU RAM usage primarily takes place in the
-descendent processes since the bash command itself calls the commands
+descendant processes since the bash command itself calls the commands
 relevant to resource usage.*
 
 The units of the computational resources can be modified. For example,
@@ -658,7 +658,7 @@ for ram-unit.
           Total RSS: 3.039
           Private RSS: 0.315
           Shared RSS: 2.724
-       Descendents:
+       Descendants:
           Total RSS: 832.487
           Private RSS: 705.831
           Shared RSS: 126.657
@@ -671,7 +671,7 @@ for ram-unit.
        System capacity: 2048.0
        System: 631.0
        Main: 0.0
-       Descendents: 277.0
+       Descendants: 277.0
        Combined: 277.0
     CPU utilization:
        System core count: 12
@@ -686,7 +686,7 @@ for ram-unit.
           Max hardware percent: 0.0
           Mean sum percent: 0.0
           Mean hardware percent: 0.0
-       Descendents:
+       Descendants:
           Max sum percent: 512.8
           Max hardware percent: 42.733
           Mean sum percent: 120.333
@@ -697,7 +697,7 @@ for ram-unit.
           Mean sum percent: 120.333
           Mean hardware percent: 10.028
        Main number of threads: 1
-       Descendents number of threads: 15
+       Descendants number of threads: 15
        Combined number of threads: 16
     GPU utilization:
        System GPU count: 1
@@ -741,7 +741,7 @@ that same content in a file.
           Total RSS: 0.003
           Private RSS: 0.0
           Shared RSS: 0.003
-       Descendents:
+       Descendants:
           Total RSS: 0.843
           Private RSS: 0.717
           Shared RSS: 0.127
@@ -754,7 +754,7 @@ that same content in a file.
        System capacity: 2.048
        System: 0.631
        Main: 0.0
-       Descendents: 0.277
+       Descendants: 0.277
        Combined: 0.277
     CPU utilization:
        System core count: 12
@@ -769,7 +769,7 @@ that same content in a file.
           Max hardware percent: 0.0
           Mean sum percent: 0.0
           Mean hardware percent: 0.0
-       Descendents:
+       Descendants:
           Max sum percent: 528.4
           Max hardware percent: 44.033
           Mean sum percent: 128.014
@@ -780,7 +780,7 @@ that same content in a file.
           Mean sum percent: 128.014
           Mean hardware percent: 10.668
        Main number of threads: 1
-       Descendents number of threads: 15
+       Descendants number of threads: 15
        Combined number of threads: 16
     GPU utilization:
        System GPU count: 1
@@ -815,7 +815,7 @@ By default, the format of the output is “text”. The ``-f`` or
        "private_rss": 0.000339968,
        "shared_rss": 0.002719744
       },
-      "descendents": {
+      "descendants": {
        "total_rss": 0.846565376,
        "private_rss": 0.7198023680000001,
        "shared_rss": 0.12713984
@@ -831,7 +831,7 @@ By default, the format of the output is “text”. The ``-f`` or
       "system_capacity": 2.048,
       "system": 0.631,
       "main": 0.0,
-      "descendents": 0.277,
+      "descendants": 0.277,
       "combined": 0.277
      },
      "cpu_utilization": {
@@ -849,7 +849,7 @@ By default, the format of the output is “text”. The ``-f`` or
        "mean_sum_percent": 0.0,
        "mean_hardware_percent": 0.0
       },
-      "descendents": {
+      "descendants": {
        "max_sum_percent": 526.0,
        "max_hardware_percent": 43.833333333333336,
        "mean_sum_percent": 128.65,
@@ -862,7 +862,7 @@ By default, the format of the output is “text”. The ``-f`` or
        "mean_hardware_percent": 10.720833333333333
       },
       "main_n_threads": 1,
-      "descendents_n_threads": 15,
+      "descendants_n_threads": 15,
       "combined_n_threads": 16
      },
      "gpu_utilization": {
@@ -909,7 +909,7 @@ By default, the format of the output is “text”. The ``-f`` or
        "private_rss": 0.00031948800000000004,
        "shared_rss": 0.0026583040000000002
       },
-      "descendents": {
+      "descendants": {
        "total_rss": 0.8333844480000001,
        "private_rss": 0.7066091520000001,
        "shared_rss": 0.127152128
@@ -925,7 +925,7 @@ By default, the format of the output is “text”. The ``-f`` or
       "system_capacity": 2.048,
       "system": 0.631,
       "main": 0.0,
-      "descendents": 0.277,
+      "descendants": 0.277,
       "combined": 0.277
      },
      "cpu_utilization": {
@@ -943,7 +943,7 @@ By default, the format of the output is “text”. The ``-f`` or
        "mean_sum_percent": 0.0,
        "mean_hardware_percent": 0.0
       },
-      "descendents": {
+      "descendants": {
        "max_sum_percent": 440.2,
        "max_hardware_percent": 36.68333333333333,
        "mean_sum_percent": 128.27272727272728,
@@ -956,7 +956,7 @@ By default, the format of the output is “text”. The ``-f`` or
        "mean_hardware_percent": 10.68939393939394
       },
       "main_n_threads": 1,
-      "descendents_n_threads": 15,
+      "descendants_n_threads": 15,
       "combined_n_threads": 16
      },
      "gpu_utilization": {
