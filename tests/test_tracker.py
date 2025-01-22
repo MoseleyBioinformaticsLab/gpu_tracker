@@ -313,3 +313,18 @@ def test_state(mocker):
     with pt.raises(RuntimeError) as error:
         tracker.stop()
     assert str(error.value) == 'Cannot stop tracking when tracking has already stopped.'
+
+
+def test_resource_usage_file(mocker):
+    class EventMock:
+        @staticmethod
+        def is_set() -> bool:
+            return True
+
+    mocker.patch('gpu_tracker.tracker.mproc.Event', wraps=EventMock)
+    file_path = 'my-file.pkl'
+    tracker = gput.Tracker(resource_usage_file=file_path)
+    assert not os.path.isfile(file_path)
+    tracker._tracking_process.run()
+    assert os.path.isfile(file_path)
+    os.remove(file_path)
