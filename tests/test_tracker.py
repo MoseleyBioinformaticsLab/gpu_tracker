@@ -19,10 +19,6 @@ def get_use_context_manager(request) -> bool:
     yield request.param
 
 
-def multiply_list(_list: list, multiple=2) -> list:
-    return [item for item in _list for _ in range(multiple)]
-
-
 test_tracker_data = [
     ('bytes', 'megabytes', 'seconds', None, 3),
     ('kilobytes', 'gigabytes', 'minutes', {'gpu-id1'}, 2),
@@ -83,10 +79,8 @@ def test_tracker(
                     private_dirty=private_dirty, private_clean=private_clean, shared_dirty=shared_dirty, shared_clean=shared_clean,
                     path=path)
                 memory_map_mocks.append(memory_map_mock)
-            memory_maps_side_effect.extend([memory_map_mocks, memory_map_mocks])
-        rams = multiply_list(rams)
-        cpu_percentages = multiply_list(cpu_percentages)
-        num_threads = multiply_list(num_threads)
+            memory_maps_side_effect.append(memory_map_mocks)
+        cpu_percentages = [percent for percent in cpu_percentages for percent in [0.0, percent]]
         return mocker.MagicMock(
             pid=pid,
             memory_info=mocker.MagicMock(side_effect=[mocker.MagicMock(rss=ram) for ram in rams]),
@@ -172,13 +166,13 @@ def test_tracker(
     utils.assert_args_list(current_process_mock.children, [()] * 2)
     utils.assert_args_list(mock=main_process_mock.children, expected_args_list=[{'recursive': True}] * 3, use_kwargs=True)
     if operating_system == 'Linux':
-        utils.assert_args_list(mock=main_process_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
-        utils.assert_args_list(mock=child1_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
-        utils.assert_args_list(mock=child2_mock.memory_maps, expected_args_list=[{'grouped': False}] * 6, use_kwargs=True)
+        utils.assert_args_list(mock=main_process_mock.memory_maps, expected_args_list=[{'grouped': False}] * 3, use_kwargs=True)
+        utils.assert_args_list(mock=child1_mock.memory_maps, expected_args_list=[{'grouped': False}] * 3, use_kwargs=True)
+        utils.assert_args_list(mock=child2_mock.memory_maps, expected_args_list=[{'grouped': False}] * 3, use_kwargs=True)
     else:
-        utils.assert_args_list(mock=main_process_mock.memory_info, expected_args_list=[()] * 6)
-        utils.assert_args_list(mock=child1_mock.memory_info, expected_args_list=[()] * 6)
-        utils.assert_args_list(mock=child2_mock.memory_info, expected_args_list=[()] * 6)
+        utils.assert_args_list(mock=main_process_mock.memory_info, expected_args_list=[()] * 3)
+        utils.assert_args_list(mock=child1_mock.memory_info, expected_args_list=[()] * 3)
+        utils.assert_args_list(mock=child2_mock.memory_info, expected_args_list=[()] * 3)
     assert len(check_output_mock.call_args_list) == 8
     os_mock.getpid.assert_called_once_with()
     utils.assert_args_list(mock=time_mock.time, expected_args_list=[()] * 5)
