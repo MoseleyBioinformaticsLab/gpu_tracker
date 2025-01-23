@@ -1,23 +1,21 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tutorial &mdash; gpu_tracker 3.0.2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+  <title>Tutorial &mdash; gpu_tracker 4.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=3f474186"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=3304f9e4"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -36,9 +34,6 @@
           <a href="index.html" class="icon icon-home">
             gpu_tracker
           </a>
-              <div class="version">
-                3.0.2
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -99,8 +94,8 @@ The compute time will be the time from the call to <code class="docutils literal
 call to <code class="docutils literal notranslate"><span class="pre">stop()</span></code> and the RAM, GPU RAM, CPU utilization, and GPU
 utilization quantities will be the respective computational resources
 used by the code that’s in between <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code>.</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gpu_tracker</span> <span class="k">as</span> <span class="nn">gput</span>
-<span class="kn">from</span> <span class="nn">example_module</span> <span class="kn">import</span> <span class="n">example_function</span>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gpu_tracker</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gput</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">example_module</span><span class="w"> </span><span class="kn">import</span> <span class="n">example_function</span>
 </pre></div>
 </div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span> <span class="o">=</span> <span class="n">gput</span><span class="o">.</span><span class="n">Tracker</span><span class="p">(</span><span class="n">n_expected_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sleep_time</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
@@ -117,61 +112,61 @@ resource formatted.</p>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM:
    Unit: gigabytes
-   System capacity: 63.088
-   System: 1.899
+   System capacity: 67.254
+   System: 2.001
    Main:
-      Total RSS: 0.914
-      Private RSS: 0.753
-      Shared RSS: 0.161
-   Descendents:
+      Total RSS: 0.94
+      Private RSS: 0.786
+      Shared RSS: 0.165
+   Descendants:
       Total RSS: 0.0
       Private RSS: 0.0
       Shared RSS: 0.0
    Combined:
-      Total RSS: 0.883
-      Private RSS: 0.723
-      Shared RSS: 0.161
+      Total RSS: 0.94
+      Private RSS: 0.786
+      Shared RSS: 0.165
 Max GPU RAM:
    Unit: gigabytes
-   System capacity: 2.048
-   System: 0.353
-   Main: 0.277
-   Descendents: 0.0
-   Combined: 0.277
+   System capacity: 16.376
+   System: 0.535
+   Main: 0.314
+   Descendants: 0.0
+   Combined: 0.314
 CPU utilization:
    System core count: 12
    Number of expected cores: 1
    System:
-      Max sum percent: 169.7
-      Max hardware percent: 14.142
-      Mean sum percent: 150.183
-      Mean hardware percent: 12.515
+      Max sum percent: 162.3
+      Max hardware percent: 13.525
+      Mean sum percent: 144.283
+      Mean hardware percent: 12.024
    Main:
-      Max sum percent: 101.2
-      Max hardware percent: 101.2
-      Mean sum percent: 93.158
-      Mean hardware percent: 93.158
-   Descendents:
+      Max sum percent: 101.4
+      Max hardware percent: 101.4
+      Mean sum percent: 96.7
+      Mean hardware percent: 96.7
+   Descendants:
       Max sum percent: 0.0
       Max hardware percent: 0.0
       Mean sum percent: 0.0
       Mean hardware percent: 0.0
    Combined:
-      Max sum percent: 101.2
-      Max hardware percent: 101.2
-      Mean sum percent: 93.158
-      Mean hardware percent: 93.158
-   Main number of threads: 24
-   Descendents number of threads: 0
-   Combined number of threads: 24
+      Max sum percent: 101.4
+      Max hardware percent: 101.4
+      Mean sum percent: 96.7
+      Mean hardware percent: 96.7
+   Main number of threads: 15
+   Descendants number of threads: 0
+   Combined number of threads: 15
 GPU utilization:
    System GPU count: 1
    Number of expected GPUs: 1
    GPU percentages:
-      Max sum percent: 4.0
-      Max hardware percent: 4.0
-      Mean sum percent: 0.333
-      Mean hardware percent: 0.333
+      Max sum percent: 5.0
+      Max hardware percent: 5.0
+      Mean sum percent: 0.417
+      Mean hardware percent: 0.417
 Compute time:
    Unit: hours
    Time: 0.001
@@ -185,9 +180,9 @@ confused with the system field, which measures the maximum RAM / GPU RAM
 (operating system wide) that was actually used over the duration of the
 computational-resource tracking. Both the RAM and GPU RAM have 3
 additional fields, namely the usage of the main process itself followed
-by the summed usage of any descendent processes it may have (i.e. child
+by the summed usage of any descendant processes it may have (i.e. child
 processes, grandchild processes, etc.), and combined usage which is the
-sum of the main and its descendent processes. RAM is divided further to
+sum of the main and its descendant processes. RAM is divided further to
 include the private RSS (RAM usage unique to the process), shared RSS
 (RAM that’s shared by a process and at least one other process), and
 total RSS (the sum of private and shared RSS). The private and shared
@@ -198,23 +193,23 @@ never exceed the overall system RAM usage, but inaccuracies resulting
 from shared RSS can cause this to happen, especially for non-linux
 operating systems (see note below).</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> assumes that GPU memory is not shared across multiple
-processes and if it is, the reported GPU RAM of “descendent” and
+processes and if it is, the reported GPU RAM of “descendant” and
 “combined” may be an overestimation.</p>
 <p>The CPU utilization includes the system core count field which is the
 total number of cores available system-wide. Utilization is measured for
-the main process, its descendents, the main process and its descendents
+the main process, its descendants, the main process and its descendants
 combined, and CPU utilization across the entire system. The sum percent
 is the sum of the percentages of all the cores being used. The hardware
 percent is that divided by the expected number of cores being used
 i.e. the optional <code class="docutils literal notranslate"><span class="pre">n_expected_cores</span></code> parameter (defaults to the number
-of cores in the entire system) for the main, descendents, and combined
+of cores in the entire system) for the main, descendants, and combined
 measurements. For the system measurements, hardware percent is divided
 by the total number of cores in the system regardless of the value of
 <code class="docutils literal notranslate"><span class="pre">n_expected_cores</span></code>. The max percent is the highest percentage detected
 through the duration of tracking while the mean percent is the average
 of all the percentages detected over that duration. The CPU utilization
 concludes with the maximum number of threads used at any time for the
-main process and the sum of the threads used across its descendent
+main process and the sum of the threads used across its descendant
 processes and combined.</p>
 <p>The GPU utilization is similar to the CPU utilization but rather than
 being based on utilization of processes, it can only measure the
@@ -229,7 +224,7 @@ that divided by the expected number of GPUs being used
 mean of both the sum and hardware percentages are provided.</p>
 <p>The compute time is the real time that the computational-resource
 tracking lasted (as compared to CPU time).</p>
-<p><strong>NOTE</strong> <em>The keywords “descendents” and “combined” in the output above
+<p><strong>NOTE</strong> <em>The keywords “descendants” and “combined” in the output above
 indicate a sum of the RSS used by multiple processes. It’s important to
 keep in mind that on non-linux operating systems, this sum does not take
 into account shared memory but rather adds up the total RSS of all
@@ -251,145 +246,145 @@ the compute time in seconds:</p>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM:
    Unit: megabytes
-   System capacity: 63088.23
-   System: 2399.92
+   System capacity: 67254.17
+   System: 2336.362
    Main:
-      Total RSS: 890.704
-      Private RSS: 674.058
-      Shared RSS: 216.924
-   Descendents:
+      Total RSS: 919.99
+      Private RSS: 699.384
+      Shared RSS: 230.269
+   Descendants:
       Total RSS: 0.0
       Private RSS: 0.0
       Shared RSS: 0.0
    Combined:
-      Total RSS: 901.263
-      Private RSS: 684.618
-      Shared RSS: 216.678
+      Total RSS: 919.99
+      Private RSS: 699.384
+      Shared RSS: 230.269
 Max GPU RAM:
    Unit: megabytes
-   System capacity: 2048.0
-   System: 353.0
-   Main: 277.0
-   Descendents: 0.0
-   Combined: 277.0
+   System capacity: 16376.0
+   System: 727.0
+   Main: 506.0
+   Descendants: 0.0
+   Combined: 506.0
 CPU utilization:
    System core count: 12
    Number of expected cores: 12
    System:
-      Max sum percent: 164.3
-      Max hardware percent: 13.692
-      Mean sum percent: 152.325
-      Mean hardware percent: 12.694
+      Max sum percent: 166.5
+      Max hardware percent: 13.875
+      Mean sum percent: 144.55
+      Mean hardware percent: 12.046
    Main:
-      Max sum percent: 102.6
-      Max hardware percent: 8.55
-      Mean sum percent: 91.258
-      Mean hardware percent: 7.605
-   Descendents:
+      Max sum percent: 104.8
+      Max hardware percent: 8.733
+      Mean sum percent: 97.458
+      Mean hardware percent: 8.122
+   Descendants:
       Max sum percent: 0.0
       Max hardware percent: 0.0
       Mean sum percent: 0.0
       Mean hardware percent: 0.0
    Combined:
-      Max sum percent: 102.6
-      Max hardware percent: 8.55
-      Mean sum percent: 91.258
-      Mean hardware percent: 7.605
-   Main number of threads: 24
-   Descendents number of threads: 0
-   Combined number of threads: 24
+      Max sum percent: 104.8
+      Max hardware percent: 8.733
+      Mean sum percent: 97.458
+      Mean hardware percent: 8.122
+   Main number of threads: 15
+   Descendants number of threads: 0
+   Combined number of threads: 15
 GPU utilization:
    System GPU count: 1
    Number of expected GPUs: 1
    GPU percentages:
-      Max sum percent: 6.0
-      Max hardware percent: 6.0
-      Mean sum percent: 0.5
-      Mean hardware percent: 0.5
+      Max sum percent: 0.0
+      Max hardware percent: 0.0
+      Mean sum percent: 0.0
+      Mean hardware percent: 0.0
 Compute time:
    Unit: seconds
-   Time: 3.346
+   Time: 2.685
 </pre></div>
 </div>
 <p>The same information as the text format can be provided as a dictionary
 via the <code class="docutils literal notranslate"><span class="pre">to_json()</span></code> method of the <code class="docutils literal notranslate"><span class="pre">Tracker</span></code>.</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">to_json</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
  &quot;max_ram&quot;: {
   &quot;unit&quot;: &quot;megabytes&quot;,
-  &quot;system_capacity&quot;: 63088.2304,
-  &quot;system&quot;: 2399.9201279999997,
+  &quot;system_capacity&quot;: 67254.1696,
+  &quot;system&quot;: 2336.3624959999997,
   &quot;main&quot;: {
-   &quot;total_rss&quot;: 890.7038719999999,
-   &quot;private_rss&quot;: 674.05824,
-   &quot;shared_rss&quot;: 216.92416
+   &quot;total_rss&quot;: 919.9902719999999,
+   &quot;private_rss&quot;: 699.3838079999999,
+   &quot;shared_rss&quot;: 230.268928
   },
-  &quot;descendents&quot;: {
+  &quot;descendants&quot;: {
    &quot;total_rss&quot;: 0.0,
    &quot;private_rss&quot;: 0.0,
    &quot;shared_rss&quot;: 0.0
   },
   &quot;combined&quot;: {
-   &quot;total_rss&quot;: 901.2633599999999,
-   &quot;private_rss&quot;: 684.6177279999999,
-   &quot;shared_rss&quot;: 216.67839999999998
+   &quot;total_rss&quot;: 919.9902719999999,
+   &quot;private_rss&quot;: 699.3838079999999,
+   &quot;shared_rss&quot;: 230.268928
   }
  },
  &quot;max_gpu_ram&quot;: {
   &quot;unit&quot;: &quot;megabytes&quot;,
-  &quot;system_capacity&quot;: 2048.0,
-  &quot;system&quot;: 353.0,
-  &quot;main&quot;: 277.0,
-  &quot;descendents&quot;: 0.0,
-  &quot;combined&quot;: 277.0
+  &quot;system_capacity&quot;: 16376.0,
+  &quot;system&quot;: 727.0,
+  &quot;main&quot;: 506.0,
+  &quot;descendants&quot;: 0.0,
+  &quot;combined&quot;: 506.0
  },
  &quot;cpu_utilization&quot;: {
   &quot;system_core_count&quot;: 12,
   &quot;n_expected_cores&quot;: 12,
   &quot;system&quot;: {
-   &quot;max_sum_percent&quot;: 164.3,
-   &quot;max_hardware_percent&quot;: 13.691666666666668,
-   &quot;mean_sum_percent&quot;: 152.325,
-   &quot;mean_hardware_percent&quot;: 12.693750000000001
+   &quot;max_sum_percent&quot;: 166.5,
+   &quot;max_hardware_percent&quot;: 13.875,
+   &quot;mean_sum_percent&quot;: 144.55,
+   &quot;mean_hardware_percent&quot;: 12.045833333333333
   },
   &quot;main&quot;: {
-   &quot;max_sum_percent&quot;: 102.6,
-   &quot;max_hardware_percent&quot;: 8.549999999999999,
-   &quot;mean_sum_percent&quot;: 91.25833333333334,
-   &quot;mean_hardware_percent&quot;: 7.604861111111112
+   &quot;max_sum_percent&quot;: 104.8,
+   &quot;max_hardware_percent&quot;: 8.733333333333333,
+   &quot;mean_sum_percent&quot;: 97.45833333333333,
+   &quot;mean_hardware_percent&quot;: 8.121527777777779
   },
-  &quot;descendents&quot;: {
+  &quot;descendants&quot;: {
    &quot;max_sum_percent&quot;: 0.0,
    &quot;max_hardware_percent&quot;: 0.0,
    &quot;mean_sum_percent&quot;: 0.0,
    &quot;mean_hardware_percent&quot;: 0.0
   },
   &quot;combined&quot;: {
-   &quot;max_sum_percent&quot;: 102.6,
-   &quot;max_hardware_percent&quot;: 8.549999999999999,
-   &quot;mean_sum_percent&quot;: 91.25833333333334,
-   &quot;mean_hardware_percent&quot;: 7.604861111111112
+   &quot;max_sum_percent&quot;: 104.8,
+   &quot;max_hardware_percent&quot;: 8.733333333333333,
+   &quot;mean_sum_percent&quot;: 97.45833333333333,
+   &quot;mean_hardware_percent&quot;: 8.121527777777779
   },
-  &quot;main_n_threads&quot;: 24,
-  &quot;descendents_n_threads&quot;: 0,
-  &quot;combined_n_threads&quot;: 24
+  &quot;main_n_threads&quot;: 15,
+  &quot;descendants_n_threads&quot;: 0,
+  &quot;combined_n_threads&quot;: 15
  },
  &quot;gpu_utilization&quot;: {
   &quot;system_gpu_count&quot;: 1,
   &quot;n_expected_gpus&quot;: 1,
   &quot;gpu_percentages&quot;: {
-   &quot;max_sum_percent&quot;: 6.0,
-   &quot;max_hardware_percent&quot;: 6.0,
-   &quot;mean_sum_percent&quot;: 0.5,
-   &quot;mean_hardware_percent&quot;: 0.5
+   &quot;max_sum_percent&quot;: 0.0,
+   &quot;max_hardware_percent&quot;: 0.0,
+   &quot;mean_sum_percent&quot;: 0.0,
+   &quot;mean_hardware_percent&quot;: 0.0
   }
  },
  &quot;compute_time&quot;: {
   &quot;unit&quot;: &quot;seconds&quot;,
-  &quot;time&quot;: 3.345628023147583
+  &quot;time&quot;: 2.684972047805786
  }
 }
 </pre></div>
@@ -400,7 +395,7 @@ information for each individual computational resource.</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span><span class="o">.</span><span class="n">resource_usage</span><span class="o">.</span><span class="n">max_ram</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>MaxRAM(unit=&#39;megabytes&#39;, system_capacity=63088.2304, system=2399.9201279999997, main=RSSValues(total_rss=890.7038719999999, private_rss=674.05824, shared_rss=216.92416), descendents=RSSValues(total_rss=0.0, private_rss=0.0, shared_rss=0.0), combined=RSSValues(total_rss=901.2633599999999, private_rss=684.6177279999999, shared_rss=216.67839999999998))
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>MaxRAM(unit=&#39;megabytes&#39;, system_capacity=67254.1696, system=2336.3624959999997, main=RSSValues(total_rss=919.9902719999999, private_rss=699.3838079999999, shared_rss=230.268928), descendants=RSSValues(total_rss=0.0, private_rss=0.0, shared_rss=0.0), combined=RSSValues(total_rss=919.9902719999999, private_rss=699.3838079999999, shared_rss=230.268928))
 </pre></div>
 </div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span><span class="o">.</span><span class="n">resource_usage</span><span class="o">.</span><span class="n">max_ram</span><span class="o">.</span><span class="n">unit</span>
@@ -412,25 +407,25 @@ information for each individual computational resource.</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span><span class="o">.</span><span class="n">resource_usage</span><span class="o">.</span><span class="n">max_ram</span><span class="o">.</span><span class="n">main</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>RSSValues(total_rss=890.7038719999999, private_rss=674.05824, shared_rss=216.92416)
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>RSSValues(total_rss=919.9902719999999, private_rss=699.3838079999999, shared_rss=230.268928)
 </pre></div>
 </div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span><span class="o">.</span><span class="n">resource_usage</span><span class="o">.</span><span class="n">max_ram</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">total_rss</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>890.7038719999999
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>919.9902719999999
 </pre></div>
 </div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span><span class="o">.</span><span class="n">resource_usage</span><span class="o">.</span><span class="n">max_gpu_ram</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>MaxGPURAM(unit=&#39;megabytes&#39;, system_capacity=2048.0, system=353.0, main=277.0, descendents=0.0, combined=277.0)
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>MaxGPURAM(unit=&#39;megabytes&#39;, system_capacity=16376.0, system=727.0, main=506.0, descendants=0.0, combined=506.0)
 </pre></div>
 </div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span><span class="o">.</span><span class="n">resource_usage</span><span class="o">.</span><span class="n">compute_time</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>ComputeTime(unit=&#39;seconds&#39;, time=3.345628023147583)
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>ComputeTime(unit=&#39;seconds&#39;, time=2.684972047805786)
 </pre></div>
 </div>
 <p>Sometimes the code can fail. In order to collect the resource usage up
@@ -446,12 +441,22 @@ to the point of failure, use a try/except block like so:</p>
 </pre></div>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>The following error occured while tracking: AN ERROR
-0.277
+0.506
 </pre></div>
 </div>
-<p>Below is an example of using a child process. Notice the descendents
+<p>If you do not catch the error in your code or if tracking otherwise is
+interrupted (e.g. you are debugging your code and you stop partway), the
+<code class="docutils literal notranslate"><span class="pre">resource_usage</span></code> attribute will not be set and that information will
+not be able to be obtained in memory. In such a case, the
+<code class="docutils literal notranslate"><span class="pre">resource_usage</span></code> attribute will be stored in a hidden pickle file in
+the working directory with a randomly generated name. Its file path can
+be optionally overriden with the <code class="docutils literal notranslate"><span class="pre">resource_usage_file</span></code> parameter.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span> <span class="o">=</span> <span class="n">gput</span><span class="o">.</span><span class="n">Tracker</span><span class="p">(</span><span class="n">resource_usage_file</span><span class="o">=</span><span class="s1">&#39;path/to/my-file.pkl&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Below is an example of using a child process. Notice the descendants
 fields are now non-zero.</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">get_context</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;spawn&#39;</span><span class="p">)</span>
 <span class="n">child_process</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">example_function</span><span class="p">)</span>
 <span class="k">with</span> <span class="n">gput</span><span class="o">.</span><span class="n">Tracker</span><span class="p">(</span><span class="n">n_expected_cores</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sleep_time</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span> <span class="k">as</span> <span class="n">tracker</span><span class="p">:</span>
@@ -464,61 +469,61 @@ fields are now non-zero.</p>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM:
    Unit: gigabytes
-   System capacity: 63.088
-   System: 2.877
+   System capacity: 67.254
+   System: 3.033
    Main:
-      Total RSS: 0.844
-      Private RSS: 0.525
-      Shared RSS: 0.319
-   Descendents:
-      Total RSS: 0.831
-      Private RSS: 0.704
-      Shared RSS: 0.127
+      Total RSS: 0.865
+      Private RSS: 0.55
+      Shared RSS: 0.32
+   Descendants:
+      Total RSS: 0.854
+      Private RSS: 0.737
+      Shared RSS: 0.118
    Combined:
-      Total RSS: 1.462
-      Private RSS: 1.148
+      Total RSS: 1.437
+      Private RSS: 1.125
       Shared RSS: 0.32
 Max GPU RAM:
    Unit: gigabytes
-   System capacity: 2.048
-   System: 0.631
-   Main: 0.277
-   Descendents: 0.277
-   Combined: 0.554
+   System capacity: 16.376
+   System: 1.235
+   Main: 0.506
+   Descendants: 0.506
+   Combined: 1.012
 CPU utilization:
    System core count: 12
    Number of expected cores: 2
    System:
-      Max sum percent: 398.9
-      Max hardware percent: 33.242
-      Mean sum percent: 222.255
-      Mean hardware percent: 18.521
+      Max sum percent: 456.5
+      Max hardware percent: 38.042
+      Mean sum percent: 216.675
+      Mean hardware percent: 18.056
    Main:
-      Max sum percent: 103.8
-      Max hardware percent: 51.9
-      Mean sum percent: 66.009
-      Mean hardware percent: 33.005
-   Descendents:
-      Max sum percent: 308.5
-      Max hardware percent: 154.25
-      Mean sum percent: 117.109
-      Mean hardware percent: 58.555
+      Max sum percent: 102.6
+      Max hardware percent: 51.3
+      Mean sum percent: 66.65
+      Mean hardware percent: 33.325
+   Descendants:
+      Max sum percent: 175.8
+      Max hardware percent: 87.9
+      Mean sum percent: 105.392
+      Mean hardware percent: 52.696
    Combined:
-      Max sum percent: 409.2
-      Max hardware percent: 204.6
-      Mean sum percent: 183.118
-      Mean hardware percent: 91.559
-   Main number of threads: 24
-   Descendents number of threads: 16
-   Combined number of threads: 40
+      Max sum percent: 278.4
+      Max hardware percent: 139.2
+      Mean sum percent: 172.042
+      Mean hardware percent: 86.021
+   Main number of threads: 15
+   Descendants number of threads: 13
+   Combined number of threads: 28
 GPU utilization:
    System GPU count: 1
    Number of expected GPUs: 1
    GPU percentages:
-      Max sum percent: 6.0
-      Max hardware percent: 6.0
-      Mean sum percent: 0.545
-      Mean hardware percent: 0.545
+      Max sum percent: 8.0
+      Max hardware percent: 8.0
+      Mean sum percent: 1.333
+      Mean hardware percent: 1.333
 Compute time:
    Unit: hours
    Time: 0.001
@@ -567,68 +572,68 @@ completes, its status code is reported.</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Resource tracking complete. Process completed with status code: 0
 Max RAM:
    Unit: gigabytes
-   System capacity: 63.088
-   System: 2.3
+   System capacity: 67.254
+   System: 2.896
    Main:
       Total RSS: 0.003
       Private RSS: 0.0
       Shared RSS: 0.003
-   Descendents:
-      Total RSS: 0.917
-      Private RSS: 0.905
-      Shared RSS: 0.012
+   Descendants:
+      Total RSS: 0.877
+      Private RSS: 0.759
+      Shared RSS: 0.118
    Combined:
-      Total RSS: 0.925
-      Private RSS: 0.912
-      Shared RSS: 0.013
+      Total RSS: 0.878
+      Private RSS: 0.759
+      Shared RSS: 0.119
 Max GPU RAM:
    Unit: gigabytes
-   System capacity: 2.048
-   System: 0.193
+   System capacity: 16.376
+   System: 1.043
    Main: 0.0
-   Descendents: 0.117
-   Combined: 0.117
+   Descendants: 0.314
+   Combined: 0.314
 CPU utilization:
    System core count: 12
    Number of expected cores: 12
    System:
-      Max sum percent: 309.5
-      Max hardware percent: 25.792
-      Mean sum percent: 159.073
-      Mean hardware percent: 13.256
+      Max sum percent: 324.1
+      Max hardware percent: 27.008
+      Mean sum percent: 164.91
+      Mean hardware percent: 13.743
    Main:
       Max sum percent: 0.0
       Max hardware percent: 0.0
       Mean sum percent: 0.0
       Mean hardware percent: 0.0
-   Descendents:
-      Max sum percent: 493.1
-      Max hardware percent: 41.092
-      Mean sum percent: 134.427
-      Mean hardware percent: 11.202
+   Descendants:
+      Max sum percent: 361.4
+      Max hardware percent: 30.117
+      Mean sum percent: 123.42
+      Mean hardware percent: 10.285
    Combined:
-      Max sum percent: 493.1
-      Max hardware percent: 41.092
-      Mean sum percent: 134.427
-      Mean hardware percent: 11.202
+      Max sum percent: 361.4
+      Max hardware percent: 30.117
+      Mean sum percent: 123.42
+      Mean hardware percent: 10.285
    Main number of threads: 1
-   Descendents number of threads: 15
-   Combined number of threads: 16
+   Descendants number of threads: 12
+   Combined number of threads: 13
 GPU utilization:
    System GPU count: 1
    Number of expected GPUs: 1
    GPU percentages:
-      Max sum percent: 4.0
-      Max hardware percent: 4.0
-      Mean sum percent: 0.364
-      Mean hardware percent: 0.364
+      Max sum percent: 0.0
+      Max hardware percent: 0.0
+      Mean sum percent: 0.0
+      Mean hardware percent: 0.0
 Compute time:
    Unit: hours
    Time: 0.001
 </pre></div>
 </div>
 <p><em>Notice that the RAM and GPU RAM usage primarily takes place in the
-descendent processes since the bash command itself calls the commands
+descendant processes since the bash command itself calls the commands
 relevant to resource usage.</em></p>
 <p>The units of the computational resources can be modified. For example,
 –tu stands for time-unit, –gru stands for gpu-ram-unit, and –ru stands
@@ -639,64 +644,64 @@ for ram-unit.</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Resource tracking complete. Process completed with status code: 0
 Max RAM:
    Unit: megabytes
-   System capacity: 63088.23
-   System: 2242.593
+   System capacity: 67254.17
+   System: 2420.457
    Main:
-      Total RSS: 3.039
-      Private RSS: 0.315
-      Shared RSS: 2.724
-   Descendents:
-      Total RSS: 832.487
-      Private RSS: 705.831
-      Shared RSS: 126.657
+      Total RSS: 3.109
+      Private RSS: 0.319
+      Shared RSS: 2.789
+   Descendants:
+      Total RSS: 849.125
+      Private RSS: 731.435
+      Shared RSS: 118.125
    Combined:
-      Total RSS: 841.482
-      Private RSS: 713.867
-      Shared RSS: 127.992
+      Total RSS: 850.338
+      Private RSS: 731.754
+      Shared RSS: 119.017
 Max GPU RAM:
    Unit: megabytes
-   System capacity: 2048.0
-   System: 631.0
+   System capacity: 16376.0
+   System: 1235.0
    Main: 0.0
-   Descendents: 277.0
-   Combined: 277.0
+   Descendants: 506.0
+   Combined: 506.0
 CPU utilization:
    System core count: 12
    Number of expected cores: 12
    System:
-      Max sum percent: 362.6
-      Max hardware percent: 30.217
-      Mean sum percent: 156.853
-      Mean hardware percent: 13.071
+      Max sum percent: 316.4
+      Max hardware percent: 26.367
+      Mean sum percent: 168.077
+      Mean hardware percent: 14.006
    Main:
       Max sum percent: 0.0
       Max hardware percent: 0.0
       Mean sum percent: 0.0
       Mean hardware percent: 0.0
-   Descendents:
-      Max sum percent: 512.8
-      Max hardware percent: 42.733
-      Mean sum percent: 120.333
-      Mean hardware percent: 10.028
+   Descendants:
+      Max sum percent: 517.3
+      Max hardware percent: 43.108
+      Mean sum percent: 130.623
+      Mean hardware percent: 10.885
    Combined:
-      Max sum percent: 512.8
-      Max hardware percent: 42.733
-      Mean sum percent: 120.333
-      Mean hardware percent: 10.028
+      Max sum percent: 517.3
+      Max hardware percent: 43.108
+      Mean sum percent: 130.623
+      Mean hardware percent: 10.885
    Main number of threads: 1
-   Descendents number of threads: 15
-   Combined number of threads: 16
+   Descendants number of threads: 12
+   Combined number of threads: 13
 GPU utilization:
    System GPU count: 1
    Number of expected GPUs: 1
    GPU percentages:
-      Max sum percent: 4.0
-      Max hardware percent: 4.0
-      Mean sum percent: 0.267
-      Mean hardware percent: 0.267
+      Max sum percent: 5.0
+      Max hardware percent: 5.0
+      Mean sum percent: 0.462
+      Mean hardware percent: 0.462
 Compute time:
    Unit: seconds
-   Time: 4.931
+   Time: 3.995
 </pre></div>
 </div>
 <p>By default, the computational-resource-usage statistics are printed to
@@ -713,61 +718,61 @@ that same content in a file.</p>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Max RAM:
    Unit: gigabytes
-   System capacity: 63.088
-   System: 2.683
+   System capacity: 67.254
+   System: 2.43
    Main:
       Total RSS: 0.003
       Private RSS: 0.0
       Shared RSS: 0.003
-   Descendents:
-      Total RSS: 0.843
-      Private RSS: 0.717
-      Shared RSS: 0.127
+   Descendants:
+      Total RSS: 0.884
+      Private RSS: 0.766
+      Shared RSS: 0.118
    Combined:
-      Total RSS: 0.852
-      Private RSS: 0.725
-      Shared RSS: 0.128
+      Total RSS: 0.885
+      Private RSS: 0.766
+      Shared RSS: 0.119
 Max GPU RAM:
    Unit: gigabytes
-   System capacity: 2.048
-   System: 0.631
+   System capacity: 16.376
+   System: 1.043
    Main: 0.0
-   Descendents: 0.277
-   Combined: 0.277
+   Descendants: 0.314
+   Combined: 0.314
 CPU utilization:
    System core count: 12
    Number of expected cores: 12
    System:
-      Max sum percent: 383.8
-      Max hardware percent: 31.983
-      Mean sum percent: 166.507
-      Mean hardware percent: 13.876
+      Max sum percent: 405.0
+      Max hardware percent: 33.75
+      Mean sum percent: 165.357
+      Mean hardware percent: 13.78
    Main:
       Max sum percent: 0.0
       Max hardware percent: 0.0
       Mean sum percent: 0.0
       Mean hardware percent: 0.0
-   Descendents:
-      Max sum percent: 528.4
-      Max hardware percent: 44.033
-      Mean sum percent: 128.014
-      Mean hardware percent: 10.668
+   Descendants:
+      Max sum percent: 573.7
+      Max hardware percent: 47.808
+      Mean sum percent: 124.871
+      Mean hardware percent: 10.406
    Combined:
-      Max sum percent: 528.4
-      Max hardware percent: 44.033
-      Mean sum percent: 128.014
-      Mean hardware percent: 10.668
+      Max sum percent: 573.7
+      Max hardware percent: 47.808
+      Mean sum percent: 124.871
+      Mean hardware percent: 10.406
    Main number of threads: 1
-   Descendents number of threads: 15
-   Combined number of threads: 16
+   Descendants number of threads: 12
+   Combined number of threads: 13
 GPU utilization:
    System GPU count: 1
    Number of expected GPUs: 1
    GPU percentages:
-      Max sum percent: 7.0
-      Max hardware percent: 7.0
-      Mean sum percent: 0.643
-      Mean hardware percent: 0.643
+      Max sum percent: 5.0
+      Max hardware percent: 5.0
+      Mean sum percent: 0.357
+      Mean hardware percent: 0.357
 Compute time:
    Unit: hours
    Time: 0.001
@@ -782,40 +787,40 @@ Compute time:
 {
  &quot;max_ram&quot;: {
   &quot;unit&quot;: &quot;gigabytes&quot;,
-  &quot;system_capacity&quot;: 63.0882304,
-  &quot;system&quot;: 3.111936,
+  &quot;system_capacity&quot;: 67.2541696,
+  &quot;system&quot;: 2.5132195840000002,
   &quot;main&quot;: {
-   &quot;total_rss&quot;: 0.003059712,
-   &quot;private_rss&quot;: 0.000339968,
-   &quot;shared_rss&quot;: 0.002719744
+   &quot;total_rss&quot;: 0.00311296,
+   &quot;private_rss&quot;: 0.000323584,
+   &quot;shared_rss&quot;: 0.002789376
   },
-  &quot;descendents&quot;: {
-   &quot;total_rss&quot;: 0.846565376,
-   &quot;private_rss&quot;: 0.7198023680000001,
-   &quot;shared_rss&quot;: 0.12713984
+  &quot;descendants&quot;: {
+   &quot;total_rss&quot;: 0.8446238720000001,
+   &quot;private_rss&quot;: 0.7268597760000001,
+   &quot;shared_rss&quot;: 0.11776409600000001
   },
   &quot;combined&quot;: {
-   &quot;total_rss&quot;: 0.8552325120000001,
-   &quot;private_rss&quot;: 0.727576576,
-   &quot;shared_rss&quot;: 0.12803276800000002
+   &quot;total_rss&quot;: 0.8458403840000001,
+   &quot;private_rss&quot;: 0.7271833600000001,
+   &quot;shared_rss&quot;: 0.11865702400000001
   }
  },
  &quot;max_gpu_ram&quot;: {
   &quot;unit&quot;: &quot;gigabytes&quot;,
-  &quot;system_capacity&quot;: 2.048,
-  &quot;system&quot;: 0.631,
+  &quot;system_capacity&quot;: 16.376,
+  &quot;system&quot;: 1.235,
   &quot;main&quot;: 0.0,
-  &quot;descendents&quot;: 0.277,
-  &quot;combined&quot;: 0.277
+  &quot;descendants&quot;: 0.506,
+  &quot;combined&quot;: 0.506
  },
  &quot;cpu_utilization&quot;: {
   &quot;system_core_count&quot;: 12,
   &quot;n_expected_cores&quot;: 12,
   &quot;system&quot;: {
-   &quot;max_sum_percent&quot;: 384.5999999999999,
-   &quot;max_hardware_percent&quot;: 32.04999999999999,
-   &quot;mean_sum_percent&quot;: 167.49285714285716,
-   &quot;mean_hardware_percent&quot;: 13.957738095238097
+   &quot;max_sum_percent&quot;: 316.3,
+   &quot;max_hardware_percent&quot;: 26.358333333333334,
+   &quot;mean_sum_percent&quot;: 167.90769230769232,
+   &quot;mean_hardware_percent&quot;: 13.992307692307692
   },
   &quot;main&quot;: {
    &quot;max_sum_percent&quot;: 0.0,
@@ -823,35 +828,35 @@ Compute time:
    &quot;mean_sum_percent&quot;: 0.0,
    &quot;mean_hardware_percent&quot;: 0.0
   },
-  &quot;descendents&quot;: {
-   &quot;max_sum_percent&quot;: 526.0,
-   &quot;max_hardware_percent&quot;: 43.833333333333336,
-   &quot;mean_sum_percent&quot;: 128.65,
-   &quot;mean_hardware_percent&quot;: 10.720833333333333
+  &quot;descendants&quot;: {
+   &quot;max_sum_percent&quot;: 527.1,
+   &quot;max_hardware_percent&quot;: 43.925000000000004,
+   &quot;mean_sum_percent&quot;: 130.81538461538463,
+   &quot;mean_hardware_percent&quot;: 10.90128205128205
   },
   &quot;combined&quot;: {
-   &quot;max_sum_percent&quot;: 526.0,
-   &quot;max_hardware_percent&quot;: 43.833333333333336,
-   &quot;mean_sum_percent&quot;: 128.65,
-   &quot;mean_hardware_percent&quot;: 10.720833333333333
+   &quot;max_sum_percent&quot;: 527.1,
+   &quot;max_hardware_percent&quot;: 43.925000000000004,
+   &quot;mean_sum_percent&quot;: 130.81538461538463,
+   &quot;mean_hardware_percent&quot;: 10.90128205128205
   },
   &quot;main_n_threads&quot;: 1,
-  &quot;descendents_n_threads&quot;: 15,
-  &quot;combined_n_threads&quot;: 16
+  &quot;descendants_n_threads&quot;: 12,
+  &quot;combined_n_threads&quot;: 13
  },
  &quot;gpu_utilization&quot;: {
   &quot;system_gpu_count&quot;: 1,
   &quot;n_expected_gpus&quot;: 1,
   &quot;gpu_percentages&quot;: {
-   &quot;max_sum_percent&quot;: 7.0,
-   &quot;max_hardware_percent&quot;: 7.0,
-   &quot;mean_sum_percent&quot;: 0.5,
-   &quot;mean_hardware_percent&quot;: 0.5
+   &quot;max_sum_percent&quot;: 5.0,
+   &quot;max_hardware_percent&quot;: 5.0,
+   &quot;mean_sum_percent&quot;: 0.38461538461538464,
+   &quot;mean_hardware_percent&quot;: 0.38461538461538464
   }
  },
  &quot;compute_time&quot;: {
   &quot;unit&quot;: &quot;hours&quot;,
-  &quot;time&quot;: 0.0012672905127207438
+  &quot;time&quot;: 0.0010899075534608628
  }
 }
 </pre></div>
@@ -868,40 +873,40 @@ Compute time:
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
  &quot;max_ram&quot;: {
   &quot;unit&quot;: &quot;gigabytes&quot;,
-  &quot;system_capacity&quot;: 63.0882304,
-  &quot;system&quot;: 2.878910464,
+  &quot;system_capacity&quot;: 67.2541696,
+  &quot;system&quot;: 2.325712896,
   &quot;main&quot;: {
-   &quot;total_rss&quot;: 0.0029777920000000004,
+   &quot;total_rss&quot;: 0.0031088640000000002,
    &quot;private_rss&quot;: 0.00031948800000000004,
-   &quot;shared_rss&quot;: 0.0026583040000000002
+   &quot;shared_rss&quot;: 0.002789376
   },
-  &quot;descendents&quot;: {
-   &quot;total_rss&quot;: 0.8333844480000001,
-   &quot;private_rss&quot;: 0.7066091520000001,
-   &quot;shared_rss&quot;: 0.127152128
+  &quot;descendants&quot;: {
+   &quot;total_rss&quot;: 0.822874112,
+   &quot;private_rss&quot;: 0.705110016,
+   &quot;shared_rss&quot;: 0.11776409600000001
   },
   &quot;combined&quot;: {
-   &quot;total_rss&quot;: 0.841486336,
-   &quot;private_rss&quot;: 0.713818112,
-   &quot;shared_rss&quot;: 0.12804505600000002
+   &quot;total_rss&quot;: 0.824086528,
+   &quot;private_rss&quot;: 0.705429504,
+   &quot;shared_rss&quot;: 0.11865702400000001
   }
  },
  &quot;max_gpu_ram&quot;: {
   &quot;unit&quot;: &quot;gigabytes&quot;,
-  &quot;system_capacity&quot;: 2.048,
-  &quot;system&quot;: 0.631,
+  &quot;system_capacity&quot;: 16.376,
+  &quot;system&quot;: 1.235,
   &quot;main&quot;: 0.0,
-  &quot;descendents&quot;: 0.277,
-  &quot;combined&quot;: 0.277
+  &quot;descendants&quot;: 0.392,
+  &quot;combined&quot;: 0.392
  },
  &quot;cpu_utilization&quot;: {
   &quot;system_core_count&quot;: 12,
   &quot;n_expected_cores&quot;: 12,
   &quot;system&quot;: {
-   &quot;max_sum_percent&quot;: 306.09999999999997,
-   &quot;max_hardware_percent&quot;: 25.50833333333333,
-   &quot;mean_sum_percent&quot;: 161.4272727272727,
-   &quot;mean_hardware_percent&quot;: 13.452272727272724
+   &quot;max_sum_percent&quot;: 332.1,
+   &quot;max_hardware_percent&quot;: 27.675,
+   &quot;mean_sum_percent&quot;: 166.07,
+   &quot;mean_hardware_percent&quot;: 13.839166666666666
   },
   &quot;main&quot;: {
    &quot;max_sum_percent&quot;: 0.0,
@@ -909,35 +914,35 @@ Compute time:
    &quot;mean_sum_percent&quot;: 0.0,
    &quot;mean_hardware_percent&quot;: 0.0
   },
-  &quot;descendents&quot;: {
-   &quot;max_sum_percent&quot;: 440.2,
-   &quot;max_hardware_percent&quot;: 36.68333333333333,
-   &quot;mean_sum_percent&quot;: 128.27272727272728,
-   &quot;mean_hardware_percent&quot;: 10.68939393939394
+  &quot;descendants&quot;: {
+   &quot;max_sum_percent&quot;: 104.1,
+   &quot;max_hardware_percent&quot;: 8.674999999999999,
+   &quot;mean_sum_percent&quot;: 99.77000000000001,
+   &quot;mean_hardware_percent&quot;: 8.314166666666665
   },
   &quot;combined&quot;: {
-   &quot;max_sum_percent&quot;: 440.2,
-   &quot;max_hardware_percent&quot;: 36.68333333333333,
-   &quot;mean_sum_percent&quot;: 128.27272727272728,
-   &quot;mean_hardware_percent&quot;: 10.68939393939394
+   &quot;max_sum_percent&quot;: 104.1,
+   &quot;max_hardware_percent&quot;: 8.674999999999999,
+   &quot;mean_sum_percent&quot;: 99.77000000000001,
+   &quot;mean_hardware_percent&quot;: 8.314166666666665
   },
   &quot;main_n_threads&quot;: 1,
-  &quot;descendents_n_threads&quot;: 15,
-  &quot;combined_n_threads&quot;: 16
+  &quot;descendants_n_threads&quot;: 12,
+  &quot;combined_n_threads&quot;: 13
  },
  &quot;gpu_utilization&quot;: {
   &quot;system_gpu_count&quot;: 1,
   &quot;n_expected_gpus&quot;: 1,
   &quot;gpu_percentages&quot;: {
-   &quot;max_sum_percent&quot;: 7.0,
-   &quot;max_hardware_percent&quot;: 7.0,
-   &quot;mean_sum_percent&quot;: 0.6363636363636364,
-   &quot;mean_hardware_percent&quot;: 0.6363636363636364
+   &quot;max_sum_percent&quot;: 5.0,
+   &quot;max_hardware_percent&quot;: 5.0,
+   &quot;mean_sum_percent&quot;: 0.5,
+   &quot;mean_hardware_percent&quot;: 0.5
   }
  },
  &quot;compute_time&quot;: {
   &quot;unit&quot;: &quot;hours&quot;,
-  &quot;time&quot;: 0.0012816817230648465
+  &quot;time&quot;: 0.0010636144214206272
  }
 }
 </pre></div>
