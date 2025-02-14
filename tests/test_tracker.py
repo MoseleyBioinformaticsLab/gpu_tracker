@@ -4,9 +4,10 @@ import json
 import os
 import pytest as pt
 import utils
+import subprocess as subp
 
-nvidia_smi_unavailable_message = 'The nvidia-smi command is not available. Please install the Nvidia drivers to track GPU usage. ' \
-                                 'Otherwise the Max GPU RAM values will remain 0.0'
+gpu_unavailable_message = ('Neither the nvidia-smi command nor the amd-smi command is installed. Install one of these to profile the '
+                           'GPU. Otherwise the GPU RAM and GPU utilization values will remain 0.0.')
 
 
 @pt.fixture(name='operating_system', params=['Linux', 'not-linux'])
@@ -127,6 +128,7 @@ def test_tracker(
             mocker.MagicMock(used=29 * 1e9)])
     nvidia_smi_outputs = [
         b'',
+        b'',
         b' uuid,memory.total [MiB]\ngpu-id1,12198 MiB\ngpu-id2,12198 MiB\ngpu-id3 , 12198MiB',
         b'pid, used_gpu_memory [MiB]\n',
         b'uuid, memory.used [MiB], utilization.gpu [%]\ngpu-id1, 0 MiB, 0 %\ngpu-id2 , 0 MiB, 0 %\ngpu-id3 , 0 MiB, 0 %',
@@ -173,7 +175,7 @@ def test_tracker(
         utils.assert_args_list(mock=main_process_mock.memory_info, expected_args_list=[()] * 3)
         utils.assert_args_list(mock=child1_mock.memory_info, expected_args_list=[()] * 3)
         utils.assert_args_list(mock=child2_mock.memory_info, expected_args_list=[()] * 3)
-    assert len(check_output_mock.call_args_list) == 8
+    assert len(check_output_mock.call_args_list) == 9
     os_mock.getpid.assert_called_once_with()
     utils.assert_args_list(mock=time_mock.time, expected_args_list=[()] * 5)
     cpu_percent_interval = gput.tracker._TrackingProcess._CPU_PERCENT_INTERVAL
@@ -196,10 +198,31 @@ def test_tracker(
         assert expected_measurements == tracker.to_json()
 
 
+def test_cannot_connect_warnings(mocker, caplog):
+    mocker.patch(
+        'gpu_tracker.tracker.subp.check_output',
+        side_effect=[
+            subp.CalledProcessError(1, ''),
+            FileNotFoundError(),
+            FileNotFoundError(),
+            subp.CalledProcessError(1, '')
+        ]
+    )
+    gput.Tracker()
+    gput.Tracker()
+    _assert_warnings(
+        caplog,
+        [
+            'The nvidia-smi command is installed but cannot connect to a GPU. The GPU RAM and GPU utilization values will remain 0.0.',
+            'The amd-smi command is installed but cannot connect to a GPU. The GPU RAM and GPU utilization values will remain 0.0.'
+        ]
+    )
+
+
 def test_main_process_warnings(mocker, caplog):
     n_join_attempts = 3
     join_timeout = 5.2
-    subprocess_mock = mocker.patch('gpu_tracker.tracker.subp', check_output=mocker.MagicMock(side_effect=FileNotFoundError))
+    check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=FileNotFoundError)
     mocker.patch('gpu_tracker.tracker.time', time=mocker.MagicMock(return_value=23.0))
     mocker.patch('gpu_tracker.tracker.os.path.getmtime', return_value=12.0)
     mocker.patch.object(gput.tracker._TrackingProcess, 'is_alive', return_value=True)
@@ -208,14 +231,14 @@ def test_main_process_warnings(mocker, caplog):
     close_spy = mocker.spy(gput.tracker._TrackingProcess, 'close')
     with gput.Tracker(n_join_attempts=n_join_attempts, join_timeout=join_timeout) as tracker:
         set_spy = mocker.spy(tracker._stop_event, 'set')
-    subprocess_mock.check_output.assert_called_once()
+    assert len(check_output_mock.call_args_list) == 2
     utils.assert_args_list(mock=set_spy, expected_args_list=[()] * n_join_attempts)
     utils.assert_args_list(
         mock=join_spy, expected_args_list=[{'timeout': join_timeout}] * n_join_attempts, use_kwargs=True)
     utils.assert_args_list(mock=tracker._tracking_process.is_alive, expected_args_list=[()] * (n_join_attempts + 1))
     terminate_spy.assert_called_once()
     close_spy.assert_called_once()
-    expected_warnings = [nvidia_smi_unavailable_message]
+    expected_warnings = [gpu_unavailable_message]
     expected_warnings += ['The tracking process is still alive after join timout. Attempting to join again...'] * n_join_attempts
     expected_warnings.append(
         'The tracking process is still alive after 3 attempts to join. Terminating the process by force...')
@@ -247,7 +270,7 @@ def test_tracking_process_warnings(mocker, disable_logs: bool, caplog):
             mocker.MagicMock(), psutil.NoSuchProcess(pid=666), mocker.MagicMock(),
             mocker.MagicMock(children=mocker.MagicMock(
                 side_effect=[psutil.NoSuchProcess(child_process_id), RuntimeError(error_message)]))])
-    subprocess_mock = mocker.patch('gpu_tracker.tracker.subp', check_output=mocker.MagicMock(side_effect=FileNotFoundError))
+    check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=FileNotFoundError)
     log_spy = mocker.spy(gput.tracker.log, 'warning')
     tracker = gput.Tracker(process_id=main_process_id, disable_logs=disable_logs)
     tracker._tracking_process.run()
@@ -262,12 +285,12 @@ def test_tracking_process_warnings(mocker, disable_logs: bool, caplog):
     [printed] = print_mock.call_args_list
     [printed] = printed.args
     assert error_message == str(printed)
-    assert len(subprocess_mock.check_output.call_args_list) == 2
+    assert len(check_output_mock.call_args_list) == 4
     if disable_logs:
         assert not log_spy.called
     else:
         expected_warnings = [
-            nvidia_smi_unavailable_message, 'The target process of ID 666 ended before tracking could begin.', nvidia_smi_unavailable_message,
+            gpu_unavailable_message, 'The target process of ID 666 ended before tracking could begin.', gpu_unavailable_message,
             'Failed to track a process (PID: 777) that does not exist. This possibly resulted from the process completing before it could be tracked.',
             'The following uncaught exception occurred in the tracking process:']
         _assert_warnings(caplog, expected_warnings)
@@ -282,15 +305,18 @@ def test_validate_arguments(mocker):
     assert str(error.value) == '"milibytes" is not a valid RAM unit. Valid values are bytes, gigabytes, kilobytes, megabytes, terabytes'
     subprocess_mock = mocker.patch(
         'gpu_tracker.tracker.subp', check_output=mocker.MagicMock(
-            side_effect=[b'', b'uuid ,memory.total [MiB] \ngpu-id1,2048 MiB\ngpu-id2,2048 MiB', b'', b'uuid ,memory.total [MiB] ']))
+            side_effect=[b'', b'', b'uuid ,memory.total [MiB] \ngpu-id1,2048 MiB\ngpu-id2,2048 MiB', b'', b'', b'uuid ,memory.total [MiB] ']))
     with pt.raises(ValueError) as error:
         gput.Tracker(gpu_uuids={'invalid-id'})
-    assert len(subprocess_mock.check_output.call_args_list) == 2
+    assert len(subprocess_mock.check_output.call_args_list) == 3
     assert str(error.value) == 'GPU UUID of invalid-id is not valid. Available UUIDs are: gpu-id1, gpu-id2'
     with pt.raises(ValueError) as error:
         gput.Tracker(gpu_uuids=set[str]())
-    assert len(subprocess_mock.check_output.call_args_list) == 4
+    assert len(subprocess_mock.check_output.call_args_list) == 6
     assert str(error.value) == 'gpu_uuids is not None but the set is empty. Please provide a set of at least one GPU UUID.'
+    with pt.raises(ValueError) as error:
+        gput.Tracker(gpu_brand='invalid-brand')
+    assert str(error.value) == '"invalid-brand" is not a valid GPU brand. Supported values are "nvidia" and "amd".'
 
 
 def test_state(mocker):
@@ -322,6 +348,7 @@ def test_resource_usage_file(mocker):
             return True
 
     mocker.patch('gpu_tracker.tracker.mproc.Event', wraps=EventMock)
+    mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=FileNotFoundError)
     file_path = 'my-file.pkl'
     tracker = gput.Tracker(resource_usage_file=file_path)
     assert not os.path.isfile(file_path)
