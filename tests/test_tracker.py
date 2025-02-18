@@ -199,15 +199,20 @@ def test_tracker(
 
 
 def test_cannot_connect_warnings(mocker, caplog):
-    mocker.patch(
-        'gpu_tracker.tracker.subp.check_output',
-        side_effect=[
+    exceptions = [
             subp.CalledProcessError(1, ''),
             FileNotFoundError(),
             FileNotFoundError(),
             subp.CalledProcessError(1, '')
         ]
-    )
+
+    def side_effect_func(command, *_, **__) -> None:
+        # This is a workaround for a bug that only occurs on Windows and in Python 3.11 or earlier.
+        # The check_output mock is called 3 times before it's supposed to, causing a "RuntimeError: generator raised StopIteration".
+        if command in ('nvidia-smi', 'amd-smi'):
+            raise exceptions.pop()
+        raise FileNotFoundError()
+    mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=side_effect_func)
     gput.Tracker()
     gput.Tracker()
     _assert_warnings(
