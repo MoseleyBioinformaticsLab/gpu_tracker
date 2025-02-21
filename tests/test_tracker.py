@@ -10,6 +10,11 @@ gpu_unavailable_message = ('Neither the nvidia-smi command nor the amd-smi comma
                            'GPU. Otherwise the GPU RAM and GPU utilization values will remain 0.0.')
 
 
+@pt.fixture(name='gpu_brand', params=['amd', 'nvidia'])
+def get_gpu_brand(request) -> str:
+    yield request.param
+
+
 @pt.fixture(name='operating_system', params=['Linux', 'not-linux'])
 def get_operating_system(request) -> str:
     yield request.param
@@ -30,8 +35,8 @@ test_tracker_data = [
 
 @pt.mark.parametrize('ram_unit,gpu_ram_unit,time_unit,gpu_uuids,n_expected_cores', test_tracker_data)
 def test_tracker(
-        mocker, use_context_manager: bool, operating_system: str, ram_unit: str, gpu_ram_unit: str, time_unit: str, gpu_uuids: set[str],
-        n_expected_cores: int):
+        mocker, gpu_brand: str, use_context_manager: bool, operating_system: str, ram_unit: str, gpu_ram_unit: str, time_unit: str,
+        gpu_uuids: set[str], n_expected_cores: int):
     class EventMock:
         def __init__(self):
             self.count = 0
@@ -126,17 +131,31 @@ def test_tracker(
         'gpu_tracker.tracker.psutil.virtual_memory', side_effect=[
             mocker.MagicMock(total=67 * 1e9), mocker.MagicMock(used=30 * 1e9), mocker.MagicMock(used=31 * 1e9),
             mocker.MagicMock(used=29 * 1e9)])
-    nvidia_smi_outputs = [
-        b'',
-        b'',
-        b' uuid,memory.total [MiB]\ngpu-id1,12198 MiB\ngpu-id2,12198 MiB\ngpu-id3 , 12198MiB',
-        b'pid, used_gpu_memory [MiB]\n',
-        b'uuid, memory.used [MiB], utilization.gpu [%]\ngpu-id1, 0 MiB, 0 %\ngpu-id2 , 0 MiB, 0 %\ngpu-id3 , 0 MiB, 0 %',
-        b'pid, used_gpu_memory [MiB]\n12,1600 MiB\n21,700 MiB\n22,200 MiB',
-        b'uuid, memory.used [MiB], utilization.gpu [%]\ngpu-id1, 1600 MiB,75 %\ngpu-id2,900 MiB , 50 %\n gpu-id3, 500 MiB, 25 %',
-        b'pid, used_gpu_memory [MiB]\n12,1500 MiB\n21,2100 MiB\n22,2200 MiB',
-        b'uuid, memory.used [MiB], utilization.gpu [%]\ngpu-id1, 1500 MiB, 55 %\n gpu-id2, 4300 MiB, 45%\ngpu-id3,700MiB,35%']
-    check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=nvidia_smi_outputs)
+    if gpu_brand == 'nvidia':
+        check_output_side_effect = [
+            b'',
+            b'',
+            b' uuid,memory.total [MiB]\ngpu-id1,12198 MiB\ngpu-id2,12198 MiB\ngpu-id3 , 12198MiB',
+            b'pid, used_gpu_memory [MiB]\n',
+            b'uuid, memory.used [MiB], utilization.gpu [%]\ngpu-id1, 0 MiB, 0 %\ngpu-id2 , 0 MiB, 0 %\ngpu-id3 , 0 MiB, 0 %',
+            b'pid, used_gpu_memory [MiB]\n12,1600 MiB\n21,700 MiB\n22,200 MiB',
+            b'uuid, memory.used [MiB], utilization.gpu [%]\ngpu-id1, 1600 MiB,75 %\ngpu-id2,900 MiB , 50 %\n gpu-id3, 500 MiB, 25 %',
+            b'pid, used_gpu_memory [MiB]\n12,1500 MiB\n21,2100 MiB\n22,2200 MiB',
+            b'uuid, memory.used [MiB], utilization.gpu [%]\ngpu-id1, 1500 MiB, 55 %\n gpu-id2, 4300 MiB, 45%\ngpu-id3,700MiB,35%']
+    else:
+        check_output_side_effect = [
+            FileNotFoundError,
+            b'',
+            b'gpu,size,extraneous-col\n0,12198,some-val\n1,12198,some-val\n2 , 12198,some-val',
+            b'gpu,gpu_uuid,extraneous-col\n0,gpu-id1,some-val\n1,gpu-id2,some-val\n2,gpu-id3 ,some-val',
+            b'pid,vram_mem\n',
+            b'gpu,vram_used,gfx\n0,0,0\n1 ,0,0\n2 ,0,0',
+            b'pid,vram_mem\n12,1600000000\n21,700000000\n22,200000000',
+            b'gpu,vram_used,gfx\n0,1600,75\n1,900,50\n2,500,25',
+            b'pid,vram_mem\n12,1500000000\n21,2100000000\n22,2200000000',
+            b'gpu,vram_used,gfx\n0,1500,55\n1,4300,45\n2,700,35'
+        ]
+    check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=check_output_side_effect)
     cpu_count_mock = mocker.patch('gpu_tracker.tracker.psutil.cpu_count', return_value=4)
     cpu_percent_mock = mocker.patch(
         'gpu_tracker.tracker.psutil.cpu_percent', side_effect=[[67.5, 27.3, 77.8, 97.9], [57.6, 58.2, 23.5, 99.8], [78.3, 88.3, 87.2, 22.5]])
@@ -157,6 +176,7 @@ def test_tracker(
             gpu_uuids=gpu_uuids, n_expected_cores=n_expected_cores)
         tracker.start()
         tracker.stop()
+    gput.tracker._AMDQuerier._AMDQuerier__id_to_uuid = None
     assert start_mock.called
     assert not os.path.isfile(tracker._resource_usage_file)
     assert not log_spy.called
@@ -175,7 +195,7 @@ def test_tracker(
         utils.assert_args_list(mock=main_process_mock.memory_info, expected_args_list=[()] * 3)
         utils.assert_args_list(mock=child1_mock.memory_info, expected_args_list=[()] * 3)
         utils.assert_args_list(mock=child2_mock.memory_info, expected_args_list=[()] * 3)
-    assert len(check_output_mock.call_args_list) == 9
+    assert len(check_output_mock.call_args_list) == 10 if gpu_brand == 'amd' else 9
     os_mock.getpid.assert_called_once_with()
     utils.assert_args_list(mock=time_mock.time, expected_args_list=[()] * 5)
     cpu_percent_interval = gput.tracker._TrackingProcess._CPU_PERCENT_INTERVAL
@@ -211,7 +231,7 @@ def test_cannot_connect_warnings(mocker, caplog):
         # The check_output mock is called 3 times before it's supposed to, causing a "RuntimeError: generator raised StopIteration".
         if command in ('nvidia-smi', 'amd-smi'):
             raise exceptions.pop()
-        raise FileNotFoundError()
+        raise FileNotFoundError()  # pragma: nocover
     mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=side_effect_func)
     gput.Tracker()
     gput.Tracker()
