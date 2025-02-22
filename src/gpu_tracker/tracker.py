@@ -54,7 +54,7 @@ class _NvidiaQuerier(_GPUQuerier):
     command = 'nvidia-smi'
 
     @classmethod
-    def _query_gpu(cls, *args: list[str], ram_column: str | None = None):
+    def _query_gpu(cls, *args: list[str], ram_column: str):
         gpu_info = super()._query_gpu(*args, '--format=csv')
         gpu_info.columns = [col.replace('[MiB]', '').replace('[%]', '').strip() for col in gpu_info.columns]
         gpu_info[ram_column] = gpu_info[ram_column].apply(lambda ram: int(ram.replace('MiB', '').strip()))
@@ -75,8 +75,45 @@ class _NvidiaQuerier(_GPUQuerier):
         gpu_info.utilization_percent = [float(percentage.replace('%', '').strip()) for percentage in gpu_info.utilization_percent]
         return gpu_info
 
+
 class _AMDQuerier(_GPUQuerier):
     command = 'amd-smi'
+    __id_to_uuid = None
+
+    @classmethod
+    @property
+    def _id_to_uuid(cls) -> dict[int, str]:
+        if cls.__id_to_uuid is None:
+            gpu_info = super()._query_gpu('list', '--csv')
+            cls.__id_to_uuid = {gpu_id: uuid for gpu_id, uuid in zip(gpu_info.gpu, gpu_info.gpu_uuid)}
+        return cls.__id_to_uuid
+
+    @classmethod
+    def _query_gpu(cls, *args: list[str], ram_column: str) -> pd.DataFrame:
+        gpu_info = super()._query_gpu(*args, '--csv')
+        if 'gpu' in gpu_info.columns:
+            gpu_info.gpu = [cls._id_to_uuid[gpu_id] for gpu_id in gpu_info.gpu]
+            gpu_info = gpu_info.rename(columns={'gpu': 'uuid'})
+        return gpu_info.rename(columns={ram_column: 'ram'})
+
+    @classmethod
+    def static_info(cls) -> pd.DataFrame:
+        gpu_info = cls._query_gpu('static', '--vram', ram_column='size')
+        return gpu_info[['uuid', 'ram']]
+
+    @classmethod
+    def process_ram(cls) -> pd.DataFrame:
+        gpu_info = cls._query_gpu('process', ram_column='vram_mem')
+        gpu_info.ram = [ram / 1e6 for ram in gpu_info.ram]  # RAM is in bytes for the process subcommand.
+        return gpu_info[['pid', 'ram']]
+
+    @classmethod
+    def ram_and_utilization(cls) -> pd.DataFrame:
+        gpu_info = cls._query_gpu('monitor', '--vram-usage', '--gfx', ram_column='vram_used')
+        gpu_info = gpu_info[['uuid', 'gfx', 'ram']]
+        gpu_info.gfx = gpu_info.gfx.astype(float)
+        return gpu_info.rename(columns={'gfx': 'utilization_percent'})
+
 
 class _TrackingProcess(mproc.Process):
     _CPU_PERCENT_INTERVAL = 0.1
