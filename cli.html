@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CLI &mdash; gpu_tracker 4.0.0 documentation</title>
+  <title>CLI &mdash; gpu_tracker 4.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=3304f9e4"></script>
+      <script src="_static/documentation_options.js?v=42d1b3bd"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -84,7 +84,7 @@ See the CLI section of the <a class="reference internal" href="tutorial.html#tut
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Usage:
     gpu-tracker -h | --help
     gpu-tracker -v | --version
-    gpu-tracker --execute=&lt;command&gt; [--output=&lt;output&gt;] [--format=&lt;format&gt;] [--st=&lt;sleep-time&gt;] [--ru=&lt;ram-unit&gt;] [--gru=&lt;gpu-ram-unit&gt;] [--tu=&lt;time-unit&gt;] [--nec=&lt;num-cores&gt;] [--guuids=&lt;gpu-uuids&gt;] [--disable-logs]
+    gpu-tracker --execute=&lt;command&gt; [--output=&lt;output&gt;] [--format=&lt;format&gt;] [--st=&lt;sleep-time&gt;] [--ru=&lt;ram-unit&gt;] [--gru=&lt;gpu-ram-unit&gt;] [--tu=&lt;time-unit&gt;] [--nec=&lt;num-cores&gt;] [--guuids=&lt;gpu-uuids&gt;] [--disable-logs] [--gb=&lt;gpu-brand&gt;]
 
 Options:
     -h --help               Show this help message and exit.
@@ -99,6 +99,7 @@ Options:
     --nec=&lt;num-cores&gt;       The number of cores expected to be used. Defaults to the number of cores in the entire operating system.
     --guuids=&lt;gpu-uuids&gt;    Comma separated list of the UUIDs of the GPUs for which to track utilization e.g. gpu-uuid1,gpu-uuid2,etc. Defaults to all the GPUs in the system.
     --disable-logs          If set, warnings are suppressed during tracking. Otherwise, the Tracker logs warnings as usual.
+    --gb=&lt;gpu-brand&gt;        The brand of GPU to profile. Valid values are nvidia and amd. Defaults to the brand of GPU detected in the system, checking NVIDIA first.
 </pre></div>
 </div>
 </section>
