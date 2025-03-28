@@ -18,12 +18,12 @@ test_data = [
     (['-e', 'my-command', '--ru=kilobytes'], ['my-command'], {'disable_logs': False, 'ram_unit': 'kilobytes'}),
     (['--execute', 'my-command arg1 ', '--disable-logs'], ['my-command', 'arg1'], {'disable_logs': True}),
     (
-        ['--execute=my-command arg1  arg2', '--st=0.4', '--gb=nvidia'], ['my-command', 'arg1', 'arg2'],
-        {'disable_logs': False, 'sleep_time': 0.4, 'gpu_brand': 'nvidia'}
+        ['--execute=my-command arg1  arg2', '--st=0.4', '--gb=nvidia', '--tf=track-file.sqlite'], ['my-command', 'arg1', 'arg2'],
+        {'disable_logs': False, 'sleep_time': 0.4, 'gpu_brand': 'nvidia', 'tracking_file': 'track-file.sqlite'}
     ),
     (
-        ['-e', 'my-command', '--gru=megabytes', '--tu=days', '--gb=amd'], ['my-command'],
-        {'disable_logs': False, 'gpu_ram_unit': 'megabytes', 'time_unit': 'days', 'gpu_brand': 'amd'}),
+        ['-e', 'my-command', '--gru=megabytes', '--tu=days', '--gb=amd', '--tf=track-file.csv'], ['my-command'],
+        {'disable_logs': False, 'gpu_ram_unit': 'megabytes', 'time_unit': 'days', 'gpu_brand': 'amd', 'tracking_file': 'track-file.csv'}),
     (
         ['-e', 'my-command', '--nec=3', '--guuids=gpu-id1,gpu-id2,gpu-id3', '--gb=amd'], ['my-command'],
         {'disable_logs': False, 'n_expected_cores': 3, 'gpu_uuids': {'gpu-id1', 'gpu-id2', 'gpu-id3'}, 'gpu_brand': 'amd'}),

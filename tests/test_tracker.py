@@ -5,6 +5,11 @@ import os
 import pytest as pt
 import utils
 import subprocess as subp
+import pandas as pd
+import sqlalchemy as sqlalc
+# noinspection PyProtectedMember
+from gpu_tracker._helper_classes import _SQLiteTrackingFile
+
 
 gpu_unavailable_message = ('Neither the nvidia-smi command nor the amd-smi command is installed. Install one of these to profile the '
                            'GPU. Otherwise the GPU RAM and GPU utilization values will remain 0.0.')
@@ -25,6 +30,11 @@ def get_use_context_manager(request) -> bool:
     yield request.param
 
 
+@pt.fixture(name='tracking_file', params=[None, '.csv', '.sqlite'])
+def get_tracking_file(request) -> str:
+    return request.param
+
+
 test_tracker_data = [
     ('bytes', 'megabytes', 'seconds', None, 3),
     ('kilobytes', 'gigabytes', 'minutes', {'gpu-id1'}, 2),
@@ -35,8 +45,8 @@ test_tracker_data = [
 
 @pt.mark.parametrize('ram_unit,gpu_ram_unit,time_unit,gpu_uuids,n_expected_cores', test_tracker_data)
 def test_tracker(
-        mocker, gpu_brand: str, use_context_manager: bool, operating_system: str, ram_unit: str, gpu_ram_unit: str, time_unit: str,
-        gpu_uuids: set[str], n_expected_cores: int):
+        mocker, gpu_brand: str, use_context_manager: bool, operating_system: str, tracking_file: str | None, ram_unit: str,
+        gpu_ram_unit: str, time_unit: str, gpu_uuids: set[str], n_expected_cores: int):
     class EventMock:
         def __init__(self):
             self.count = 0
@@ -155,7 +165,7 @@ def test_tracker(
             b'pid,vram_mem\n12,1500000000\n21,2100000000\n22,2200000000',
             b'gpu,vram_used,gfx\n0,1500,55\n1,4300,45\n2,700,35'
         ]
-    check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=check_output_side_effect)
+    check_output_mock = mocker.patch('gpu_tracker._helper_classes.subp.check_output', side_effect=check_output_side_effect)
     cpu_count_mock = mocker.patch('gpu_tracker.tracker.psutil.cpu_count', return_value=4)
     cpu_percent_mock = mocker.patch(
         'gpu_tracker.tracker.psutil.cpu_percent', side_effect=[[67.5, 27.3, 77.8, 97.9], [57.6, 58.2, 23.5, 99.8], [78.3, 88.3, 87.2, 22.5]])
@@ -165,15 +175,17 @@ def test_tracker(
     log_spy = mocker.spy(gput.tracker.log, 'warning')
     sleep_time = 1.5
     join_timeout = 5.5
+    test_file = f'{use_context_manager}-{operating_system}-{ram_unit}-{gpu_ram_unit}-{time_unit}'
+    tracking_file = f'{test_file}_{gpu_brand}{tracking_file}' if tracking_file is not None else None
     if use_context_manager:
         with gput.Tracker(
                 sleep_time=sleep_time, join_timeout=join_timeout, ram_unit=ram_unit, gpu_ram_unit=gpu_ram_unit,
-                time_unit=time_unit, gpu_uuids=gpu_uuids, n_expected_cores=n_expected_cores) as tracker:
+                time_unit=time_unit, gpu_uuids=gpu_uuids, n_expected_cores=n_expected_cores, tracking_file=tracking_file) as tracker:
             pass
     else:
         tracker = gput.Tracker(
             sleep_time=sleep_time, join_timeout=join_timeout, ram_unit=ram_unit, gpu_ram_unit=gpu_ram_unit, time_unit=time_unit,
-            gpu_uuids=gpu_uuids, n_expected_cores=n_expected_cores)
+            gpu_uuids=gpu_uuids, n_expected_cores=n_expected_cores, tracking_file=tracking_file)
         tracker.start()
         tracker.stop()
     gput.tracker._AMDQuerier._AMDQuerier__id_to_uuid = None
@@ -209,13 +221,24 @@ def test_tracker(
     tracker._tracking_process.close.assert_called_once_with()
     cpu_count_mock.assert_called_once_with()
     utils.assert_args_list(cpu_percent_mock, [()] * 3)
-    expected_measurements_file = f'tests/data/{use_context_manager}-{operating_system}-{ram_unit}-{gpu_ram_unit}-{time_unit}'
+    expected_measurements_file = f'tests/data/{test_file}'
     with open(f'{expected_measurements_file}.txt', 'r') as file:
         expected_tracker_str = file.read()
         assert expected_tracker_str == str(tracker)
     with open(f'{expected_measurements_file}.json', 'r') as file:
         expected_measurements = json.load(file)
         assert expected_measurements == tracker.to_json()
+    if tracking_file is None:
+        assert tracker._tracking_process.tracking_file is None
+    else:
+        if tracking_file.endswith('.csv'):
+            actual_timepoint_usage = pd.read_csv(tracking_file)
+        else:
+            engine = sqlalc.create_engine(f'sqlite:///{tracking_file}', poolclass=sqlalc.pool.NullPool)
+            actual_timepoint_usage = pd.read_sql_table(_SQLiteTrackingFile._SQLITE_TABLE_NAME, engine)
+        expected_timepoint_usage = pd.read_csv(f'{expected_measurements_file}.csv')
+        pd.testing.assert_frame_equal(expected_timepoint_usage, actual_timepoint_usage, atol=1e-10, rtol=1e-10)
+        os.remove(tracking_file)
 
 
 def test_cannot_connect_warnings(mocker, caplog):
@@ -232,7 +255,7 @@ def test_cannot_connect_warnings(mocker, caplog):
         if command in ('nvidia-smi', 'amd-smi'):
             raise exceptions.pop()
         raise FileNotFoundError()  # pragma: nocover
-    mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=side_effect_func)
+    mocker.patch('gpu_tracker._helper_classes.subp.check_output', side_effect=side_effect_func)
     gput.Tracker()
     gput.Tracker()
     _assert_warnings(
@@ -247,7 +270,7 @@ def test_cannot_connect_warnings(mocker, caplog):
 def test_main_process_warnings(mocker, caplog):
     n_join_attempts = 3
     join_timeout = 5.2
-    check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=FileNotFoundError)
+    check_output_mock = mocker.patch('gpu_tracker._helper_classes.subp.check_output', side_effect=FileNotFoundError)
     mocker.patch('gpu_tracker.tracker.time', time=mocker.MagicMock(return_value=23.0))
     mocker.patch('gpu_tracker.tracker.os.path.getmtime', return_value=12.0)
     mocker.patch.object(gput.tracker._TrackingProcess, 'is_alive', return_value=True)
@@ -295,7 +318,7 @@ def test_tracking_process_warnings(mocker, disable_logs: bool, caplog):
             mocker.MagicMock(), psutil.NoSuchProcess(pid=666), mocker.MagicMock(),
             mocker.MagicMock(children=mocker.MagicMock(
                 side_effect=[psutil.NoSuchProcess(child_process_id), RuntimeError(error_message)]))])
-    check_output_mock = mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=FileNotFoundError)
+    check_output_mock = mocker.patch('gpu_tracker._helper_classes.subp.check_output', side_effect=FileNotFoundError)
     log_spy = mocker.spy(gput.tracker.log, 'warning')
     tracker = gput.Tracker(process_id=main_process_id, disable_logs=disable_logs)
     tracker._tracking_process.run()
@@ -329,7 +352,7 @@ def test_validate_arguments(mocker):
         gput.Tracker(ram_unit='milibytes')
     assert str(error.value) == '"milibytes" is not a valid RAM unit. Valid values are bytes, gigabytes, kilobytes, megabytes, terabytes'
     subprocess_mock = mocker.patch(
-        'gpu_tracker.tracker.subp', check_output=mocker.MagicMock(
+        'gpu_tracker._helper_classes.subp', check_output=mocker.MagicMock(
             side_effect=[b'', b'', b'uuid ,memory.total [MiB] \ngpu-id1,2048 MiB\ngpu-id2,2048 MiB', b'', b'', b'uuid ,memory.total [MiB] ']))
     with pt.raises(ValueError) as error:
         gput.Tracker(gpu_uuids={'invalid-id'})
@@ -342,10 +365,13 @@ def test_validate_arguments(mocker):
     with pt.raises(ValueError) as error:
         gput.Tracker(gpu_brand='invalid-brand')
     assert str(error.value) == '"invalid-brand" is not a valid GPU brand. Supported values are "nvidia" and "amd".'
+    with pt.raises(ValueError) as error:
+        gput.Tracker(tracking_file='invalid.txt')
+    assert str(error.value) == 'Invalid file name: "invalid.txt". Valid file extensions are ".csv" and ".sqlite".'
 
 
 def test_state(mocker):
-    mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=FileNotFoundError)
+    mocker.patch('gpu_tracker._helper_classes.subp.check_output', side_effect=FileNotFoundError)
     tracker = gput.Tracker()
     assert tracker.__repr__() == 'State: NEW'
     with pt.raises(RuntimeError) as error:
@@ -373,7 +399,7 @@ def test_resource_usage_file(mocker):
             return True
 
     mocker.patch('gpu_tracker.tracker.mproc.Event', wraps=EventMock)
-    mocker.patch('gpu_tracker.tracker.subp.check_output', side_effect=FileNotFoundError)
+    mocker.patch('gpu_tracker._helper_classes.subp.check_output', side_effect=FileNotFoundError)
     file_path = 'my-file.pkl'
     tracker = gput.Tracker(resource_usage_file=file_path)
     assert not os.path.isfile(file_path)

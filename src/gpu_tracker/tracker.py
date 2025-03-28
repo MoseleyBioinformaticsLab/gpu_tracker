@@ -1,6 +1,5 @@
 """The ``tracker`` module contains the ``Tracker`` class which can alternatively be imported directly from the ``gpu_tracker`` package."""
 from __future__ import annotations
-import abc
 import json
 import dataclasses as dclass
 import platform
@@ -9,110 +8,12 @@ import multiprocessing as mproc
 import os
 import typing as typ
 import psutil
-import subprocess as subp
 import logging as log
 import enum
 import pickle as pkl
 import uuid
-import io
 import pandas as pd
-
-
-class _GPUQuerier(abc.ABC):
-    @classmethod
-    def _query_gpu(cls, *args) -> pd.DataFrame:
-        output = subp.check_output((cls.command,) + args, stderr=subp.STDOUT).decode()
-        gpu_info = pd.read_csv(io.StringIO(output))
-        return gpu_info.map(lambda value: value.strip() if type(value) is str else value)
-
-    @classmethod
-    def is_available(cls) -> bool | None:
-        try:
-            subp.check_output(cls.command)
-            return True
-        except subp.CalledProcessError:
-            return False
-        except FileNotFoundError:
-            return None
-
-    @classmethod
-    @abc.abstractmethod
-    def static_info(cls) -> pd.DataFrame:
-        pass  # pragma: nocover
-
-    @classmethod
-    @abc.abstractmethod
-    def process_ram(cls) -> pd.DataFrame:
-        pass  # pragma: nocover
-
-    @classmethod
-    @abc.abstractmethod
-    def ram_and_utilization(cls) -> pd.DataFrame:
-        pass  # pragma: nocover
-
-class _NvidiaQuerier(_GPUQuerier):
-    command = 'nvidia-smi'
-
-    @classmethod
-    def _query_gpu(cls, *args: list[str], ram_column: str):
-        gpu_info = super()._query_gpu(*args, '--format=csv')
-        gpu_info.columns = [col.replace('[MiB]', '').replace('[%]', '').strip() for col in gpu_info.columns]
-        gpu_info[ram_column] = gpu_info[ram_column].apply(lambda ram: int(ram.replace('MiB', '').strip()))
-        return gpu_info.rename(columns={ram_column: 'ram'})
-
-    @classmethod
-    def static_info(cls) -> pd.DataFrame:
-        return cls._query_gpu('--query-gpu=uuid,memory.total', ram_column='memory.total')
-
-    @classmethod
-    def process_ram(cls) -> pd.DataFrame:
-        return cls._query_gpu('--query-compute-apps=pid,used_gpu_memory', ram_column='used_gpu_memory')
-
-    @classmethod
-    def ram_and_utilization(cls) -> pd.DataFrame:
-        gpu_info = cls._query_gpu('--query-gpu=uuid,memory.used,utilization.gpu', ram_column='memory.used')
-        gpu_info = gpu_info.rename(columns={'utilization.gpu': 'utilization_percent'})
-        gpu_info.utilization_percent = [float(percentage.replace('%', '').strip()) for percentage in gpu_info.utilization_percent]
-        return gpu_info
-
-
-class _AMDQuerier(_GPUQuerier):
-    command = 'amd-smi'
-    __id_to_uuid = None
-
-    @classmethod
-    @property
-    def _id_to_uuid(cls) -> dict[int, str]:
-        if cls.__id_to_uuid is None:
-            gpu_info = super()._query_gpu('list', '--csv')
-            cls.__id_to_uuid = {gpu_id: uuid for gpu_id, uuid in zip(gpu_info.gpu, gpu_info.gpu_uuid)}
-        return cls.__id_to_uuid
-
-    @classmethod
-    def _query_gpu(cls, *args: list[str], ram_column: str) -> pd.DataFrame:
-        gpu_info = super()._query_gpu(*args, '--csv')
-        if 'gpu' in gpu_info.columns:
-            gpu_info.gpu = [cls._id_to_uuid[gpu_id] for gpu_id in gpu_info.gpu]
-            gpu_info = gpu_info.rename(columns={'gpu': 'uuid'})
-        return gpu_info.rename(columns={ram_column: 'ram'})
-
-    @classmethod
-    def static_info(cls) -> pd.DataFrame:
-        gpu_info = cls._query_gpu('static', '--vram', ram_column='size')
-        return gpu_info[['uuid', 'ram']]
-
-    @classmethod
-    def process_ram(cls) -> pd.DataFrame:
-        gpu_info = cls._query_gpu('process', ram_column='vram_mem')
-        gpu_info.ram = [ram / 1e6 for ram in gpu_info.ram]  # RAM is in bytes for the process subcommand.
-        return gpu_info[['pid', 'ram']]
-
-    @classmethod
-    def ram_and_utilization(cls) -> pd.DataFrame:
-        gpu_info = cls._query_gpu('monitor', '--vram-usage', '--gfx', ram_column='vram_used')
-        gpu_info = gpu_info[['uuid', 'gfx', 'ram']]
-        gpu_info.gfx = gpu_info.gfx.astype(float)
-        return gpu_info.rename(columns={'gfx': 'utilization_percent'})
+from ._helper_classes import _NvidiaQuerier, _AMDQuerier, _TrackingFile, TimepointUsage
 
 
 class _TrackingProcess(mproc.Process):
@@ -141,7 +42,7 @@ class _TrackingProcess(mproc.Process):
     def __init__(
             self, stop_event: mproc.Event, sleep_time: float, ram_unit: str, gpu_ram_unit: str, time_unit: str,
             n_expected_cores: int | None, gpu_uuids: set[str] | None, disable_logs: bool, main_process_id: int,
-            resource_usage_file: str, extraneous_process_ids: set[int], gpu_brand: str | None):
+            resource_usage_file: str, extraneous_process_ids: set[int], gpu_brand: str | None, tracking_file: str | None):
         super().__init__()
         self._stop_event = stop_event
         if sleep_time < _TrackingProcess._CPU_PERCENT_INTERVAL:
@@ -163,6 +64,7 @@ class _TrackingProcess(mproc.Process):
         self._is_linux = platform.system().lower() == 'linux'
         cannot_connect_warning = ('The {} command is installed but cannot connect to a GPU. '
                                   'The GPU RAM and GPU utilization values will remain 0.0.')
+        self.tracking_file = _TrackingFile.create(tracking_file)
         if gpu_brand is None:
             nvidia_available = _NvidiaQuerier.is_available()
             nvidia_installed = nvidia_available is not None
@@ -238,6 +140,7 @@ class _TrackingProcess(mproc.Process):
             self._stop_event.set()
         # Simulate a do-while loop so that the tracking is executed at least once.
         while True:
+            timepoint_usage = TimepointUsage()
             with open(self._resource_usage_file, 'wb') as file:
                 pkl.dump(self._resource_usage, file)
             if self._stop_event.is_set():
@@ -256,56 +159,78 @@ class _TrackingProcess(mproc.Process):
                 descendants_ram = self._map_processes(descendant_processes, map_func=ram_map_func)
                 combined_ram = main_ram + descendants_ram
                 kwarg = 'memory_maps_list' if self._is_linux else 'rss_list'
-                self._update_ram(rss_values=self._resource_usage.max_ram.main, **{kwarg: main_ram})
-                self._update_ram(rss_values=self._resource_usage.max_ram.descendants, **{kwarg: descendants_ram})
-                self._update_ram(rss_values=self._resource_usage.max_ram.combined, **{kwarg: combined_ram})
-                self._resource_usage.max_ram.system = max(
-                    self._resource_usage.max_ram.system, psutil.virtual_memory().used * self._ram_coefficient)
+                timepoint_usage.main_ram = self._update_ram(rss_values=self._resource_usage.max_ram.main, **{kwarg: main_ram})
+                timepoint_usage.descendants_ram = self._update_ram(
+                    rss_values=self._resource_usage.max_ram.descendants, **{kwarg: descendants_ram})
+                timepoint_usage.combined_ram = self._update_ram(
+                    rss_values=self._resource_usage.max_ram.combined, **{kwarg: combined_ram})
+                timepoint_usage.system_ram = psutil.virtual_memory().used * self._ram_coefficient
+                self._resource_usage.max_ram.system = max(self._resource_usage.max_ram.system, timepoint_usage.system_ram)
                 # Get the maximum GPU RAM usage if available.
                 if self._gpu_querier:  # pragma: nocover
                     gpu_info = self._gpu_querier.process_ram()
                     if len(gpu_info):
                         process_ids = {self._main_process_id}
-                        self._update_gpu_ram(attr='main', process_ids=process_ids, gpu_info=gpu_info)
+                        timepoint_usage.main_gpu_ram = self._update_gpu_ram(attr='main', process_ids=process_ids, gpu_info=gpu_info)
                         process_ids = set(self._map_processes(processes=descendant_processes, map_func=lambda process: process.pid))
-                        self._update_gpu_ram(attr='descendants', process_ids=process_ids, gpu_info=gpu_info)
+                        timepoint_usage.descendants_gpu_ram = self._update_gpu_ram(
+                            attr='descendants', process_ids=process_ids, gpu_info=gpu_info)
                         process_ids.add(self._main_process_id)
-                        self._update_gpu_ram(attr='combined', process_ids=process_ids, gpu_info=gpu_info)
+                        timepoint_usage.combined_gpu_ram = self._update_gpu_ram(
+                            attr='combined', process_ids=process_ids, gpu_info=gpu_info)
                     gpu_info = self._gpu_querier.ram_and_utilization()
-                    system_gpu_ram = self._get_gpu_ram(gpu_info)
-                    self._resource_usage.max_gpu_ram.system = max(self._resource_usage.max_gpu_ram.system, system_gpu_ram)
-                    gpu_info = gpu_info.loc[[uuid in self._gpu_uuids for uuid in gpu_info.uuid]]
-                    self._update_processing_unit_utilization(
+                    timepoint_usage.system_gpu_ram = self._get_gpu_ram(gpu_info)
+                    self._resource_usage.max_gpu_ram.system = max(
+                        self._resource_usage.max_gpu_ram.system, timepoint_usage.system_gpu_ram)
+                    gpu_info = gpu_info.loc[[uuid_ in self._gpu_uuids for uuid_ in gpu_info.uuid]]
+                    (
+                        timepoint_usage.gpu_sum_utilization_percent, timepoint_usage.gpu_hardware_utilization_percent
+                    ) = self._update_processing_unit_utilization(
                         current_percentages=list(gpu_info.utilization_percent),
                         processing_unit_percentages=self._resource_usage.gpu_utilization.gpu_percentages, percent_key='gpu',
                         n_hardware_units=self._resource_usage.gpu_utilization.n_expected_gpus)
                 # Get the mean and maximum CPU usages.
                 main_n_threads = self._map_processes([main_process], map_func=get_n_threads)
                 descendant_n_threads = self._map_processes(descendant_processes, map_func=get_n_threads)
-                self._update_n_threads(n_threads_list=main_n_threads, attr='main')
-                self._update_n_threads(n_threads_list=descendant_n_threads, attr='descendants')
-                self._update_n_threads(n_threads_list=main_n_threads + descendant_n_threads, attr='combined')
+                timepoint_usage.main_n_threads = self._update_n_threads(n_threads_list=main_n_threads, attr='main')
+                timepoint_usage.descendants_n_threads = self._update_n_threads(
+                    n_threads_list=descendant_n_threads, attr='descendants')
+                timepoint_usage.combined_n_threads = self._update_n_threads(
+                    n_threads_list=main_n_threads + descendant_n_threads, attr='combined')
                 # noinspection PyTypeChecker
                 system_core_percentages: list[float] = psutil.cpu_percent(percpu=True)
                 cpu_utilization = self._resource_usage.cpu_utilization
-                self._update_processing_unit_utilization(
+                (
+                    timepoint_usage.cpu_system_sum_utilization_percent, timepoint_usage.cpu_system_hardware_utilization_percent
+                ) = self._update_processing_unit_utilization(
                     current_percentages=system_core_percentages, processing_unit_percentages=cpu_utilization.system,
                     percent_key='cpu_system', n_hardware_units=cpu_utilization.system_core_count)
                 time.sleep(_TrackingProcess._CPU_PERCENT_INTERVAL)
                 main_percentage = self._map_processes([main_process], map_func=get_cpu_percent)
                 descendant_percentages = self._map_processes(processes=descendant_processes, map_func=get_cpu_percent)
-                self._update_processing_unit_utilization(
+                (
+                    timepoint_usage.cpu_main_sum_utilization_percent, timepoint_usage.cpu_main_hardware_utilization_percent
+                ) = self._update_processing_unit_utilization(
                     current_percentages=main_percentage, processing_unit_percentages=cpu_utilization.main, percent_key='cpu_main',
                     n_hardware_units=cpu_utilization.n_expected_cores)
-                self._update_processing_unit_utilization(
+                (
+                    timepoint_usage.cpu_descendants_sum_utilization_percent,
+                    timepoint_usage.cpu_descendants_hardware_utilization_percent
+                ) = self._update_processing_unit_utilization(
                     current_percentages=descendant_percentages, processing_unit_percentages=cpu_utilization.descendants,
                     percent_key='cpu_descendants', n_hardware_units=cpu_utilization.n_expected_cores)
-                self._update_processing_unit_utilization(
+                (
+                    timepoint_usage.cpu_combined_sum_utilization_percent,
+                    timepoint_usage.cpu_combined_hardware_utilization_percent
+                ) = self._update_processing_unit_utilization(
                     current_percentages=main_percentage + descendant_percentages, processing_unit_percentages=cpu_utilization.combined,
                     percent_key='cpu_combined', n_hardware_units=cpu_utilization.n_expected_cores)
                 # Update compute time.
-                self._resource_usage.compute_time.time = (time.time() - start_time) * self._time_coefficient
+                timepoint_usage.timestamp = time.time()
+                self._resource_usage.compute_time.time = (timepoint_usage.timestamp - start_time) * self._time_coefficient
                 self._tracking_iteration += 1
+                if self.tracking_file:
+                    self.tracking_file.write_row(timepoint_usage)
                 time.sleep(self._sleep_time - _TrackingProcess._CPU_PERCENT_INTERVAL)
             except psutil.NoSuchProcess as error:
                 self._log_warning(f'Failed to track a process (PID: {error.pid}) that does not exist. '
@@ -323,7 +248,8 @@ class _TrackingProcess(mproc.Process):
                 self._log_warning('Attempted to obtain usage information of a process that no longer exists.')  # pragma: nocover
         return mapped_list
 
-    def _update_ram(self, rss_values: RSSValues, memory_maps_list: list[list] | None = None, rss_list: list[int] | None = None):
+    def _update_ram(
+            self, rss_values: RSSValues, memory_maps_list: list[list] | None = None, rss_list: list[int] | None = None) -> float:
         if memory_maps_list is not None:
             private_rss = 0
             path_to_shared_rss = dict[str, float]()
@@ -345,19 +271,21 @@ class _TrackingProcess(mproc.Process):
             total_rss = sum(rss_list)
             total_rss *= self._ram_coefficient
         rss_values.total_rss = max(rss_values.total_rss, total_rss)
+        return total_rss
 
-    def _update_gpu_ram(self, attr: str, process_ids: set[int], gpu_info: pd.DataFrame):
+    def _update_gpu_ram(self, attr: str, process_ids: set[int], gpu_info: pd.DataFrame) -> float:
         gpu_info = gpu_info.loc[[pid in process_ids for pid in gpu_info.pid]]
         gpu_ram = self._get_gpu_ram(gpu_info)
         max_gpu_ram = getattr(self._resource_usage.max_gpu_ram, attr)
         setattr(self._resource_usage.max_gpu_ram, attr, max(max_gpu_ram, gpu_ram))
+        return gpu_ram
 
     def _get_gpu_ram(self, gpu_info: pd.DataFrame) -> float:
         return sum(gpu_info.ram) * self._gpu_ram_coefficient
 
     def _update_processing_unit_utilization(
             self, current_percentages: list[float], processing_unit_percentages: ProcessingUnitPercentages,
-            percent_key: str, n_hardware_units: int):
+            percent_key: str, n_hardware_units: int) -> tuple[float, float]:
         sum_percent = sum(current_percentages)
         hardware_percent = sum_percent / n_hardware_units
         for percent, percent_sums, percent_type in (
@@ -367,12 +295,14 @@ class _TrackingProcess(mproc.Process):
             setattr(processing_unit_percentages, f'mean_{percent_type}_percent', mean_percent)
             max_percent: float = getattr(processing_unit_percentages, f'max_{percent_type}_percent')
             setattr(processing_unit_percentages, f'max_{percent_type}_percent', max(max_percent, percent))
+        return sum_percent, hardware_percent
 
-    def _update_n_threads(self, n_threads_list: list[int], attr: str):
+    def _update_n_threads(self, n_threads_list: list[int], attr: str) -> int:
         n_threads = sum(n_threads_list)
         attr = f'{attr}_n_threads'
         max_n_threads = getattr(self._resource_usage.cpu_utilization, attr)
         setattr(self._resource_usage.cpu_utilization, attr, max(n_threads, max_n_threads))
+        return n_threads
 
     @staticmethod
     def _validate_unit(unit: str, unit2coefficient: dict[str, float], unit_type: str) -> float:
@@ -405,7 +335,7 @@ class Tracker:
             self, sleep_time: float = 1.0, ram_unit: str = 'gigabytes', gpu_ram_unit: str = 'gigabytes', time_unit: str = 'hours',
             n_expected_cores: int = None, gpu_uuids: set[str] = None, disable_logs: bool = False, process_id: int = None,
             resource_usage_file: str | None = None, n_join_attempts: int = 5, join_timeout: float = 10.0,
-            gpu_brand: str | None = None):
+            gpu_brand: str | None = None, tracking_file: str | None = None):
         """
         :param sleep_time: The number of seconds to sleep in between usage-collection iterations.
         :param ram_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
@@ -419,7 +349,8 @@ class Tracker:
         :param n_join_attempts: The number of times the tracker attempts to join its underlying sub-process.
         :param join_timeout: The amount of time the tracker waits for its underlying sub-process to join.
         :param gpu_brand: The brand of GPU to profile. Valid values are "nvidia" and "amd". Defaults to the brand of GPU detected in the system, checking Nvidia first.
-        :raises ValueError: Raised if invalid units are provided.
+        :param tracking_file: If specified, stores the individual resource usage measurements at each iteration. Valid file formats are CSV (.csv) and SQLite (.sqlite) where the SQLite file format stores the data in a table called "tracking" and allows for more efficient querying.
+        :raises ValueError: Raised if invalid arguments are provided.
         """
         current_process_id = os.getpid()
         current_process = psutil.Process(current_process_id)
@@ -432,7 +363,8 @@ class Tracker:
         self._resource_usage_file = f'.gpu-tracker_{uuid.uuid1()}.pkl' if resource_usage_file is None else resource_usage_file
         self._tracking_process = _TrackingProcess(
             self._stop_event, sleep_time, ram_unit, gpu_ram_unit, time_unit, n_expected_cores, gpu_uuids, disable_logs,
-            process_id if process_id is not None else current_process_id, self._resource_usage_file, extraneous_ids, gpu_brand)
+            process_id if process_id is not None else current_process_id, self._resource_usage_file, extraneous_ids, gpu_brand,
+            tracking_file)
         self.resource_usage = None
         self.n_join_attempts = n_join_attempts
         self.join_timeout = join_timeout
