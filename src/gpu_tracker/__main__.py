@@ -4,7 +4,7 @@ Tracks the computational resource usage (RAM, GPU RAM, CPU utilization, GPU util
 Usage:
     gpu-tracker -h | --help
     gpu-tracker -v | --version
-    gpu-tracker --execute=<command> [--output=<output>] [--format=<format>] [--st=<sleep-time>] [--ru=<ram-unit>] [--gru=<gpu-ram-unit>] [--tu=<time-unit>] [--nec=<num-cores>] [--guuids=<gpu-uuids>] [--disable-logs] [--gb=<gpu-brand>]
+    gpu-tracker --execute=<command> [--output=<output>] [--format=<format>] [--st=<sleep-time>] [--ru=<ram-unit>] [--gru=<gpu-ram-unit>] [--tu=<time-unit>] [--nec=<num-cores>] [--guuids=<gpu-uuids>] [--disable-logs] [--gb=<gpu-brand>] [--tf=<tracking-file>]
 
 Options:
     -h --help               Show this help message and exit.
@@ -20,6 +20,7 @@ Options:
     --guuids=<gpu-uuids>    Comma separated list of the UUIDs of the GPUs for which to track utilization e.g. gpu-uuid1,gpu-uuid2,etc. Defaults to all the GPUs in the system.
     --disable-logs          If set, warnings are suppressed during tracking. Otherwise, the Tracker logs warnings as usual.
     --gb=<gpu-brand>        The brand of GPU to profile. Valid values are nvidia and amd. Defaults to the brand of GPU detected in the system, checking NVIDIA first.
+    --tf=<tracking-file>    If specified, stores the individual resource usage measurements at each iteration. Valid file formats are CSV (.csv) and SQLite (.sqlite) where the SQLite file format stores the data in a table called "tracking" and allows for more efficient querying.
 """
 import docopt as doc
 import subprocess as subp
@@ -43,7 +44,8 @@ def main():
         '--nec': 'n_expected_cores',
         '--guuids': 'gpu_uuids',
         '--disable-logs': 'disable_logs',
-        '--gb': 'gpu_brand'
+        '--gb': 'gpu_brand',
+        '--tf': 'tracking_file'
     }
     kwargs = {
         option_map[option]: value for option, value in args.items() if value is not None and option not in {
