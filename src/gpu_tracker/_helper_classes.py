@@ -8,6 +8,7 @@ import csv
 import dataclasses as dclass
 import sqlalchemy as sqlalc
 import sqlalchemy.orm as sqlorm
+import enum
 
 
 class _GPUQuerier(abc.ABC):
@@ -111,7 +112,7 @@ class _AMDQuerier(_GPUQuerier):
 
 
 @dclass.dataclass
-class TimepointUsage:
+class _TimepointUsage:
     main_ram: float = 0.0
     descendants_ram: float = 0.0
     combined_ram: float = 0.0
@@ -136,6 +137,16 @@ class TimepointUsage:
     timestamp: float = 0.0
 
 
+@dclass.dataclass
+class _SubTrackerLog:
+    class CodeBlockPosition(enum.Enum):
+        START = 'START'
+        END = 'END'
+    code_block_name: str
+    position: CodeBlockPosition
+    timestamp: float
+
+
 class _TrackingFile(abc.ABC):
     @staticmethod
     def create(file: str | None) -> _TrackingFile | None:
@@ -153,7 +164,7 @@ class _TrackingFile(abc.ABC):
     def __init__(self, file: str):
         self._file = file
 
-    def write_row(self, values: TimepointUsage):
+    def write_row(self, values: _TimepointUsage | _SubTrackerLog):
         values = dclass.asdict(values)
         if not os.path.isfile(self._file):
             self._create_file(values)
@@ -206,5 +217,5 @@ class _SQLiteTrackingFile(_TrackingFile):
         for column_name, data_type in schema.items():
             sqlalchemy_type = type_mapping[data_type]
             columns.append(sqlalc.Column(column_name, sqlalchemy_type))
-        tracking_table = sqlalc.Table(_SQLiteTrackingFile._SQLITE_TABLE_NAME, metadata, *columns)
+        sqlalc.Table(_SQLiteTrackingFile._SQLITE_TABLE_NAME, metadata, *columns)
         metadata.create_all(engine)

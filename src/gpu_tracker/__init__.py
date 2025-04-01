@@ -10,3 +10,4 @@ except ImportError:
     __version__ = _gv(_path.join(_path.dirname(__file__), _path.pardir))
 
 from .tracker import Tracker
+from .sub_tracker import SubTracker

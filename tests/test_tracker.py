@@ -5,10 +5,6 @@ import os
 import pytest as pt
 import utils
 import subprocess as subp
-import pandas as pd
-import sqlalchemy as sqlalc
-# noinspection PyProtectedMember
-from gpu_tracker._helper_classes import _SQLiteTrackingFile
 
 
 gpu_unavailable_message = ('Neither the nvidia-smi command nor the amd-smi command is installed. Install one of these to profile the '
@@ -231,14 +227,7 @@ def test_tracker(
     if tracking_file is None:
         assert tracker._tracking_process.tracking_file is None
     else:
-        if tracking_file.endswith('.csv'):
-            actual_timepoint_usage = pd.read_csv(tracking_file)
-        else:
-            engine = sqlalc.create_engine(f'sqlite:///{tracking_file}', poolclass=sqlalc.pool.NullPool)
-            actual_timepoint_usage = pd.read_sql_table(_SQLiteTrackingFile._SQLITE_TABLE_NAME, engine)
-        expected_timepoint_usage = pd.read_csv(f'{expected_measurements_file}.csv')
-        pd.testing.assert_frame_equal(expected_timepoint_usage, actual_timepoint_usage, atol=1e-10, rtol=1e-10)
-        os.remove(tracking_file)
+        utils.test_tracking_file(actual_tracking_file=tracking_file, expected_tracking_file=f'{expected_measurements_file}.csv')
 
 
 def test_cannot_connect_warnings(mocker, caplog):

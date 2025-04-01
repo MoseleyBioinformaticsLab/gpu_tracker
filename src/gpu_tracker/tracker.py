@@ -13,7 +13,7 @@ import enum
 import pickle as pkl
 import uuid
 import pandas as pd
-from ._helper_classes import _NvidiaQuerier, _AMDQuerier, _TrackingFile, TimepointUsage
+from ._helper_classes import _NvidiaQuerier, _AMDQuerier, _TrackingFile, _TimepointUsage
 
 
 class _TrackingProcess(mproc.Process):
@@ -140,7 +140,7 @@ class _TrackingProcess(mproc.Process):
             self._stop_event.set()
         # Simulate a do-while loop so that the tracking is executed at least once.
         while True:
-            timepoint_usage = TimepointUsage()
+            timepoint_usage = _TimepointUsage()
             with open(self._resource_usage_file, 'wb') as file:
                 pkl.dump(self._resource_usage, file)
             if self._stop_event.is_set():
