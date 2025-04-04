@@ -31,14 +31,15 @@ class SubTracker:
             file_path = os.path.abspath(caller_frame.filename)
             code_block_attribute = caller_frame.lineno if code_block_attribute is None else code_block_attribute
             self.code_block_name = f'{file_path}:{code_block_attribute}'
+        self.process_id = os.getpid()
         if sub_tracking_file is None:
-            sub_tracking_file = f'{os.getpid()}.csv'
+            sub_tracking_file = f'{self.process_id}.csv'
         self.sub_tracking_file = sub_tracking_file
         self._sub_tracking_file = _Writer.create(self.sub_tracking_file)
 
     def _log(self, code_block_position: _SubTrackerLog.CodeBlockPosition):
         sub_tracker_log = _SubTrackerLog(
-            code_block_name=self.code_block_name, position=code_block_position.value, timestamp=time.time())
+            process_id=self.process_id, code_block_name=self.code_block_name, position=code_block_position.value, timestamp=time.time())
         self._sub_tracking_file.write_row(sub_tracker_log)
 
     def __enter__(self):

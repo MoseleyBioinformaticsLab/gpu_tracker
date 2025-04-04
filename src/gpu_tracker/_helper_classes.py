@@ -142,6 +142,7 @@ class _SubTrackerLog:
     class CodeBlockPosition(enum.Enum):
         START = 'START'
         STOP = 'STOP'
+    process_id: int
     code_block_name: str
     position: CodeBlockPosition
     timestamp: float
