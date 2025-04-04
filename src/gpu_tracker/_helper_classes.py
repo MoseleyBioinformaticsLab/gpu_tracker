@@ -141,20 +141,20 @@ class _TimepointUsage:
 class _SubTrackerLog:
     class CodeBlockPosition(enum.Enum):
         START = 'START'
-        END = 'END'
+        STOP = 'STOP'
     code_block_name: str
     position: CodeBlockPosition
     timestamp: float
 
 
-class _TrackingFile(abc.ABC):
+class _Writer(abc.ABC):
     @staticmethod
-    def create(file: str | None) -> _TrackingFile | None:
+    def create(file: str | None) -> _Writer | None:
         if file is not None:
             if file.endswith('.csv'):
-                return _CSVTrackingFile(file)
+                return _CSVWriter(file)
             elif file.endswith('.sqlite'):
-                return _SQLiteTrackingFile(file)
+                return _SQLiteWriter(file)
             else:
                 raise ValueError(
                     f'Invalid file name: "{file}". Valid file extensions are ".csv" and ".sqlite".')
@@ -164,7 +164,7 @@ class _TrackingFile(abc.ABC):
     def __init__(self, file: str):
         self._file = file
 
-    def write_row(self, values: _TimepointUsage | _SubTrackerLog):
+    def write_row(self, values: object):
         values = dclass.asdict(values)
         if not os.path.isfile(self._file):
             self._create_file(values)
@@ -179,7 +179,7 @@ class _TrackingFile(abc.ABC):
         pass  # pragma: nocover
 
 
-class _CSVTrackingFile(_TrackingFile):
+class _CSVWriter(_Writer):
     def _write_row(self, values: dict):
         with open(self._file, 'a', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=values.keys())
@@ -191,13 +191,14 @@ class _CSVTrackingFile(_TrackingFile):
             writer.writeheader()
 
 
-class _SQLiteTrackingFile(_TrackingFile):
-    _SQLITE_TABLE_NAME = 'tracking'
+class _SQLiteWriter(_Writer):
+    _DATA_TABLE = 'data'
+    _STATIC_DATA_TABLE = 'static_data'
 
     def _write_row(self, values: dict):
         engine = sqlalc.create_engine(f'sqlite:///{self._file}', poolclass=sqlalc.pool.NullPool)
         metadata = sqlalc.MetaData()
-        tracking_table = sqlalc.Table(_SQLiteTrackingFile._SQLITE_TABLE_NAME, metadata, autoload_with=engine)
+        tracking_table = sqlalc.Table(_SQLiteWriter._DATA_TABLE, metadata, autoload_with=engine)
         Session = sqlorm.sessionmaker(bind=engine)
         with Session() as session:
             insert_stmt = sqlalc.insert(tracking_table).values(**values)
@@ -217,5 +218,5 @@ class _SQLiteTrackingFile(_TrackingFile):
         for column_name, data_type in schema.items():
             sqlalchemy_type = type_mapping[data_type]
             columns.append(sqlalc.Column(column_name, sqlalchemy_type))
-        sqlalc.Table(_SQLiteTrackingFile._SQLITE_TABLE_NAME, metadata, *columns)
+        sqlalc.Table(_SQLiteWriter._DATA_TABLE, metadata, *columns)
         metadata.create_all(engine)

@@ -13,7 +13,7 @@ import enum
 import pickle as pkl
 import uuid
 import pandas as pd
-from ._helper_classes import _NvidiaQuerier, _AMDQuerier, _TrackingFile, _TimepointUsage
+from ._helper_classes import _NvidiaQuerier, _AMDQuerier, _Writer, _TimepointUsage
 
 
 class _TrackingProcess(mproc.Process):
@@ -64,7 +64,7 @@ class _TrackingProcess(mproc.Process):
         self._is_linux = platform.system().lower() == 'linux'
         cannot_connect_warning = ('The {} command is installed but cannot connect to a GPU. '
                                   'The GPU RAM and GPU utilization values will remain 0.0.')
-        self.tracking_file = _TrackingFile.create(tracking_file)
+        self.tracking_file = _Writer.create(tracking_file)
         if gpu_brand is None:
             nvidia_available = _NvidiaQuerier.is_available()
             nvidia_installed = nvidia_available is not None
@@ -349,7 +349,7 @@ class Tracker:
         :param n_join_attempts: The number of times the tracker attempts to join its underlying sub-process.
         :param join_timeout: The amount of time the tracker waits for its underlying sub-process to join.
         :param gpu_brand: The brand of GPU to profile. Valid values are "nvidia" and "amd". Defaults to the brand of GPU detected in the system, checking Nvidia first.
-        :param tracking_file: If specified, stores the individual resource usage measurements at each iteration. Valid file formats are CSV (.csv) and SQLite (.sqlite) where the SQLite file format stores the data in a table called "tracking" and allows for more efficient querying.
+        :param tracking_file: If specified, stores the individual resource usage measurements at each iteration. Valid file formats are CSV (.csv) and SQLite (.sqlite) where the SQLite file format stores the data in a table called "data" and allows for more efficient querying.
         :raises ValueError: Raised if invalid arguments are provided.
         """
         current_process_id = os.getpid()
