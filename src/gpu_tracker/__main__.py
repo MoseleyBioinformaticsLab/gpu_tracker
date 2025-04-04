@@ -20,7 +20,7 @@ Options:
     --guuids=<gpu-uuids>    Comma separated list of the UUIDs of the GPUs for which to track utilization e.g. gpu-uuid1,gpu-uuid2,etc. Defaults to all the GPUs in the system.
     --disable-logs          If set, warnings are suppressed during tracking. Otherwise, the Tracker logs warnings as usual.
     --gb=<gpu-brand>        The brand of GPU to profile. Valid values are nvidia and amd. Defaults to the brand of GPU detected in the system, checking NVIDIA first.
-    --tf=<tracking-file>    If specified, stores the individual resource usage measurements at each iteration. Valid file formats are CSV (.csv) and SQLite (.sqlite) where the SQLite file format stores the data in a table called "tracking" and allows for more efficient querying.
+    --tf=<tracking-file>    If specified, stores the individual resource usage measurements at each iteration. Valid file formats are CSV (.csv) and SQLite (.sqlite) where the SQLite file format stores the data in a table called "data" and allows for more efficient querying.
 """
 import docopt as doc
 import subprocess as subp

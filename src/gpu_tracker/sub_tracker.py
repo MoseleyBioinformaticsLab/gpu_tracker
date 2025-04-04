@@ -3,7 +3,7 @@ import inspect
 import os
 import time
 import functools
-from ._helper_classes import _TrackingFile, _SubTrackerLog
+from ._helper_classes import _Writer, _SubTrackerLog
 
 
 class SubTracker:
@@ -21,7 +21,7 @@ class SubTracker:
         """
         :param code_block_name: The name of the code block within a ``Tracker`` context that is being sub-tracked. Defaults to the file path followed by a colon followed by the ``code_block_attribute``.
         :param code_block_attribute: Only used if ``code_block_name`` is ``None``. Defaults to the line number where the SubTracker context is started.
-        :param sub_tracking_file: The path to the file to log the time stamps of the code block being sub-tracked Defaults to the ID of the process where the SubTracker context is created and in CSV format.
+        :param sub_tracking_file: The path to the file to log the time stamps of the code block being sub-tracked. Defaults to the ID of the process where the SubTracker context is created and in CSV format.
         """
         if code_block_name is not None:
             self.code_block_name = code_block_name
@@ -34,7 +34,7 @@ class SubTracker:
         if sub_tracking_file is None:
             sub_tracking_file = f'{os.getpid()}.csv'
         self.sub_tracking_file = sub_tracking_file
-        self._sub_tracking_file = _TrackingFile.create(self.sub_tracking_file)
+        self._sub_tracking_file = _Writer.create(self.sub_tracking_file)
 
     def _log(self, code_block_position: _SubTrackerLog.CodeBlockPosition):
         sub_tracker_log = _SubTrackerLog(
@@ -46,7 +46,7 @@ class SubTracker:
         return self
 
     def __exit__(self, *_):
-        self._log(_SubTrackerLog.CodeBlockPosition.END)
+        self._log(_SubTrackerLog.CodeBlockPosition.STOP)
 
 
 def sub_track(code_block_name: str | None = None, code_block_attribute: str | None = None, sub_tracking_file: str | None = None):
