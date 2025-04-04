@@ -3,6 +3,7 @@ import sqlalchemy as sqlalc
 import os
 # noinspection PyProtectedMember
 from gpu_tracker._helper_classes import _SQLiteTrackingFile
+import gpu_tracker as gput
 
 
 def assert_args_list(mock, expected_args_list: list[tuple | dict], use_kwargs: bool = False):
@@ -23,3 +24,8 @@ def test_tracking_file(
     expected_tracking_log = pd.read_csv(expected_tracking_file)
     pd.testing.assert_frame_equal(expected_tracking_log, actual_tracking_log, atol=1e-10, rtol=1e-10)
     os.remove(actual_tracking_file)
+
+
+@gput.sub_track()
+def function_in_other_file(*args, **kwargs):
+    return args, kwargs
