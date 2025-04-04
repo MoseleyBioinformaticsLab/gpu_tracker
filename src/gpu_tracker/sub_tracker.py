@@ -19,8 +19,8 @@ class SubTracker:
     def __init__(
             self, code_block_name: str | None = None, code_block_attribute: str | None = None, sub_tracking_file: str | None = None):
         """
-        :param code_block_name: The name of the code block within a ``Tracker`` context that is being sub-tracked. Defaults to the file path followed by a colon followed by the ``code_block_attribute``.
-        :param code_block_attribute: Only used if ``code_block_name`` is ``None``. Defaults to the line number where the SubTracker context is started.
+        :param code_block_name: The name of the code block within a ``Tracker`` context that is being sub-tracked. Defaults to the file path where the ``SubTracker`` context is started followed by a colon followed by the ``code_block_attribute``.
+        :param code_block_attribute: Only used if ``code_block_name`` is ``None``. Defaults to the line number where the ``SubTracker`` context is started.
         :param sub_tracking_file: The path to the file to log the time stamps of the code block being sub-tracked. To avoid file lock errors when a sub-tracking file is created in multiple different processes (i.e. multiple processes attempting to access the same file at the same time), the sub-tracking file of each process must have a unique name. For example, the ID of the process where the SubTracker context is created. Defaults to this process ID as the file name and in CSV format.
         """
         if code_block_name is not None:
@@ -52,11 +52,11 @@ class SubTracker:
 
 def sub_track(code_block_name: str | None = None, code_block_attribute: str | None = None, sub_tracking_file: str | None = None):
     """
-    Decorator for sub tracking calls to a specified function.
+    Decorator for sub tracking calls to a specified function. Creates a ``SubTracker`` context that wraps the function call.
 
-    :param code_block_name: The name of the code block within a ``Tracker`` context that is being sub-tracked. Defaults to the file path followed by a colon followed by the ``code_block_attribute``.
-    :param code_block_attribute: Only used if ``code_block_name`` is ``None``. Defaults to the name of the decorated function i.e. the function being sub-tracked.
-    :param sub_tracking_file: The path to the file to log the time stamps of the code block being sub-tracked. Defaults to the ID of the process where the SubTracker context is created and in CSV format.
+    :param code_block_name: The ``code_block_name`` argument passed to the ``SubTracker``. Defaults to the file path where the decorated function is defined followed by a colon followed by the ``code_block_attribute``.
+    :param code_block_attribute: The ``code_block_attribute`` argument passed to the ``SubTracker``. Defaults to the name of the decorated function.
+    :param sub_tracking_file: the ``sub_tracking_file`` argument passed to the ``SubTracker``. Same default as the ``SubTracker`` constructor.
     """
     def decorator(func):
         nonlocal code_block_name, code_block_attribute, sub_tracking_file
