@@ -13,7 +13,7 @@ import enum
 import pickle as pkl
 import uuid
 import pandas as pd
-from ._helper_classes import _NvidiaQuerier, _AMDQuerier, _Writer, _TimepointUsage
+from ._helper_classes import _NvidiaQuerier, _AMDQuerier, _DataProxy, _TimepointUsage, _StaticData
 
 
 class _TrackingProcess(mproc.Process):
@@ -42,7 +42,8 @@ class _TrackingProcess(mproc.Process):
     def __init__(
             self, stop_event: mproc.Event, sleep_time: float, ram_unit: str, gpu_ram_unit: str, time_unit: str,
             n_expected_cores: int | None, gpu_uuids: set[str] | None, disable_logs: bool, main_process_id: int,
-            resource_usage_file: str, extraneous_process_ids: set[int], gpu_brand: str | None, tracking_file: str | None):
+            resource_usage_file: str, extraneous_process_ids: set[int], gpu_brand: str | None, tracking_file: str | None,
+            overwrite: bool):
         super().__init__()
         self._stop_event = stop_event
         if sleep_time < _TrackingProcess._CPU_PERCENT_INTERVAL:
@@ -64,7 +65,6 @@ class _TrackingProcess(mproc.Process):
         self._is_linux = platform.system().lower() == 'linux'
         cannot_connect_warning = ('The {} command is installed but cannot connect to a GPU. '
                                   'The GPU RAM and GPU utilization values will remain 0.0.')
-        self.tracking_file = _Writer.create(tracking_file)
         if gpu_brand is None:
             nvidia_available = _NvidiaQuerier.is_available()
             nvidia_installed = nvidia_available is not None
@@ -119,6 +119,13 @@ class _TrackingProcess(mproc.Process):
         self._resource_usage = ResourceUsage(
             max_ram=max_ram, max_gpu_ram=max_gpu_ram, cpu_utilization=cpu_utilization, gpu_utilization=gpu_utilization,
             compute_time=compute_time)
+        self.data_proxy = _DataProxy.create(tracking_file, overwrite)
+        if self.data_proxy is not None:
+            static_data = _StaticData(
+                ram_unit, gpu_ram_unit, time_unit, max_ram.system_capacity, max_gpu_ram.system_capacity, system_core_count,
+                cpu_utilization.n_expected_cores, gpu_utilization.system_gpu_count, gpu_utilization.n_expected_gpus
+            )
+            self.data_proxy.write_static_data(static_data)
         self._resource_usage_file = resource_usage_file
         self._extraneous_process_ids = extraneous_process_ids
 
@@ -229,8 +236,8 @@ class _TrackingProcess(mproc.Process):
                 timepoint_usage.timestamp = time.time()
                 self._resource_usage.compute_time.time = (timepoint_usage.timestamp - start_time) * self._time_coefficient
                 self._tracking_iteration += 1
-                if self.tracking_file:
-                    self.tracking_file.write_row(timepoint_usage)
+                if self.data_proxy:
+                    self.data_proxy.write_data(timepoint_usage)
                 time.sleep(self._sleep_time - _TrackingProcess._CPU_PERCENT_INTERVAL)
             except psutil.NoSuchProcess as error:
                 self._log_warning(f'Failed to track a process (PID: {error.pid}) that does not exist. '
@@ -319,7 +326,7 @@ class _TrackingProcess(mproc.Process):
 class Tracker:
     """
     Runs a sub-process that tracks computational resources of the calling process. Including the compute time, maximum CPU utilization, mean CPU utilization, maximum RAM, and maximum GPU RAM used within a context manager or explicit calls to ``start()`` and ``stop()`` methods.
-    Calculated quantities are scaled depending on the units chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).
+    Calculated quantities are scaled, depending on the units chosen for them (e.g. megabytes vs. gigabytes, hours vs. days, etc.).
 
     :ivar ResourceUsage resource_usage: Data class containing the computational resource usage data collected by the tracking process.
     """
@@ -335,7 +342,7 @@ class Tracker:
             self, sleep_time: float = 1.0, ram_unit: str = 'gigabytes', gpu_ram_unit: str = 'gigabytes', time_unit: str = 'hours',
             n_expected_cores: int = None, gpu_uuids: set[str] = None, disable_logs: bool = False, process_id: int = None,
             resource_usage_file: str | None = None, n_join_attempts: int = 5, join_timeout: float = 10.0,
-            gpu_brand: str | None = None, tracking_file: str | None = None):
+            gpu_brand: str | None = None, tracking_file: str | None = None, overwrite: bool = False):
         """
         :param sleep_time: The number of seconds to sleep in between usage-collection iterations.
         :param ram_unit: One of 'bytes', 'kilobytes', 'megabytes', 'gigabytes', or 'terabytes'.
@@ -350,6 +357,7 @@ class Tracker:
         :param join_timeout: The amount of time the tracker waits for its underlying sub-process to join.
         :param gpu_brand: The brand of GPU to profile. Valid values are "nvidia" and "amd". Defaults to the brand of GPU detected in the system, checking Nvidia first.
         :param tracking_file: If specified, stores the individual resource usage measurements at each iteration. Valid file formats are CSV (.csv) and SQLite (.sqlite) where the SQLite file format stores the data in a table called "data" and allows for more efficient querying.
+        :param overwrite: Whether to overwrite the ``tracking_file`` if it already existed before the beginning of this tracking session.
         :raises ValueError: Raised if invalid arguments are provided.
         """
         current_process_id = os.getpid()
@@ -364,7 +372,7 @@ class Tracker:
         self._tracking_process = _TrackingProcess(
             self._stop_event, sleep_time, ram_unit, gpu_ram_unit, time_unit, n_expected_cores, gpu_uuids, disable_logs,
             process_id if process_id is not None else current_process_id, self._resource_usage_file, extraneous_ids, gpu_brand,
-            tracking_file)
+            tracking_file, overwrite)
         self.resource_usage = None
         self.n_join_attempts = n_join_attempts
         self.join_timeout = join_timeout
