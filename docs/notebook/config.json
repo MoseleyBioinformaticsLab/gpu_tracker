@@ -1,0 +1,6 @@
+{
+  "sleep_time": 0.5c,
+  "ram_unit": "megabytes",
+  "gpu_ram_unit": "megabytes",
+  "time_unit": "seconds"
+}
