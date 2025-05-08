@@ -225,7 +225,7 @@ def test_tracker(
         expected_measurements = json.load(file)
         assert expected_measurements == tracker.to_json()
     if tracking_file is None:
-        assert tracker._tracking_process.tracking_file is None
+        assert tracker._tracking_process.data_proxy is None
     else:
         utils.test_tracking_file(actual_tracking_file=tracking_file, expected_tracking_file=f'{expected_measurements_file}.csv')
 

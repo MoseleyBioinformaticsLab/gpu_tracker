@@ -57,26 +57,25 @@ def main():
             results = SubTrackingAnalyzer(tracking_file, sub_tracking_file).sub_tracking_results()
             _process_output(output_format, results, output)
         elif args['combine']:
-            directory = None
-            files = None
             files = args['-p']
             if len(files) == 1:
                 [directory] = files
                 files = [os.path.join(directory, file) for file in os.listdir(directory)]
             SubTrackingAnalyzer(None, args['--stf']).combine_sub_tracking_files(files)
-        elif args['compare']:
+        else:
             if args['--cconfig'] is not None:
                 with open(args['--cconfig'], 'r') as file:
                     config = json.load(file)
-                file_path_map = config['file_path_map'] if 'file_path_map' in config else None
+                file_path_map = config['file_path_map'] if 'file_path_map' in config else dict[str, str]()
                 statistic = config['statistic'] if 'statistic' in config else None
             else:
                 file_path_map = dict[str, str]()
                 statistic = None
-            if not file_path_map and args['-m'] is None:
-                raise ValueError(
-                    f'A mapping of tracking session name to file path must be provided either through the -m option or a config file.'
+            if not file_path_map and not args['-m']:
+                log.error(
+                    'A mapping of tracking session name to file path must be provided either through the -m option or a config file.'
                 )
+                sys.exit(1)
             else:
                 file_path_map.update({name: file for [name, file] in [option.split('=') for option in args['-m']]})
             if args['--stat'] is not None:
@@ -154,5 +153,5 @@ def _process_output(output_format: str, output_obj, output: str | None):
             file.write(output_str)
 
 
-if __name__ == '__main__':
-    main()
+if __name__ == '__main__':  # pragma: nocover
+    main()  # pragma: nocover

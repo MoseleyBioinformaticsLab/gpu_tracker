@@ -2,7 +2,7 @@ import pandas as pd
 import sqlalchemy as sqlalc
 import os
 # noinspection PyProtectedMember
-from gpu_tracker._helper_classes import _SQLiteWriter
+from gpu_tracker._helper_classes import _SQLiteDataProxy
 import gpu_tracker as gput
 
 
@@ -17,7 +17,7 @@ def test_tracking_file(
         actual_tracking_log = pd.read_csv(actual_tracking_file)
     else:
         engine = sqlalc.create_engine(f'sqlite:///{actual_tracking_file}', poolclass=sqlalc.pool.NullPool)
-        actual_tracking_log = pd.read_sql_table(_SQLiteWriter._DATA_TABLE, engine)
+        actual_tracking_log = pd.read_sql_table(_SQLiteDataProxy._DATA_TABLE, engine)
     if excluded_col is not None:
         actual_tracking_log[excluded_col].apply(excluded_col_test)
         actual_tracking_log = actual_tracking_log[actual_tracking_log.columns.difference([excluded_col])]
