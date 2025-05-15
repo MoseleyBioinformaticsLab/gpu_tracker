@@ -65,6 +65,7 @@ class _TrackingProcess(mproc.Process):
         self._is_linux = platform.system().lower() == 'linux'
         cannot_connect_warning = ('The {} command is installed but cannot connect to a GPU. '
                                   'The GPU RAM and GPU utilization values will remain 0.0.')
+        self.data_proxy = _DataProxy.create(tracking_file, overwrite)
         if gpu_brand is None:
             nvidia_available = _NvidiaQuerier.is_available()
             nvidia_installed = nvidia_available is not None
@@ -119,7 +120,6 @@ class _TrackingProcess(mproc.Process):
         self._resource_usage = ResourceUsage(
             max_ram=max_ram, max_gpu_ram=max_gpu_ram, cpu_utilization=cpu_utilization, gpu_utilization=gpu_utilization,
             compute_time=compute_time)
-        self.data_proxy = _DataProxy.create(tracking_file, overwrite)
         if self.data_proxy is not None:
             static_data = _StaticData(
                 ram_unit, gpu_ram_unit, time_unit, max_ram.system_capacity, max_gpu_ram.system_capacity, system_core_count,

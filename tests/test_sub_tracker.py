@@ -1,4 +1,6 @@
 import pytest as pt
+import json
+import deepdiff as deepd
 import gpu_tracker as gput
 import utils
 
@@ -8,25 +10,23 @@ def get_code_block_name(request) -> str | None:
     yield request.param
 
 
-@pt.fixture(name='sub_tracking_file', params=['sub-tracking-file.csv', 'sub-tracking-file.sqlite', None])
+@pt.fixture(name='sub_tracking_file', params=['sub-tracking-file.csv', 'sub-tracking-file.sqlite'])
 def get_sub_tracking_file(request) -> str | None:
     yield request.param
 
 
-def test_sub_tracker(mocker, code_block_name: str | None, sub_tracking_file: str | None):
+def test_sub_tracker(mocker, code_block_name: str | None, sub_tracking_file: str):
+    sub_tracking_file = f'{code_block_name}_{sub_tracking_file}'
     n_iterations = 5
     getpid_mock = mocker.patch('gpu_tracker.sub_tracker.os.getpid', side_effect=[1234] * n_iterations)
     time_mock = mocker.patch(
         'gpu_tracker.sub_tracker.time', time=mocker.MagicMock(side_effect=range(n_iterations * 2)))
-    default_code_block_end = 'test_sub_tracker.py:23'
+    default_code_block_end = 'test_sub_tracker.py:26'
     for _ in range(n_iterations):
         with gput.SubTracker(code_block_name=code_block_name, sub_tracking_file=sub_tracking_file) as sub_tracker:
             if code_block_name is None:
                 assert sub_tracker.code_block_name.endswith(default_code_block_end)
-            if sub_tracking_file is None:
-                assert sub_tracker.sub_tracking_file == '1234.csv'
-    if sub_tracking_file is None:
-        assert len(getpid_mock.call_args_list) == n_iterations
+    assert len(getpid_mock.call_args_list) == n_iterations
     assert len(time_mock.time.call_args_list) == n_iterations * 2
 
     def code_block_name_test(val: str):
@@ -36,7 +36,7 @@ def test_sub_tracker(mocker, code_block_name: str | None, sub_tracking_file: str
             assert val == code_block_name
     utils.test_tracking_file(
         actual_tracking_file=sub_tracker.sub_tracking_file, expected_tracking_file='tests/data/sub-tracker.csv',
-        excluded_col='code_block_name', excluded_col_test=code_block_name_test
+        excluded_col='code_block_name', excluded_col_test=code_block_name_test, is_sub_tracking=True
     )
 
 
@@ -46,7 +46,9 @@ def get_code_block_attribute(request):
 
 
 def test_decorator(mocker, code_block_name: str | None, code_block_attribute: str | None):
-    @gput.sub_track(code_block_name=code_block_name, code_block_attribute=code_block_attribute)
+    sub_tracking_file = f'{code_block_name}_{code_block_attribute}.csv'
+
+    @gput.sub_track(code_block_name=code_block_name, code_block_attribute=code_block_attribute, sub_tracking_file=sub_tracking_file)
     def decorated_function(arg1: int, arg2: int, kwarg1: int = 1, kwarg2: int = 2) -> int:
         return arg1 + arg2 - (kwarg1 + kwarg2)
     getpid_mock = mocker.patch('gpu_tracker.sub_tracker.os.getpid', return_value=1234)
@@ -69,8 +71,8 @@ def test_decorator(mocker, code_block_name: str | None, code_block_attribute: st
         else:
             assert val == code_block_name
     utils.test_tracking_file(
-        actual_tracking_file='1234.csv', expected_tracking_file=f'tests/data/decorated-function.csv',
-        excluded_col='code_block_name', excluded_col_test=code_block_name_test
+        actual_tracking_file=sub_tracking_file, expected_tracking_file=f'tests/data/decorated-function.csv',
+        excluded_col='code_block_name', excluded_col_test=code_block_name_test, is_sub_tracking=True
     )
     if code_block_name is None and code_block_attribute is None:
         return_val = utils.function_in_other_file(1, 2, 3, kw1=4, kw2=5)
@@ -81,6 +83,26 @@ def test_decorator(mocker, code_block_name: str | None, code_block_attribute: st
         def code_block_name_test(val):
             assert val.endswith('utils.py:function_in_other_file')
         utils.test_tracking_file(
-            actual_tracking_file='1234.csv', expected_tracking_file='tests/data/decorated-function-other-file.csv',
-            excluded_col='code_block_name', excluded_col_test=code_block_name_test
+            actual_tracking_file=f'1234.csv', expected_tracking_file='tests/data/decorated-function-other-file.csv',
+            excluded_col='code_block_name', excluded_col_test=code_block_name_test, is_sub_tracking=True
         )
+
+
+@pt.fixture(name='format_', params=['csv', 'sqlite'])
+def get_format(request):
+    yield request.param
+
+
+def test_analysis(format_):
+    folder = 'tests/data/sub-tracking-results'
+    tracking_file = f'{folder}/tracking.{format_}'
+    sub_tracking_file = f'{folder}/sub-tracking.{format_}'
+    analyzer = gput.SubTrackingAnalyzer(tracking_file, sub_tracking_file)
+    actual_results = analyzer.sub_tracking_results()
+    with open(f'{folder}/results.json', 'r') as file:
+        expected_json_results = json.load(file)
+    diff = deepd.DeepDiff(expected_json_results, actual_results.to_json(), significant_digits=12)
+    assert not diff
+    with open(f'{folder}/results.txt', 'r') as file:
+        expected_str_results = file.read()
+    assert expected_str_results == str(actual_results)

@@ -9,7 +9,7 @@ import dataclasses as dclass
 import pickle as pkl
 import logging as log
 import typing as typ
-from ._helper_classes import _DataProxy, _SubTrackerLog, _SUMMARY_STATS
+from ._helper_classes import _DataProxy, _SubTrackerLog, _SUMMARY_STATS, _summary_stats
 
 
 class SubTracker:
@@ -168,7 +168,7 @@ class SubTrackingAnalyzer:
         for code_block_name in code_block_names:
             time_stamp_pairs = self.load_timestamp_pairs(code_block_name)
             time_stamp_diffs = pd.Series([stop_time - start_time for (start_time, stop_time) in time_stamp_pairs])
-            compute_time_results = time_stamp_diffs.describe()[_SUMMARY_STATS]
+            compute_time_results = _summary_stats(time_stamp_diffs)
             compute_time_results['total'] = time_stamp_diffs.sum().item()
             timepoints = self.load_timepoints(time_stamp_pairs)
             num_non_empty_calls = sum(
@@ -179,11 +179,11 @@ class SubTrackingAnalyzer:
                 ]
             )
             timepoints = timepoints.drop(columns='timestamp')
+            resource_usage = _summary_stats(timepoints).T
             code_block_results.append(
                 CodeBlockResults(
                     name=code_block_name, num_timepoints=len(timepoints), num_calls=len(time_stamp_pairs),
-                    num_non_empty_calls=num_non_empty_calls, compute_time=compute_time_results,
-                    resource_usage=timepoints.describe().loc[_SUMMARY_STATS].T
+                    num_non_empty_calls=num_non_empty_calls, compute_time=compute_time_results, resource_usage=resource_usage
                 )
             )
         return SubTrackingResults(overall_results, static_data, code_block_results)
@@ -409,7 +409,10 @@ def _dict_to_str(string: str, results: dict, indent: int, no_title_keys: set[str
             string = _dict_to_str(string, value, indent + 1, no_title_keys)
         elif type(value) is pd.DataFrame:
             string += f'{key}:\n'
-            with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 5000):
+            with pd.option_context(
+                    'display.max_rows', None, 'display.max_columns', None, 'display.width', 5000, 'display.float_format',
+                    lambda x: f'{float(f"{x:.8f}")}'
+            ):
                 df_str = str(value)
             df_str = '\n'.join(indent_str + '\t' + line for line in df_str.splitlines())
             string += df_str + '\n'
@@ -418,7 +421,7 @@ def _dict_to_str(string: str, results: dict, indent: int, no_title_keys: set[str
             for value in value:
                 string = _dict_to_str(string, value, indent + 1, no_title_keys) + '\n'
         else:
-            value = f'{value:.4f}' if type(value) is float else value
+            value = f'{value:.8f}' if type(value) is float else value
             string += f'{key}:{" " * (max_key_len - len(key))} {value}\n'
     return string
 

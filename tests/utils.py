@@ -12,9 +12,13 @@ def assert_args_list(mock, expected_args_list: list[tuple | dict], use_kwargs: b
 
 
 def test_tracking_file(
-        actual_tracking_file: str, expected_tracking_file: str, excluded_col: str | None = None, excluded_col_test=None):
+        actual_tracking_file: str, expected_tracking_file: str, excluded_col: str | None = None, excluded_col_test=None,
+        is_sub_tracking: bool = False):
     if actual_tracking_file.endswith('.csv'):
-        actual_tracking_log = pd.read_csv(actual_tracking_file)
+        if is_sub_tracking:
+            actual_tracking_log = pd.read_csv(actual_tracking_file)
+        else:
+            actual_tracking_log = pd.read_csv(actual_tracking_file, skiprows=2)
     else:
         engine = sqlalc.create_engine(f'sqlite:///{actual_tracking_file}', poolclass=sqlalc.pool.NullPool)
         actual_tracking_log = pd.read_sql_table(_SQLiteDataProxy._DATA_TABLE, engine)

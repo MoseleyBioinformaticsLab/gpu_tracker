@@ -227,7 +227,8 @@ def test_tracker(
     if tracking_file is None:
         assert tracker._tracking_process.data_proxy is None
     else:
-        utils.test_tracking_file(actual_tracking_file=tracking_file, expected_tracking_file=f'{expected_measurements_file}.csv')
+        utils.test_tracking_file(
+            actual_tracking_file=tracking_file, expected_tracking_file=f'{expected_measurements_file}.csv')
 
 
 def test_cannot_connect_warnings(mocker, caplog):
@@ -341,15 +342,17 @@ def test_validate_arguments(mocker):
         gput.Tracker(ram_unit='milibytes')
     assert str(error.value) == '"milibytes" is not a valid RAM unit. Valid values are bytes, gigabytes, kilobytes, megabytes, terabytes'
     subprocess_mock = mocker.patch(
-        'gpu_tracker._helper_classes.subp', check_output=mocker.MagicMock(
-            side_effect=[b'', b'', b'uuid ,memory.total [MiB] \ngpu-id1,2048 MiB\ngpu-id2,2048 MiB', b'', b'', b'uuid ,memory.total [MiB] ']))
+        'gpu_tracker._helper_classes.subp.check_output', side_effect=[
+            b'', b'', b'uuid ,memory.total [MiB] \ngpu-id1,2048 MiB\ngpu-id2,2048 MiB', b'', b'', b'uuid ,memory.total [MiB] '
+        ]
+    )
     with pt.raises(ValueError) as error:
         gput.Tracker(gpu_uuids={'invalid-id'})
-    assert len(subprocess_mock.check_output.call_args_list) == 3
+    assert len(subprocess_mock.call_args_list) == 3
     assert str(error.value) == 'GPU UUID of invalid-id is not valid. Available UUIDs are: gpu-id1, gpu-id2'
     with pt.raises(ValueError) as error:
         gput.Tracker(gpu_uuids=set[str]())
-    assert len(subprocess_mock.check_output.call_args_list) == 6
+    assert len(subprocess_mock.call_args_list) == 6
     assert str(error.value) == 'gpu_uuids is not None but the set is empty. Please provide a set of at least one GPU UUID.'
     with pt.raises(ValueError) as error:
         gput.Tracker(gpu_brand='invalid-brand')

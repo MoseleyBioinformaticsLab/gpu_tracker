@@ -13,6 +13,10 @@ import tqdm
 
 _SUMMARY_STATS = ['min', 'max', 'mean', 'std']
 
+def _summary_stats(data: pd.Series | pd.DataFrame) -> pd.Series | pd.DataFrame:
+    stats = data.describe().loc[_SUMMARY_STATS]
+    stats.loc['std'] = data.std(ddof=0)
+    return stats
 
 class _GPUQuerier(abc.ABC):
     command = None
@@ -348,7 +352,8 @@ class _CSVDataProxy(_DataProxy):
         return sorted(self.timestamps.code_block_name.unique())
 
     def _overall_timepoint_results(self, fields: list[str]) -> pd.DataFrame:
-        return self.timepoints[fields].describe().loc[_SUMMARY_STATS].T
+        stats = _summary_stats(self.timepoints[fields])
+        return stats.T
 
 
 class _SQLiteDataProxy(_DataProxy):
@@ -441,21 +446,27 @@ class _SQLiteDataProxy(_DataProxy):
         return self._read_sql(sql)
 
     def _overall_timepoint_results(self, fields: list[str]) -> pd.DataFrame:
-        sql = 'SELECT\n'
-        std_func = 'sqrt((sum({0} * {0}) - (sum({0}) * sum({0})) / count({0})) / count({0})) AS "STDDEV({0})"'
-        sql_funcs = 'MIN', 'MAX', 'AVG', 'STDDEV'
-        field_aggregates = list[str]()
-        for func in sql_funcs:
-            for field in fields:
-                aggregate = f'{func}({field})' if func != 'STDDEV' else std_func.format(field)
-                field_aggregates.append(aggregate)
-        sql += ',\n'.join(field_aggregates)
-        sql += f'\nFROM {_SQLiteDataProxy._DATA_TABLE}'
+        cte_blocks = list[str]()
+        selects = list[str]()
+        for col in fields:
+            mean_cte = f'mean_{col}'
+            diff_cte = f'diff_{col}'
+            cte_blocks.append(f'{mean_cte} AS (SELECT AVG({col}) AS mean FROM {_SQLiteDataProxy._DATA_TABLE})')
+            cte_blocks.append(
+                f'{diff_cte} AS (SELECT {col} - (SELECT mean FROM {mean_cte}) AS diff FROM {_SQLiteDataProxy._DATA_TABLE})'
+            )
+            selects.append(f'MIN({col})')
+            selects.append(f'MAX({col})')
+            selects.append(f'(SELECT mean FROM {mean_cte}) AS "AVG({col})"')
+            selects.append(f'(SELECT SQRT(AVG(diff * diff)) FROM {diff_cte}) AS "STDDEV({col})"')
+        with_clause = "WITH " + ",\n     ".join(cte_blocks)
+        select_clause = "SELECT " + ",\n       ".join(selects)
+        sql = f"{with_clause}\n{select_clause} FROM {_SQLiteDataProxy._DATA_TABLE};"
         results = self._read_sql(sql).squeeze()
         reshaped_results = pd.DataFrame()
-        n_fields = len(fields)
-        for i, sql_func, index in zip(range(0, len(results), n_fields), sql_funcs, _SUMMARY_STATS):
-            next_row = results.iloc[i: i + n_fields]
+        sql_funcs = 'MIN', 'MAX', 'AVG', 'STDDEV'
+        for sql_func, index in zip(sql_funcs, _SUMMARY_STATS):
+            next_row = results.loc[[idx.startswith(sql_func) for idx in results.index]]
             next_row.index = [col.replace(sql_func, '').replace('(', '').replace(')', '') for col in next_row.index]
             reshaped_results.loc[:, index] = next_row
         return reshaped_results
