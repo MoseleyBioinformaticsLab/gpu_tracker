@@ -154,7 +154,11 @@ combine_test_data = [
             'tests/data/sub-tracking-results/files-to-combine/1723811.sub-tracking.sqlite',
             'tests/data/sub-tracking-results/files-to-combine/1723814.sub-tracking.sqlite',
             'tests/data/sub-tracking-results/files-to-combine/1723815.sub-tracking.sqlite',
-            'tests/data/sub-tracking-results/files-to-combine/main.sub-tracking.sqlite'
+            'tests/data/sub-tracking-results/files-to-combine/main.sub-tracking.sqlite',
+            'tests/data/sub-tracking-results/files-to-combine/1723811.sub-tracking.csv',
+            'tests/data/sub-tracking-results/files-to-combine/1723814.sub-tracking.csv',
+            'tests/data/sub-tracking-results/files-to-combine/1723815.sub-tracking.csv',
+            'tests/data/sub-tracking-results/files-to-combine/main.sub-tracking.csv'
         ]
     )
 ]
