@@ -11,6 +11,12 @@ def assert_args_list(mock, expected_args_list: list[tuple | dict], use_kwargs: b
     assert actual_args_list == expected_args_list
 
 
+def _assert_warnings(caplog, expected_warnings: list[str]):
+    for expected_warning, record in zip(expected_warnings, caplog.records):
+        assert record.levelname == 'WARNING'
+        assert record.message == expected_warning
+
+
 def test_tracking_file(
         actual_tracking_file: str, expected_tracking_file: str, excluded_col: str | None = None, excluded_col_test=None,
         is_sub_tracking: bool = False):

@@ -1,0 +1,351 @@
+Overall Resource Usage:
+	Main Ram:
+		          A          B
+		 0.60060156 0.61011198
+	Descendants Ram:
+		          B          A
+		 2.43691864 2.50271187
+	Combined Ram:
+		         B          A
+		 3.0365483 3.09283652
+	System Ram:
+		           A           B
+		 52.59960435 53.58121992
+	Main Gpu Ram:
+		   A   B
+		 0.0 0.0
+	Descendants Gpu Ram:
+		   A   B
+		 0.0 0.0
+	Combined Gpu Ram:
+		   A   B
+		 0.0 0.0
+	System Gpu Ram:
+		     A     B
+		 0.216 0.216
+	Gpu Sum Utilization Percent:
+		   A   B
+		 0.0 0.0
+	Gpu Hardware Utilization Percent:
+		   A   B
+		 0.0 0.0
+	Main N Threads:
+		     A     B
+		 13.96 13.96
+	Descendants N Threads:
+		     A     B
+		 17.28 17.28
+	Combined N Threads:
+		     A     B
+		 31.24 31.24
+	Cpu System Sum Utilization Percent:
+		      B      A
+		 230.76 242.06
+	Cpu System Hardware Utilization Percent:
+		     B           A
+		 19.23 20.17166667
+	Cpu Main Sum Utilization Percent:
+		      A     B
+		 48.172 48.72
+	Cpu Main Hardware Utilization Percent:
+		          A    B
+		 4.01433333 4.06
+	Cpu Descendants Sum Utilization Percent:
+		      B       A
+		 110.18 111.512
+	Cpu Descendants Hardware Utilization Percent:
+		          B          A
+		 9.18166667 9.29266667
+	Cpu Combined Sum Utilization Percent:
+		     B       A
+		 158.9 159.684
+	Cpu Combined Hardware Utilization Percent:
+		           B      A
+		 13.24166667 13.307
+Code Block Resource Usage:
+	Main Ram:
+		X:
+			         A          B
+			 0.0869161 0.08710895
+		Y:
+			          A          B
+			 1.02876979 1.15948749
+		tmp.py:7 -> tmp.py:9:
+			         B          A
+			 0.8887337 1.21389056
+		tmp.py:37 -> tmp.py:38:
+			          B          A
+			 1.09997834 1.12111565
+	Descendants Ram:
+		X:
+			          B          A
+			 5.07691383 5.21398306
+		Y:
+			   A   B
+			 0.0 0.0
+		tmp.py:7 -> tmp.py:9:
+			   A   B
+			 0.0 0.0
+		tmp.py:37 -> tmp.py:38:
+			   A   B
+			 0.0 0.0
+	Combined Ram:
+		X:
+			          B          A
+			 5.14218462 5.27907226
+		Y:
+			          A          B
+			 1.02876979 1.15948749
+		tmp.py:7 -> tmp.py:9:
+			         B          A
+			 0.8887337 1.21389056
+		tmp.py:37 -> tmp.py:38:
+			          B          A
+			 1.09997834 1.12111565
+	System Ram:
+		X:
+			           A          B
+			 54.71274223 55.1712215
+		Y:
+			           A           B
+			 50.42655232 52.71240704
+		tmp.py:7 -> tmp.py:9:
+			           A           B
+			 50.53914317 52.04266189
+		tmp.py:37 -> tmp.py:38:
+			           A          B
+			 50.68914227 52.0008364
+	Main Gpu Ram:
+		X:
+			   A   B
+			 0.0 0.0
+		Y:
+			   A   B
+			 0.0 0.0
+		tmp.py:7 -> tmp.py:9:
+			   A   B
+			 0.0 0.0
+		tmp.py:37 -> tmp.py:38:
+			   A   B
+			 0.0 0.0
+	Descendants Gpu Ram:
+		X:
+			   A   B
+			 0.0 0.0
+		Y:
+			   A   B
+			 0.0 0.0
+		tmp.py:7 -> tmp.py:9:
+			   A   B
+			 0.0 0.0
+		tmp.py:37 -> tmp.py:38:
+			   A   B
+			 0.0 0.0
+	Combined Gpu Ram:
+		X:
+			   A   B
+			 0.0 0.0
+		Y:
+			   A   B
+			 0.0 0.0
+		tmp.py:7 -> tmp.py:9:
+			   A   B
+			 0.0 0.0
+		tmp.py:37 -> tmp.py:38:
+			   A   B
+			 0.0 0.0
+	System Gpu Ram:
+		X:
+			     A     B
+			 0.216 0.216
+		Y:
+			     A     B
+			 0.216 0.216
+		tmp.py:7 -> tmp.py:9:
+			     A     B
+			 0.216 0.216
+		tmp.py:37 -> tmp.py:38:
+			     A     B
+			 0.216 0.216
+	Gpu Sum Utilization Percent:
+		X:
+			   A   B
+			 0.0 0.0
+		Y:
+			   A   B
+			 0.0 0.0
+		tmp.py:7 -> tmp.py:9:
+			   A   B
+			 0.0 0.0
+		tmp.py:37 -> tmp.py:38:
+			   A   B
+			 0.0 0.0
+	Gpu Hardware Utilization Percent:
+		X:
+			   A   B
+			 0.0 0.0
+		Y:
+			   A   B
+			 0.0 0.0
+		tmp.py:7 -> tmp.py:9:
+			   A   B
+			 0.0 0.0
+		tmp.py:37 -> tmp.py:38:
+			   A   B
+			 0.0 0.0
+	Main N Threads:
+		X:
+			    A    B
+			 15.0 15.0
+		Y:
+			    A    B
+			 13.0 13.0
+		tmp.py:7 -> tmp.py:9:
+			    A    B
+			 13.0 13.0
+		tmp.py:37 -> tmp.py:38:
+			    A    B
+			 13.0 13.0
+	Descendants N Threads:
+		X:
+			    A    B
+			 36.0 36.0
+		Y:
+			   A   B
+			 0.0 0.0
+		tmp.py:7 -> tmp.py:9:
+			   A   B
+			 0.0 0.0
+		tmp.py:37 -> tmp.py:38:
+			   A   B
+			 0.0 0.0
+	Combined N Threads:
+		X:
+			    A    B
+			 51.0 51.0
+		Y:
+			    A    B
+			 13.0 13.0
+		tmp.py:7 -> tmp.py:9:
+			    A    B
+			 13.0 13.0
+		tmp.py:37 -> tmp.py:38:
+			    A    B
+			 13.0 13.0
+	Cpu System Sum Utilization Percent:
+		X:
+			       A            B
+			 321.575 330.06666667
+		Y:
+			      B      A
+			 144.35 152.05
+		tmp.py:7 -> tmp.py:9:
+			     A     B
+			 115.7 116.5
+		tmp.py:37 -> tmp.py:38:
+			     B       A
+			 140.3 190.025
+	Cpu System Hardware Utilization Percent:
+		X:
+			           A           B
+			 26.79791667 27.50555556
+		Y:
+			           B           A
+			 12.02916667 12.67083333
+		tmp.py:7 -> tmp.py:9:
+			          A          B
+			 9.64166667 9.70833333
+		tmp.py:37 -> tmp.py:38:
+			           B           A
+			 11.69166667 15.83541667
+	Cpu Main Sum Utilization Percent:
+		X:
+			   A   B
+			 0.0 0.0
+		Y:
+			     B    A
+			 92.85 93.6
+		tmp.py:7 -> tmp.py:9:
+			    A    B
+			 89.5 94.1
+		tmp.py:37 -> tmp.py:38:
+			      A     B
+			 93.625 93.82
+	Cpu Main Hardware Utilization Percent:
+		X:
+			   A   B
+			 0.0 0.0
+		Y:
+			      B   A
+			 7.7375 7.8
+		tmp.py:7 -> tmp.py:9:
+			          A          B
+			 7.45833333 7.84166667
+		tmp.py:37 -> tmp.py:38:
+			          A          B
+			 7.80208333 7.81833333
+	Cpu Descendants Sum Utilization Percent:
+		X:
+			            B            A
+			 229.54166667 232.31666667
+		Y:
+			   A   B
+			 0.0 0.0
+		tmp.py:7 -> tmp.py:9:
+			   A   B
+			 0.0 0.0
+		tmp.py:37 -> tmp.py:38:
+			   A   B
+			 0.0 0.0
+	Cpu Descendants Hardware Utilization Percent:
+		X:
+			           B           A
+			 19.12847222 19.35972222
+		Y:
+			   A   B
+			 0.0 0.0
+		tmp.py:7 -> tmp.py:9:
+			   A   B
+			 0.0 0.0
+		tmp.py:37 -> tmp.py:38:
+			   A   B
+			 0.0 0.0
+	Cpu Combined Sum Utilization Percent:
+		X:
+			            B            A
+			 229.54166667 232.31666667
+		Y:
+			     B    A
+			 92.85 93.6
+		tmp.py:7 -> tmp.py:9:
+			    A    B
+			 89.5 94.1
+		tmp.py:37 -> tmp.py:38:
+			      A     B
+			 93.625 93.82
+	Cpu Combined Hardware Utilization Percent:
+		X:
+			           B           A
+			 19.12847222 19.35972222
+		Y:
+			      B   A
+			 7.7375 7.8
+		tmp.py:7 -> tmp.py:9:
+			          A          B
+			 7.45833333 7.84166667
+		tmp.py:37 -> tmp.py:38:
+			          A          B
+			 7.80208333 7.81833333
+Code Block Compute Time:
+	X:
+		          A          B
+		 3.73593435 3.73593435
+	Y:
+		          A          B
+		 1.84728312 1.84728312
+	tmp.py:7 -> tmp.py:9:
+		          A          B
+		 1.09347939 1.09347939
+	tmp.py:37 -> tmp.py:38:
+		          A          B
+		 1.12899106 1.12899106
