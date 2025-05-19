@@ -1,0 +1,151 @@
+Overall:
+	                                                     min         max        mean          std
+	main_ram                                      0.08691302  1.57649306  0.60060156   0.52698528
+	descendants_ram                                      0.0 11.67184282  2.50271187   3.88233661
+	combined_ram                                  0.27824128 11.73692826  3.09283652    3.5683476
+	system_ram                                   49.02936166  60.4858409 52.59960435    3.4679637
+	main_gpu_ram                                         0.0         0.0         0.0          0.0
+	descendants_gpu_ram                                  0.0         0.0         0.0          0.0
+	combined_gpu_ram                                     0.0         0.0         0.0          0.0
+	system_gpu_ram                                     0.216       0.216       0.216          0.0
+	gpu_sum_utilization_percent                          0.0         0.0         0.0          0.0
+	gpu_hardware_utilization_percent                     0.0         0.0         0.0          0.0
+	main_n_threads                                      13.0        15.0       13.96   0.99919968
+	descendants_n_threads                                0.0        36.0       17.28  17.98559424
+	combined_n_threads                                  13.0        51.0       31.24  18.98479392
+	cpu_system_sum_utilization_percent                 115.1       535.8      242.06 119.47923669
+	cpu_system_hardware_utilization_percent       9.59166667       44.65 20.17166667   9.95660306
+	cpu_main_sum_utilization_percent                     0.0       101.6      48.172  46.37932746
+	cpu_main_hardware_utilization_percent                0.0  8.46666667  4.01433333   3.86494396
+	cpu_descendants_sum_utilization_percent              0.0       300.0     111.512 128.94789745
+	cpu_descendants_hardware_utilization_percent         0.0        25.0  9.29266667  10.74565812
+	cpu_combined_sum_utilization_percent                85.6       300.0     159.684  89.63866434
+	cpu_combined_hardware_utilization_percent     7.13333333        25.0      13.307   7.46988869
+Static Data:
+	   ram_unit gpu_ram_unit time_unit ram_system_capacity gpu_ram_system_capacity system_core_count n_expected_cores system_gpu_count n_expected_gpus
+	  gigabytes    gigabytes     hours         67.25414912                  16.376                12               12                1               1
+Code Block Results:
+	Name:                X
+	Num Timepoints:      12
+	Num Calls:           10
+	Num Non Empty Calls: 10
+	Compute Time:
+		        min        max       mean        std       total
+		 3.61256337 3.80757165 3.73593438 0.06707602 37.35934377
+	Resource Usage:
+		                                                     min         max         mean          std
+		main_ram                                      0.08691302  0.08691712    0.0869161     1.77e-06
+		descendants_ram                               0.21314765 11.67184282   5.21398306   4.15506893
+		combined_ram                                  0.27824128 11.73692826   5.27907226    4.1550679
+		system_ram                                   49.02936166  60.4858409  54.71274223   4.04883975
+		main_gpu_ram                                         0.0         0.0          0.0          0.0
+		descendants_gpu_ram                                  0.0         0.0          0.0          0.0
+		combined_gpu_ram                                     0.0         0.0          0.0          0.0
+		system_gpu_ram                                     0.216       0.216        0.216          0.0
+		gpu_sum_utilization_percent                          0.0         0.0          0.0          0.0
+		gpu_hardware_utilization_percent                     0.0         0.0          0.0          0.0
+		main_n_threads                                      15.0        15.0         15.0          0.0
+		descendants_n_threads                               36.0        36.0         36.0          0.0
+		combined_n_threads                                  51.0        51.0         51.0          0.0
+		cpu_system_sum_utilization_percent                 122.6       535.8      321.575 104.04617665
+		cpu_system_hardware_utilization_percent      10.21666667       44.65  26.79791667   8.67051472
+		cpu_main_sum_utilization_percent                     0.0         0.0          0.0          0.0
+		cpu_main_hardware_utilization_percent                0.0         0.0          0.0          0.0
+		cpu_descendants_sum_utilization_percent             91.4       300.0 232.31666667  81.09138706
+		cpu_descendants_hardware_utilization_percent  7.61666667        25.0  19.35972222   6.75761559
+		cpu_combined_sum_utilization_percent                91.4       300.0 232.31666667  81.09138706
+		cpu_combined_hardware_utilization_percent     7.61666667        25.0  19.35972222   6.75761559
+
+	Name:                Y
+	Num Timepoints:      2
+	Num Calls:           1
+	Num Non Empty Calls: 1
+	Compute Time:
+		        min        max       mean  std      total
+		 1.84728312 1.84728312 1.84728312  0.0 1.84728312
+	Resource Usage:
+		                                                     min         max        mean        std
+		main_ram                                      0.48104653  1.57649306  1.02876979 0.54772326
+		descendants_ram                                      0.0         0.0         0.0        0.0
+		combined_ram                                  0.48104653  1.57649306  1.02876979 0.54772326
+		system_ram                                    49.9365888 50.91651584 50.42655232 0.48996352
+		main_gpu_ram                                         0.0         0.0         0.0        0.0
+		descendants_gpu_ram                                  0.0         0.0         0.0        0.0
+		combined_gpu_ram                                     0.0         0.0         0.0        0.0
+		system_gpu_ram                                     0.216       0.216       0.216        0.0
+		gpu_sum_utilization_percent                          0.0         0.0         0.0        0.0
+		gpu_hardware_utilization_percent                     0.0         0.0         0.0        0.0
+		main_n_threads                                      13.0        13.0        13.0        0.0
+		descendants_n_threads                                0.0         0.0         0.0        0.0
+		combined_n_threads                                  13.0        13.0        13.0        0.0
+		cpu_system_sum_utilization_percent                 145.3       158.8      152.05       6.75
+		cpu_system_hardware_utilization_percent      12.10833333 13.23333333 12.67083333     0.5625
+		cpu_main_sum_utilization_percent                    85.6       101.6        93.6        8.0
+		cpu_main_hardware_utilization_percent         7.13333333  8.46666667         7.8 0.66666667
+		cpu_descendants_sum_utilization_percent              0.0         0.0         0.0        0.0
+		cpu_descendants_hardware_utilization_percent         0.0         0.0         0.0        0.0
+		cpu_combined_sum_utilization_percent                85.6       101.6        93.6        8.0
+		cpu_combined_hardware_utilization_percent     7.13333333  8.46666667         7.8 0.66666667
+
+	Name:                tmp.py:38
+	Num Timepoints:      8
+	Num Calls:           10
+	Num Non Empty Calls: 8
+	Compute Time:
+		        min        max       mean        std       total
+		 1.09836912 1.20658827 1.12899108 0.03344235 11.28991079
+	Resource Usage:
+		                                                     min         max        mean         std
+		main_ram                                      0.86170419  1.25889741  1.12111565  0.12433487
+		descendants_ram                                      0.0         0.0         0.0         0.0
+		combined_ram                                  0.86170419  1.25889741  1.12111565  0.12433487
+		system_ram                                   50.39217459 51.04461414 50.68914227  0.18491033
+		main_gpu_ram                                         0.0         0.0         0.0         0.0
+		descendants_gpu_ram                                  0.0         0.0         0.0         0.0
+		combined_gpu_ram                                     0.0         0.0         0.0         0.0
+		system_gpu_ram                                     0.216       0.216       0.216         0.0
+		gpu_sum_utilization_percent                          0.0         0.0         0.0         0.0
+		gpu_hardware_utilization_percent                     0.0         0.0         0.0         0.0
+		main_n_threads                                      13.0        13.0        13.0         0.0
+		descendants_n_threads                                0.0         0.0         0.0         0.0
+		combined_n_threads                                  13.0        13.0        13.0         0.0
+		cpu_system_sum_utilization_percent                 115.1       405.5     190.025 93.79466603
+		cpu_system_hardware_utilization_percent       9.59166667 33.79166667 15.83541667  7.81622217
+		cpu_main_sum_utilization_percent                    90.4        97.9      93.625  2.43194881
+		cpu_main_hardware_utilization_percent         7.53333333  8.15833333  7.80208333   0.2026624
+		cpu_descendants_sum_utilization_percent              0.0         0.0         0.0         0.0
+		cpu_descendants_hardware_utilization_percent         0.0         0.0         0.0         0.0
+		cpu_combined_sum_utilization_percent                90.4        97.9      93.625  2.43194881
+		cpu_combined_hardware_utilization_percent     7.53333333  8.15833333  7.80208333   0.2026624
+
+	Name:                tmp.py:9
+	Num Timepoints:      1
+	Num Calls:           1
+	Num Non Empty Calls: 1
+	Compute Time:
+		        min        max       mean  std      total
+		 1.09347939 1.09347939 1.09347939  0.0 1.09347939
+	Resource Usage:
+		                                                     min         max        mean  std
+		main_ram                                      1.21389056  1.21389056  1.21389056  0.0
+		descendants_ram                                      0.0         0.0         0.0  0.0
+		combined_ram                                  1.21389056  1.21389056  1.21389056  0.0
+		system_ram                                   50.53914317 50.53914317 50.53914317  0.0
+		main_gpu_ram                                         0.0         0.0         0.0  0.0
+		descendants_gpu_ram                                  0.0         0.0         0.0  0.0
+		combined_gpu_ram                                     0.0         0.0         0.0  0.0
+		system_gpu_ram                                     0.216       0.216       0.216  0.0
+		gpu_sum_utilization_percent                          0.0         0.0         0.0  0.0
+		gpu_hardware_utilization_percent                     0.0         0.0         0.0  0.0
+		main_n_threads                                      13.0        13.0        13.0  0.0
+		descendants_n_threads                                0.0         0.0         0.0  0.0
+		combined_n_threads                                  13.0        13.0        13.0  0.0
+		cpu_system_sum_utilization_percent                 115.7       115.7       115.7  0.0
+		cpu_system_hardware_utilization_percent       9.64166667  9.64166667  9.64166667  0.0
+		cpu_main_sum_utilization_percent                    89.5        89.5        89.5  0.0
+		cpu_main_hardware_utilization_percent         7.45833333  7.45833333  7.45833333  0.0
+		cpu_descendants_sum_utilization_percent              0.0         0.0         0.0  0.0
+		cpu_descendants_hardware_utilization_percent         0.0         0.0         0.0  0.0
+		cpu_combined_sum_utilization_percent                89.5        89.5        89.5  0.0
+		cpu_combined_hardware_utilization_percent     7.45833333  7.45833333  7.45833333  0.0
+

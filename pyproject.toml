@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gpu-tracker"
+description = "Tracks computational resources of a process and its child processes, most prominently GPU RAM, as well as RAM, compute time, and CPU utilization."
+readme = "README.rst"
+requires-python = ">=3.10"
+keywords = ["gpu", "ram", "time", "memory", "profile", "track", "resource", "usage"]
+license = {file = "LICENSE"}
+classifiers = [
+     'Environment :: Console',
+     'Environment :: GPU :: NVIDIA CUDA',
+     'Intended Audience :: Developers',
+     'License :: OSI Approved :: BSD License',
+     'Operating System :: OS Independent',
+     'Programming Language :: Python :: 3.10',
+     'Topic :: Software Development :: Libraries :: Python Modules',
+     'Topic :: System :: Hardware',
+     'Topic :: System :: Monitoring',
+     'Typing :: Typed'
+
+]
+dynamic = ["version", "dependencies"]
+
+[project.urls]
+"Homepage" = "https://github.com/MoseleyBioinformaticsLab/gpu_tracker"
+"Documentation" = "https://moseleybioinformaticslab.github.io/gpu_tracker/"
+"GitHub" = "https://github.com/MoseleyBioinformaticsLab/gpu_tracker"
+"Issues" = "https://github.com/MoseleyBioinformaticsLab/gpu_tracker/issues"
+
+[tool.setuptools.dynamic]
+dependencies = {file = "requirements.txt"}
+
+[tool.setuptools_scm]
+write_to = "src/gpu_tracker/_version.py"
+
+[project.scripts]
+gpu-tracker = "gpu_tracker.__main__:main"

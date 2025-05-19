@@ -1,0 +1,9 @@
+.coverage*
+.env/
+.idea/
+dist/
+**/__pycache__/**
+src/gpu_tracker/_version.py
+src/gpu_tracker.egg-info
+docs/_build/
+docs/notebook/.ipynb_checkpoints/

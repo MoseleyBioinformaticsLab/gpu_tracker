@@ -1,0 +1,60 @@
+Max RAM:
+   Unit: kilobytes
+   System capacity: 67000000.0
+   System: 31000000.0
+   Main:
+      Total RSS: 550.5
+      Private RSS: 0.0
+      Shared RSS: 0.0
+   Descendants:
+      Total RSS: 1257.05
+      Private RSS: 0.0
+      Shared RSS: 0.0
+   Combined:
+      Total RSS: 1697.45
+      Private RSS: 0.0
+      Shared RSS: 0.0
+Max GPU RAM:
+   Unit: gigabytes
+   System capacity: 36.594
+   System: 6.5
+   Main: 1.6
+   Descendants: 4.3
+   Combined: 5.8
+CPU utilization:
+   System core count: 4
+   Number of expected cores: 2
+   System:
+      Max sum percent: 276.3
+      Max hardware percent: 69.075
+      Mean sum percent: 261.967
+      Mean hardware percent: 65.492
+   Main:
+      Max sum percent: 198.9
+      Max hardware percent: 99.45
+      Mean sum percent: 119.7
+      Mean hardware percent: 59.85
+   Descendants:
+      Max sum percent: 142.2
+      Max hardware percent: 71.1
+      Mean sum percent: 129.733
+      Mean hardware percent: 64.867
+   Combined:
+      Max sum percent: 311.6
+      Max hardware percent: 155.8
+      Mean sum percent: 249.433
+      Mean hardware percent: 124.717
+   Main number of threads: 2
+   Descendants number of threads: 6
+   Combined number of threads: 8
+GPU utilization:
+   System GPU count: 3
+   Number of expected GPUs: 1
+   GPU percentages:
+      Max sum percent: 75.0
+      Max hardware percent: 75.0
+      Mean sum percent: 43.333
+      Mean hardware percent: 43.333
+Compute time:
+   Unit: minutes
+   Time: 5.0

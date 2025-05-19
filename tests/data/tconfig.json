@@ -1,0 +1,7 @@
+{
+  "sleep_time": 0.5,
+  "ram_unit": "megabytes",
+  "gpu_ram_unit": "megabytes",
+  "time_unit": "seconds",
+  "n_expected_cores": 2
+}
