@@ -1,0 +1,7 @@
+{
+  "file_path_map": {
+    "A": "file1.pkl",
+    "B": "file2.pkl"
+  },
+  "statistic": "max"
+}

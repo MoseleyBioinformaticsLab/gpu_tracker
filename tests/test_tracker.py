@@ -225,9 +225,10 @@ def test_tracker(
         expected_measurements = json.load(file)
         assert expected_measurements == tracker.to_json()
     if tracking_file is None:
-        assert tracker._tracking_process.tracking_file is None
+        assert tracker._tracking_process.data_proxy is None
     else:
-        utils.test_tracking_file(actual_tracking_file=tracking_file, expected_tracking_file=f'{expected_measurements_file}.csv')
+        utils.test_tracking_file(
+            actual_tracking_file=tracking_file, expected_tracking_file=f'{expected_measurements_file}.csv')
 
 
 def test_cannot_connect_warnings(mocker, caplog):
@@ -247,7 +248,7 @@ def test_cannot_connect_warnings(mocker, caplog):
     mocker.patch('gpu_tracker._helper_classes.subp.check_output', side_effect=side_effect_func)
     gput.Tracker()
     gput.Tracker()
-    _assert_warnings(
+    utils._assert_warnings(
         caplog,
         [
             'The nvidia-smi command is installed but cannot connect to a GPU. The GPU RAM and GPU utilization values will remain 0.0.',
@@ -283,13 +284,7 @@ def test_main_process_warnings(mocker, caplog):
         'Tracking is stopping and it has been 11.0 seconds since the temporary tracking results file was last updated. '
         'Resource usage was not updated during that time.')
     assert not os.path.isfile(tracker._resource_usage_file)
-    _assert_warnings(caplog, expected_warnings)
-
-
-def _assert_warnings(caplog, expected_warnings: list[str]):
-    for expected_warning, record in zip(expected_warnings, caplog.records):
-        assert record.levelname == 'WARNING'
-        assert record.message == expected_warning
+    utils._assert_warnings(caplog, expected_warnings)
 
 
 @pt.fixture(name='disable_logs', params=[True, False])
@@ -330,7 +325,7 @@ def test_tracking_process_warnings(mocker, disable_logs: bool, caplog):
             gpu_unavailable_message, 'The target process of ID 666 ended before tracking could begin.', gpu_unavailable_message,
             'Failed to track a process (PID: 777) that does not exist. This possibly resulted from the process completing before it could be tracked.',
             'The following uncaught exception occurred in the tracking process:']
-        _assert_warnings(caplog, expected_warnings)
+        utils._assert_warnings(caplog, expected_warnings)
 
 
 def test_validate_arguments(mocker):
@@ -341,15 +336,17 @@ def test_validate_arguments(mocker):
         gput.Tracker(ram_unit='milibytes')
     assert str(error.value) == '"milibytes" is not a valid RAM unit. Valid values are bytes, gigabytes, kilobytes, megabytes, terabytes'
     subprocess_mock = mocker.patch(
-        'gpu_tracker._helper_classes.subp', check_output=mocker.MagicMock(
-            side_effect=[b'', b'', b'uuid ,memory.total [MiB] \ngpu-id1,2048 MiB\ngpu-id2,2048 MiB', b'', b'', b'uuid ,memory.total [MiB] ']))
+        'gpu_tracker._helper_classes.subp.check_output', side_effect=[
+            b'', b'', b'uuid ,memory.total [MiB] \ngpu-id1,2048 MiB\ngpu-id2,2048 MiB', b'', b'', b'uuid ,memory.total [MiB] '
+        ]
+    )
     with pt.raises(ValueError) as error:
         gput.Tracker(gpu_uuids={'invalid-id'})
-    assert len(subprocess_mock.check_output.call_args_list) == 3
+    assert len(subprocess_mock.call_args_list) == 3
     assert str(error.value) == 'GPU UUID of invalid-id is not valid. Available UUIDs are: gpu-id1, gpu-id2'
     with pt.raises(ValueError) as error:
         gput.Tracker(gpu_uuids=set[str]())
-    assert len(subprocess_mock.check_output.call_args_list) == 6
+    assert len(subprocess_mock.call_args_list) == 6
     assert str(error.value) == 'gpu_uuids is not None but the set is empty. Please provide a set of at least one GPU UUID.'
     with pt.raises(ValueError) as error:
         gput.Tracker(gpu_brand='invalid-brand')
@@ -395,3 +392,13 @@ def test_resource_usage_file(mocker):
     tracker._tracking_process.run()
     assert os.path.isfile(file_path)
     os.remove(file_path)
+
+
+def test_formatting_before_tracking_stops():
+    with pt.raises(RuntimeError) as error:
+        tracker = gput.Tracker()
+        str(tracker)
+    assert str(error.value) == (
+        'Cannot display the tracker in string or JSON format before tracking completes. Exit the content manager or call the stop() '
+        'method before calling to_json() or str()'
+    )

@@ -2,3 +2,4 @@ psutil>=6.0.0
 docopt>=0.6.2
 pandas>=2.2.3
 SQLAlchemy>=2.0.39
+tqdm>=4.67.1

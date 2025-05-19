@@ -1,15 +1,22 @@
 from __future__ import annotations
 import abc
+import os.path
 import subprocess as subp
 import pandas as pd
 import io
-import os
 import csv
 import dataclasses as dclass
 import sqlalchemy as sqlalc
 import sqlalchemy.orm as sqlorm
 import enum
+import tqdm
 
+_SUMMARY_STATS = ['min', 'max', 'mean', 'std']
+
+def _summary_stats(data: pd.Series | pd.DataFrame) -> pd.Series | pd.DataFrame:
+    stats = data.describe().loc[_SUMMARY_STATS]
+    stats.loc['std'] = data.std(ddof=0)
+    return stats
 
 class _GPUQuerier(abc.ABC):
     command = None
@@ -138,76 +145,237 @@ class _TimepointUsage:
 
 
 @dclass.dataclass
+class _StaticData:
+    ram_unit: str
+    gpu_ram_unit: str
+    time_unit: str
+    ram_system_capacity: float
+    gpu_ram_system_capacity: float
+    system_core_count: int
+    n_expected_cores: int
+    system_gpu_count: int
+    n_expected_gpus: int
+
+
+@dclass.dataclass
 class _SubTrackerLog:
     class CodeBlockPosition(enum.Enum):
-        START = 'START'
-        STOP = 'STOP'
+        START = 0
+        STOP = 1
     process_id: int
     code_block_name: str
     position: CodeBlockPosition
     timestamp: float
 
 
-class _Writer(abc.ABC):
+class _DataProxy(abc.ABC):
+    _files_w_data = set[str]()
+    _files_w_static_data = set[str]()
+
     @staticmethod
-    def create(file: str | None) -> _Writer | None:
+    def create(file: str | None, overwrite: bool = False) -> _DataProxy | None:
         if file is not None:
             if file.endswith('.csv'):
-                return _CSVWriter(file)
+                return _CSVDataProxy(file, overwrite)
             elif file.endswith('.sqlite'):
-                return _SQLiteWriter(file)
+                return _SQLiteDataProxy(file, overwrite)
             else:
                 raise ValueError(
                     f'Invalid file name: "{file}". Valid file extensions are ".csv" and ".sqlite".')
         else:
             return None
 
-    def __init__(self, file: str):
-        self._file = file
+    def __init__(self, file_name: str, overwrite: bool):
+        self._file_name = file_name
+        self._overwrite = overwrite
+        self._extension = '.csv' if self._file_name.endswith('.csv') else '.sqlite'
 
-    def write_row(self, values: object):
-        values = dclass.asdict(values)
-        if not os.path.isfile(self._file):
-            self._create_file(values)
-        self._write_row(values)
+    def _check_overwrite(self):
+        if os.path.isfile(self._file_name):
+            if self._overwrite:
+                os.remove(self._file_name)
+            else:
+                raise FileExistsError(f'File {self._file_name} already exists. Set overwrite to True to overwrite the existing file.')
+
+    def write_data(self, data: _TimepointUsage | _SubTrackerLog):
+        data = dclass.asdict(data)
+        if self._file_name not in _DataProxy._files_w_data:
+            if self._file_name not in _DataProxy._files_w_static_data:
+                self._check_overwrite()
+            self._create_table(data)
+            _DataProxy._files_w_data.add(self._file_name)
+        if not os.path.isfile(self._file_name):
+            raise FileNotFoundError(f'The file {self._file_name} was removed in the middle of writing data to it.')
+        self._write_data(data)
 
     @abc.abstractmethod
-    def _write_row(self, values: dict):
+    def _write_data(self, data: dict):
         pass  # pragma: nocover
 
     @abc.abstractmethod
-    def _create_file(self, values: dict):
+    def _create_table(self, data: dict):
+        pass  # pragma: nocover
+
+    def write_static_data(self, data: _StaticData):
+        self._check_overwrite()
+        self._write_static_data(data)
+        _DataProxy._files_w_static_data.add(self._file_name)
+
+    @abc.abstractmethod
+    def _write_static_data(self, data: _StaticData):
+        pass  # pragma: nocover
+
+    def read_static_data(self) -> pd.Series:
+        return self._read_static_data().squeeze()
+
+    @abc.abstractmethod
+    def _read_static_data(self) -> pd.DataFrame:
+        pass  # pragma: nocover
+
+    def combine_files(self, files: list[str]):
+        if os.path.exists(self._file_name):
+            raise ValueError(f'Cannot create sub-tracking file {self._file_name}. File already exists.')
+        for file in files:
+            if not file.endswith(self._extension):
+                raise ValueError(f'File {file} does not end with the same extension as {self._file_name}. Must end in "{self._extension}".')
+        self._combine_files(files)
+
+    @abc.abstractmethod
+    def _combine_files(self, files: list[str]):
+        pass  # pragma: nocover
+
+    def load_timestamp_pairs(self, code_block_name: str) -> list[tuple[float, float]]:
+        timestamps = self._load_timestamps(code_block_name)
+        indexes_to_drop = list[int]()
+        for process_id in timestamps.process_id.unique():
+            process_timestamps = timestamps.loc[timestamps.process_id == process_id]
+            if process_timestamps.position.iloc[-1] == _SubTrackerLog.CodeBlockPosition.START.value:
+                indexes_to_drop.append(process_timestamps.index[-1])
+        timestamps = timestamps.drop(indexes_to_drop)
+        timestamp_pairs = list[tuple[float, float]]()
+        for i in range(0, len(timestamps), 2):
+            timestamp1, timestamp2 = timestamps.iloc[i], timestamps.iloc[i + 1]
+            start_time, stop_time = float(timestamp1.timestamp), float(timestamp2.timestamp)
+            pid1, pid2 = int(timestamp1.process_id), int(timestamp2.process_id)
+            error_prefix = f'Sub-tracking file is invalid. Detected timestamp pair ({start_time}, {stop_time})'
+            if pid1 != pid2:
+                raise ValueError(f'{error_prefix} with differing process IDs: {pid1} and {pid2}.')
+            if timestamp1.position > timestamp2.position:
+                raise ValueError(f'{error_prefix} of process ID {pid1} with a start time greater than the stop time.')
+            timestamp_pairs.append((start_time, stop_time))
+        return timestamp_pairs
+
+    @abc.abstractmethod
+    def _load_timestamps(self, code_block_name: str) -> pd.DataFrame:
+        pass  # pragma: nocover
+
+    @abc.abstractmethod
+    def load_timepoints(self, timestamp_pairs: list[tuple[float, float]] | None) -> pd.DataFrame:
+        pass  # pragma: nocover
+
+    @abc.abstractmethod
+    def load_code_block_names(self) -> list[str]:
+        pass  # pragma: nocover
+
+    def overall_timepoint_results(self) -> pd.DataFrame:
+        fields = list(_TimepointUsage.__dataclass_fields__.keys())
+        fields.remove('timestamp')
+        return self._overall_timepoint_results(fields)
+
+    @abc.abstractmethod
+    def _overall_timepoint_results(self, fields: list[str]) -> pd.DataFrame:
         pass  # pragma: nocover
 
 
-class _CSVWriter(_Writer):
-    def _write_row(self, values: dict):
-        with open(self._file, 'a', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=values.keys())
-            writer.writerow(values)
+class _CSVDataProxy(_DataProxy):
+    def __init__(self, file_name: str, overwrite: bool):
+        super().__init__(file_name, overwrite)
+        self._timestamps = None
+        self._timepoints = None
 
-    def _create_file(self, values: dict):
-        with open(self._file, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=values.keys())
-            writer.writeheader()
+    @property
+    def timestamps(self):
+        if self._timestamps is None:
+            self._timestamps = pd.read_csv(self._file_name)
+        return self._timestamps
+
+    @property
+    def timepoints(self):
+        if self._timepoints is None:
+            self._timepoints = pd.read_csv(self._file_name, skiprows=2)
+        return self._timepoints
+
+    def _write_static_data(self, data: _StaticData):
+        static_data = dclass.asdict(data)
+        self._create_table(static_data)
+        self._write_data(static_data)
+
+    def _write_data(self, data: dict):
+        self._with_writer(data, lambda writer: writer.writerow(data))
+
+    def _create_table(self, data: dict):
+        self._with_writer(data, lambda writer: writer.writeheader())
+
+    def _with_writer(self, data: dict, func):
+        with open(self._file_name, 'a', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=data.keys())
+            func(writer)
+
+    def _read_static_data(self) -> pd.DataFrame:
+        return pd.read_csv(self._file_name, header=0, nrows=1)
+
+    def _combine_files(self, files: list[str]):
+        data = pd.DataFrame()
+        for file in files:
+            data = pd.concat([data, pd.read_csv(file)], axis='rows')
+        data.to_csv(self._file_name, index=False)
+
+    def _load_timestamps(self, code_block_name: str) -> pd.DataFrame:
+        timestamps = self.timestamps.loc[
+            self.timestamps.code_block_name == code_block_name, ['process_id', 'position', 'timestamp']
+        ]
+        return timestamps.sort_values(by=['process_id', 'timestamp', 'position'])
+
+    def load_timepoints(self, timestamp_pairs: list[tuple[float, float]]) -> pd.DataFrame:
+        selected = None
+        for start_time, stop_time in timestamp_pairs:
+            between = (self.timepoints.timestamp >= start_time) & (self.timepoints.timestamp <= stop_time)
+            if selected is None:
+                selected = between
+            else:
+                selected |= between
+        return self.timepoints[selected]
+
+    def load_code_block_names(self) -> list[str]:
+        return sorted(self.timestamps.code_block_name.unique())
+
+    def _overall_timepoint_results(self, fields: list[str]) -> pd.DataFrame:
+        stats = _summary_stats(self.timepoints[fields])
+        return stats.T
 
 
-class _SQLiteWriter(_Writer):
+class _SQLiteDataProxy(_DataProxy):
     _DATA_TABLE = 'data'
     _STATIC_DATA_TABLE = 'static_data'
 
-    def _write_row(self, values: dict):
-        engine = sqlalc.create_engine(f'sqlite:///{self._file}', poolclass=sqlalc.pool.NullPool)
+    def _write_data(self, data: dict):
+        self.__write_data(data, _SQLiteDataProxy._DATA_TABLE)
+
+    def __write_data(self, data: dict, table: str):
+        engine = self._create_engine()
         metadata = sqlalc.MetaData()
-        tracking_table = sqlalc.Table(_SQLiteWriter._DATA_TABLE, metadata, autoload_with=engine)
+        tracking_table = sqlalc.Table(table, metadata, autoload_with=engine)
         Session = sqlorm.sessionmaker(bind=engine)
         with Session() as session:
-            insert_stmt = sqlalc.insert(tracking_table).values(**values)
+            insert_stmt = sqlalc.insert(tracking_table).values(**data)
             session.execute(insert_stmt)
             session.commit()
 
-    def _create_file(self, values: dict):
-        engine = sqlalc.create_engine(f'sqlite:///{self._file}', poolclass=sqlalc.pool.NullPool)
+    def _create_table(self, data: dict):
+        self.__create_table(data, _SQLiteDataProxy._DATA_TABLE)
+
+    def __create_table(self, data: dict, table: str):
+        engine = self._create_engine()
         metadata = sqlalc.MetaData()
         type_mapping = {
             str: sqlalc.String,
@@ -215,9 +383,92 @@ class _SQLiteWriter(_Writer):
             float: sqlalc.Float,
         }
         columns = list[sqlalc.Column]()
-        schema = {name: type(value) for name, value in values.items()}
+        schema = {name: type(value) for name, value in data.items()}
         for column_name, data_type in schema.items():
             sqlalchemy_type = type_mapping[data_type]
             columns.append(sqlalc.Column(column_name, sqlalchemy_type))
-        sqlalc.Table(_SQLiteWriter._DATA_TABLE, metadata, *columns)
+        sqlalc.Table(table, metadata, *columns)
         metadata.create_all(engine)
+
+    def _create_engine(self) -> sqlalc.Engine:
+        return sqlalc.create_engine(f'sqlite:///{self._file_name}', poolclass=sqlalc.pool.NullPool)
+
+    def _read_sql(self, sql: str) -> pd.DataFrame:
+        engine = self._create_engine()
+        return pd.read_sql(sqlalc.text(sql), engine)
+
+    def _write_static_data(self, data: _StaticData):
+        static_data = dclass.asdict(data)
+        self.__create_table(static_data, _SQLiteDataProxy._STATIC_DATA_TABLE)
+        self.__write_data(static_data, _SQLiteDataProxy._STATIC_DATA_TABLE)
+
+    def _read_static_data(self) -> pd.DataFrame:
+        engine = self._create_engine()
+        return pd.read_sql_table(_SQLiteDataProxy._STATIC_DATA_TABLE, engine)
+
+    def _combine_files(self, files: list[str]):
+        engine = self._create_engine()
+        with engine.connect() as con:
+            table_created = False
+            for in_file in tqdm.tqdm(files):
+                con.execute(sqlalc.text(f"ATTACH DATABASE '{in_file}' AS input_db"))
+                if not table_created:
+                    con.execute(
+                        sqlalc.text(
+                            f'CREATE TABLE {_SQLiteDataProxy._DATA_TABLE} AS SELECT * FROM input_db.{_SQLiteDataProxy._DATA_TABLE}'
+                        )
+                    )
+                    table_created = True
+                else:
+                    con.execute(
+                        sqlalc.text(
+                            f'INSERT INTO {_SQLiteDataProxy._DATA_TABLE} SELECT * FROM input_db.{_SQLiteDataProxy._DATA_TABLE}'
+                        )
+                    )
+                con.commit()
+                con.execute(sqlalc.text('DETACH DATABASE input_db'))
+                con.commit()
+
+    def _load_timestamps(self, code_block_name: str) -> pd.DataFrame:
+        sql = f"""
+            SELECT process_id,position,timestamp FROM {_SQLiteDataProxy._DATA_TABLE}
+            WHERE code_block_name='{code_block_name}'
+            ORDER BY process_id,timestamp,position;
+        """
+        return self._read_sql(sql)
+
+    def load_timepoints(self, timestamp_pairs: list[tuple[float, float]]) -> pd.DataFrame:
+        conditions = [f'timestamp BETWEEN {start_time} AND {stop_time}' for (start_time, stop_time) in timestamp_pairs]
+        where_clause = ' OR\n'.join(conditions)
+        sql = f'SELECT * FROM {_SQLiteDataProxy._DATA_TABLE} WHERE {where_clause}'
+        return self._read_sql(sql)
+
+    def _overall_timepoint_results(self, fields: list[str]) -> pd.DataFrame:
+        cte_blocks = list[str]()
+        selects = list[str]()
+        for col in fields:
+            mean_cte = f'mean_{col}'
+            diff_cte = f'diff_{col}'
+            cte_blocks.append(f'{mean_cte} AS (SELECT AVG({col}) AS mean FROM {_SQLiteDataProxy._DATA_TABLE})')
+            cte_blocks.append(
+                f'{diff_cte} AS (SELECT {col} - (SELECT mean FROM {mean_cte}) AS diff FROM {_SQLiteDataProxy._DATA_TABLE})'
+            )
+            selects.append(f'MIN({col})')
+            selects.append(f'MAX({col})')
+            selects.append(f'(SELECT mean FROM {mean_cte}) AS "AVG({col})"')
+            selects.append(f'(SELECT SQRT(AVG(diff * diff)) FROM {diff_cte}) AS "STDDEV({col})"')
+        with_clause = "WITH " + ",\n     ".join(cte_blocks)
+        select_clause = "SELECT " + ",\n       ".join(selects)
+        sql = f"{with_clause}\n{select_clause} FROM {_SQLiteDataProxy._DATA_TABLE};"
+        results = self._read_sql(sql).squeeze()
+        reshaped_results = pd.DataFrame()
+        sql_funcs = 'MIN', 'MAX', 'AVG', 'STDDEV'
+        for sql_func, index in zip(sql_funcs, _SUMMARY_STATS):
+            next_row = results.loc[[idx.startswith(sql_func) for idx in results.index]]
+            next_row.index = [col.replace(sql_func, '').replace('(', '').replace(')', '') for col in next_row.index]
+            reshaped_results.loc[:, index] = next_row
+        return reshaped_results
+
+    def load_code_block_names(self) -> list[str]:
+        sql = f'SELECT DISTINCT code_block_name FROM {_SQLiteDataProxy._DATA_TABLE}'
+        return sorted(self._read_sql(sql).code_block_name)
