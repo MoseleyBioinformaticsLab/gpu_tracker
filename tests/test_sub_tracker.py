@@ -102,18 +102,22 @@ def test_analysis(format_: str):
     sub_tracking_file = f'{folder}/sub-tracking.{format_}'
     analyzer = gput.SubTrackingAnalyzer(tracking_file, sub_tracking_file)
     actual_results = analyzer.sub_tracking_results()
-    with open(f'{folder}/results.json', 'r') as file:
+    _assert_results_match(f'{folder}/results.json', f'{folder}/results.txt', actual_results)
+
+
+def _assert_results_match(expected_json_path: str, expected_text_path: str, actual_results):
+    with open(expected_json_path, 'r') as file:
         expected_json_results = json.load(file)
     diff = deepd.DeepDiff(expected_json_results, actual_results.to_json(), significant_digits=12)
     assert not diff
-    with open(f'{folder}/results.txt', 'r') as file:
+    with open(expected_text_path, 'r') as file:
         expected_str_results = file.read()
     assert expected_str_results == str(actual_results)
 
 
 def test_combine(format_: str):
     folder = 'tests/data/sub-tracking-results'
-    files = [f'{folder}/files-to-combine/{name}' for name in os.listdir(f'{folder}/files-to-combine') if name.endswith(format_)]
+    files = [f'{folder}/files-to-combine/{name}' for name in sorted(os.listdir(f'{folder}/files-to-combine')) if name.endswith(format_)]
     with pt.raises(ValueError) as error:
         wrong_extension = "csv" if format_ == "sqlite" else "sqlite"
         invalid_file = f'wrong-extension.{wrong_extension}'
@@ -128,10 +132,83 @@ def test_combine(format_: str):
         expected_results = pd.read_csv(expected_path)
         actual_results = pd.read_csv(sub_tracking_file)
     else:
-        expected_results = pd.read_sql('data', sqlalc.create_engine(f'sqlite:///{expected_path}'))
-        actual_results = pd.read_sql('data', sqlalc.create_engine(f'sqlite:///{sub_tracking_file}'))
+        expected_results = pd.read_sql('data', sqlalc.create_engine(f'sqlite:///{expected_path}', poolclass=sqlalc.pool.NullPool))
+        actual_results = pd.read_sql('data', sqlalc.create_engine(f'sqlite:///{sub_tracking_file}', poolclass=sqlalc.pool.NullPool))
     pd.testing.assert_frame_equal(expected_results, actual_results, atol=1e-10, rtol=1e-10)
     with pt.raises(ValueError) as error:
         analyzer.combine_sub_tracking_files(files)
     assert str(error.value) == f'Cannot create sub-tracking file {sub_tracking_file}. File already exists.'
     os.remove(sub_tracking_file)
+
+
+@pt.fixture(name='statistic', params=['std', 'min', 'max', 'mean'])
+def get_statistic(request):
+    yield request.param
+
+
+def _get_tracking_comparison(names: tuple[str, str]) -> gput.TrackingComparison:
+    folder = 'tests/data/sub-tracking-results'
+    file_path = f'{folder}/results-{{}}.pkl'
+    file_path_map = {name: file_path.format(name) for name in names}
+    return gput.TrackingComparison(file_path_map)
+
+
+def test_comparison(caplog, statistic: str):
+    comparison = _get_tracking_comparison(('A', 'B'))
+    actual_results = comparison.compare(statistic)
+    folder = 'tests/data/sub-tracking-results'
+    _assert_results_match(
+        f'{folder}/comparison_{statistic}.json', f'{folder}/comparison_{statistic}.txt',
+        actual_results
+    )
+    expected_warnings = [
+        'Code block name "tmp.py:9" of tracking session "A" matched with code block name "tmp.py:7" of tracking session "B" but they differ by line number. If these code blocks were not meant to match, their comparison will not be valid and their names must be disambiguated.',
+        'Code block name "tmp.py:38" of tracking session "A" matched with code block name "tmp.py:37" of tracking session "B" but they differ by line number. If these code blocks were not meant to match, their comparison will not be valid and their names must be disambiguated.'
+    ]
+    utils._assert_warnings(caplog, expected_warnings)
+
+
+def test_errors():
+    with pt.raises(ValueError) as error:
+        _get_tracking_comparison(('A', 'C'))
+    assert str(error.value) == 'All sub-tracking results must have the same number of code blocks. The first has 4 code blocks but tracking session "C" has 5 code blocks.'
+    with pt.raises(ValueError) as error:
+        _get_tracking_comparison(('A', 'D'))
+    assert str(error.value) == 'Code block name "tmp.py:38" of tracking session "A" does not match code block name "tmp.py:abc" of tracking session "D"'
+    with pt.raises(ValueError) as error:
+        _get_tracking_comparison(('A', 'E'))
+    assert str(error.value) == 'Code block name "tmp.py:9" of tracking session "A" does not match code block name "temp.py:123" of tracking session "E"'
+    comparison = _get_tracking_comparison(('F', 'G'))
+    comparison.compare()
+    with pt.raises(ValueError) as error:
+        comparison.compare('invalid')
+    assert str(error.value) == "Invalid summary statistic 'invalid'. Valid values are min max mean std."
+
+
+def test_overwrite():
+    file_name = 'repeat-file.csv'
+    open(file_name, 'w').close()
+    with pt.raises(FileExistsError) as error:
+        with gput.SubTracker(sub_tracking_file=file_name):
+            pass  # pragma: nocover
+    assert str(error.value) == 'File repeat-file.csv already exists. Set overwrite to True to overwrite the existing file.'
+    with gput.SubTracker(sub_tracking_file=file_name, overwrite=True):
+        pass  # pragma: nocover
+    assert os.path.isfile(file_name)
+    os.remove(file_name)
+    with pt.raises(FileNotFoundError) as error:
+        with gput.SubTracker(sub_tracking_file=file_name):
+            pass  # pragma: nocover
+    assert str(error.value) == 'The file repeat-file.csv was removed in the middle of writing data to it.'
+
+
+def test_invalid_file():
+    file_path = 'tests/data/sub-tracking-results/invalid{}.csv'
+    analyzer = gput.SubTrackingAnalyzer(None, sub_tracking_file=file_path.format(1))
+    with pt.raises(ValueError) as error:
+        analyzer.load_timestamp_pairs('X')
+    assert str(error.value) == 'Sub-tracking file is invalid. Detected timestamp pair (1745449613.532592, 1745449609.7528224) with differing process IDs: 1723811 and 1723812.'
+    analyzer = gput.SubTrackingAnalyzer(None, sub_tracking_file=file_path.format(2))
+    with pt.raises(ValueError) as error:
+        analyzer.load_timestamp_pairs('X')
+    assert str(error.value) == 'Sub-tracking file is invalid. Detected timestamp pair (1745449609.7528222, 1745449613.5325918) of process ID 1723811 with a start time greater than the stop time.'

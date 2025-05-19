@@ -260,7 +260,7 @@ class _DataProxy(abc.ABC):
             error_prefix = f'Sub-tracking file is invalid. Detected timestamp pair ({start_time}, {stop_time})'
             if pid1 != pid2:
                 raise ValueError(f'{error_prefix} with differing process IDs: {pid1} and {pid2}.')
-            if start_time > stop_time:
+            if timestamp1.position > timestamp2.position:
                 raise ValueError(f'{error_prefix} of process ID {pid1} with a start time greater than the stop time.')
             timestamp_pairs.append((start_time, stop_time))
         return timestamp_pairs
@@ -306,8 +306,6 @@ class _CSVDataProxy(_DataProxy):
         return self._timepoints
 
     def _write_static_data(self, data: _StaticData):
-        if self._file_name in _DataProxy._files_w_data:
-            raise RuntimeError('The static data for a CSV file must be created before the dynamic data.')
         static_data = dclass.asdict(data)
         self._create_table(static_data)
         self._write_data(static_data)

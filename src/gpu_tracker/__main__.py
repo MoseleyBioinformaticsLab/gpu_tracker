@@ -60,7 +60,7 @@ def main():
             files = args['-p']
             if len(files) == 1:
                 [directory] = files
-                files = [os.path.join(directory, file) for file in os.listdir(directory)]
+                files = sorted(os.path.join(directory, file) for file in os.listdir(directory))
             SubTrackingAnalyzer(None, args['--stf']).combine_sub_tracking_files(files)
         else:
             if args['--cconfig'] is not None:

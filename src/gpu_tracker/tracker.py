@@ -468,6 +468,11 @@ class Tracker:
         """
         Constructs a dictionary of the computational-resource-usage measurements and their units.
         """
+        if self.resource_usage is None:
+            raise RuntimeError(
+                'Cannot display the tracker in string or JSON format before tracking completes. Exit the content manager or call the '
+                'stop() method before calling to_json() or str()'
+            )
         return dclass.asdict(self.resource_usage)
 
 

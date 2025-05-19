@@ -24,7 +24,7 @@ jobs:
     - name: Install testing environment
       run: |
         python3 -m pip install --upgrade pip
-        python3 -m pip install pytest pytest-mock pytest-cov
+        python3 -m pip install pytest pytest-mock pytest-cov deepdiff
     - name: Install package
       uses: Wandalen/wretry.action@master
       with:

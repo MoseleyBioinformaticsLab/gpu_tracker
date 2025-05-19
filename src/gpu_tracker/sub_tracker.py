@@ -204,9 +204,7 @@ class TrackingComparison:
         :param file_path_map: Mapping of the name of each tracking session to the path of the pickle file containing the ``SubTrackingResults`` of the corresponding tracking sessions. Used to construct the ``results_map`` attribute.
         :raises ValueError: Raised if the code block results of each tracking session don't match.
         """
-        for name in file_path_map.keys():
-            self._name1 = name
-            break
+        [self._name1] = sorted(file_path_map.keys())[:1]
         self.results_map = dict[str, SubTrackingResults]()
         for name, file in file_path_map.items():
             with open(file, 'rb') as file:
@@ -221,7 +219,7 @@ class TrackingComparison:
             code_block_results2 = TrackingComparison._sort_code_block_results(results)
             if len(code_block_results1) != len(code_block_results2):
                 raise ValueError(
-                    f'All sub-tracking results must have the same number of code blocks. First has {len(code_block_results1)}'
+                    f'All sub-tracking results must have the same number of code blocks. The first has {len(code_block_results1)}'
                     f' code blocks but tracking session "{name2}" has {len(code_block_results2)} code blocks.'
                 )
             for code_block_results1_, code_block_results2_ in zip(code_block_results1, code_block_results2):
@@ -273,7 +271,7 @@ class TrackingComparison:
                 )
         code_block_compute_times = TrackingComparison._get_code_block_comparisons(
             self.results_map, lambda code_block_result: code_block_result.compute_time[statistic].item()
-        ) if results1.code_block_results else dict()
+        ) if results1.code_block_results else dict[str, pd.Series]()
         return ComparisonResults(
             overall_resource_usage=overall_resource_usages, code_block_resource_usage=code_block_resource_usages,
             code_block_compute_time=code_block_compute_times
@@ -319,7 +317,7 @@ class TrackingComparison:
                     ] for name, results in name_to_results.items()
                 ]
         ):
-            code_block_name = f'{" -> ".join({code_block_results.name for _, code_block_results in matching_code_block_results})}'
+            code_block_name = f'{" -> ".join(sorted({code_block_results.name for _, code_block_results in matching_code_block_results}))}'
             code_block_comparison = {
                 name: get_statistic(code_block_results) for name, code_block_results in matching_code_block_results
             }
