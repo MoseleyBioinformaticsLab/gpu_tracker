@@ -117,7 +117,7 @@ def _assert_results_match(expected_json_path: str, expected_text_path: str, actu
 
 def test_combine(format_: str):
     folder = 'tests/data/sub-tracking-results'
-    files = [f'{folder}/files-to-combine/{name}' for name in os.listdir(f'{folder}/files-to-combine') if name.endswith(format_)]
+    files = [f'{folder}/files-to-combine/{name}' for name in sorted(os.listdir(f'{folder}/files-to-combine')) if name.endswith(format_)]
     with pt.raises(ValueError) as error:
         wrong_extension = "csv" if format_ == "sqlite" else "sqlite"
         invalid_file = f'wrong-extension.{wrong_extension}'
@@ -132,8 +132,8 @@ def test_combine(format_: str):
         expected_results = pd.read_csv(expected_path)
         actual_results = pd.read_csv(sub_tracking_file)
     else:
-        expected_results = pd.read_sql('data', sqlalc.create_engine(f'sqlite:///{expected_path}'))
-        actual_results = pd.read_sql('data', sqlalc.create_engine(f'sqlite:///{sub_tracking_file}'))
+        expected_results = pd.read_sql('data', sqlalc.create_engine(f'sqlite:///{expected_path}', poolclass=sqlalc.pool.NullPool))
+        actual_results = pd.read_sql('data', sqlalc.create_engine(f'sqlite:///{sub_tracking_file}', poolclass=sqlalc.pool.NullPool))
     pd.testing.assert_frame_equal(expected_results, actual_results, atol=1e-10, rtol=1e-10)
     with pt.raises(ValueError) as error:
         analyzer.combine_sub_tracking_files(files)

@@ -317,9 +317,7 @@ class TrackingComparison:
                     ] for name, results in name_to_results.items()
                 ]
         ):
-            code_block_name = f'{" -> ".join(
-                sorted({code_block_results.name for _, code_block_results in matching_code_block_results})
-            )}'
+            code_block_name = f'{" -> ".join(sorted({code_block_results.name for _, code_block_results in matching_code_block_results}))}'
             code_block_comparison = {
                 name: get_statistic(code_block_results) for name, code_block_results in matching_code_block_results
             }
