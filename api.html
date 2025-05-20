@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API &mdash; gpu_tracker 5.0.0 documentation</title>
+  <title>API &mdash; gpu_tracker 5.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=ce74c6a2"></script>
+      <script src="_static/documentation_options.js?v=6a0c42bb"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -47,79 +47,121 @@
 <li class="toctree-l1"><a class="reference internal" href="guide.html">User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.Tracker"><code class="docutils literal notranslate"><span class="pre">Tracker</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.State"><code class="docutils literal notranslate"><span class="pre">Tracker.State</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.State.NEW"><code class="docutils literal notranslate"><span class="pre">Tracker.State.NEW</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.State.STARTED"><code class="docutils literal notranslate"><span class="pre">Tracker.State.STARTED</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.State.STOPPED"><code class="docutils literal notranslate"><span class="pre">Tracker.State.STOPPED</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-gpu_tracker.tracker">gpu_tracker.tracker</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.Tracker"><code class="docutils literal notranslate"><span class="pre">Tracker</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.State"><code class="docutils literal notranslate"><span class="pre">Tracker.State</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.start"><code class="docutils literal notranslate"><span class="pre">Tracker.start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.stop"><code class="docutils literal notranslate"><span class="pre">Tracker.stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.__str__"><code class="docutils literal notranslate"><span class="pre">Tracker.__str__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.to_json"><code class="docutils literal notranslate"><span class="pre">Tracker.to_json()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.start"><code class="docutils literal notranslate"><span class="pre">Tracker.start()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.stop"><code class="docutils literal notranslate"><span class="pre">Tracker.stop()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.__str__"><code class="docutils literal notranslate"><span class="pre">Tracker.__str__()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.Tracker.to_json"><code class="docutils literal notranslate"><span class="pre">Tracker.to_json()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.RSSValues"><code class="docutils literal notranslate"><span class="pre">RSSValues</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.RSSValues.total_rss"><code class="docutils literal notranslate"><span class="pre">RSSValues.total_rss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.RSSValues.private_rss"><code class="docutils literal notranslate"><span class="pre">RSSValues.private_rss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.RSSValues.shared_rss"><code class="docutils literal notranslate"><span class="pre">RSSValues.shared_rss</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.RSSValues"><code class="docutils literal notranslate"><span class="pre">RSSValues</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.RSSValues.total_rss"><code class="docutils literal notranslate"><span class="pre">RSSValues.total_rss</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.RSSValues.private_rss"><code class="docutils literal notranslate"><span class="pre">RSSValues.private_rss</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.RSSValues.shared_rss"><code class="docutils literal notranslate"><span class="pre">RSSValues.shared_rss</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM"><code class="docutils literal notranslate"><span class="pre">MaxRAM</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM.unit"><code class="docutils literal notranslate"><span class="pre">MaxRAM.unit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM.system_capacity"><code class="docutils literal notranslate"><span class="pre">MaxRAM.system_capacity</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM.system"><code class="docutils literal notranslate"><span class="pre">MaxRAM.system</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM.main"><code class="docutils literal notranslate"><span class="pre">MaxRAM.main</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM.descendants"><code class="docutils literal notranslate"><span class="pre">MaxRAM.descendants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM.combined"><code class="docutils literal notranslate"><span class="pre">MaxRAM.combined</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM"><code class="docutils literal notranslate"><span class="pre">MaxRAM</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM.unit"><code class="docutils literal notranslate"><span class="pre">MaxRAM.unit</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM.system_capacity"><code class="docutils literal notranslate"><span class="pre">MaxRAM.system_capacity</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM.system"><code class="docutils literal notranslate"><span class="pre">MaxRAM.system</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM.main"><code class="docutils literal notranslate"><span class="pre">MaxRAM.main</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM.descendants"><code class="docutils literal notranslate"><span class="pre">MaxRAM.descendants</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxRAM.combined"><code class="docutils literal notranslate"><span class="pre">MaxRAM.combined</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM.unit"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM.unit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM.system_capacity"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM.system_capacity</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM.system"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM.system</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM.main"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM.main</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM.descendants"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM.descendants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM.combined"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM.combined</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM.unit"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM.unit</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM.system_capacity"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM.system_capacity</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM.system"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM.system</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM.main"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM.main</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM.descendants"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM.descendants</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.MaxGPURAM.combined"><code class="docutils literal notranslate"><span class="pre">MaxGPURAM.combined</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ProcessingUnitPercentages"><code class="docutils literal notranslate"><span class="pre">ProcessingUnitPercentages</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.ProcessingUnitPercentages.max_sum_percent"><code class="docutils literal notranslate"><span class="pre">ProcessingUnitPercentages.max_sum_percent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.ProcessingUnitPercentages.max_hardware_percent"><code class="docutils literal notranslate"><span class="pre">ProcessingUnitPercentages.max_hardware_percent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.ProcessingUnitPercentages.mean_sum_percent"><code class="docutils literal notranslate"><span class="pre">ProcessingUnitPercentages.mean_sum_percent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.ProcessingUnitPercentages.mean_hardware_percent"><code class="docutils literal notranslate"><span class="pre">ProcessingUnitPercentages.mean_hardware_percent</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.ProcessingUnitPercentages"><code class="docutils literal notranslate"><span class="pre">ProcessingUnitPercentages</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ProcessingUnitPercentages.max_sum_percent"><code class="docutils literal notranslate"><span class="pre">ProcessingUnitPercentages.max_sum_percent</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ProcessingUnitPercentages.max_hardware_percent"><code class="docutils literal notranslate"><span class="pre">ProcessingUnitPercentages.max_hardware_percent</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ProcessingUnitPercentages.mean_sum_percent"><code class="docutils literal notranslate"><span class="pre">ProcessingUnitPercentages.mean_sum_percent</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ProcessingUnitPercentages.mean_hardware_percent"><code class="docutils literal notranslate"><span class="pre">ProcessingUnitPercentages.mean_hardware_percent</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization"><code class="docutils literal notranslate"><span class="pre">CPUUtilization</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.system_core_count"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.system_core_count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.n_expected_cores"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.n_expected_cores</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.system"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.system</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.main"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.main</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.descendants"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.descendants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.combined"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.combined</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.main_n_threads"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.main_n_threads</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.descendants_n_threads"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.descendants_n_threads</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.combined_n_threads"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.combined_n_threads</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization"><code class="docutils literal notranslate"><span class="pre">CPUUtilization</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.system_core_count"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.system_core_count</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.n_expected_cores"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.n_expected_cores</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.system"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.system</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.main"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.main</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.descendants"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.descendants</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.combined"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.combined</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.main_n_threads"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.main_n_threads</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.descendants_n_threads"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.descendants_n_threads</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.CPUUtilization.combined_n_threads"><code class="docutils literal notranslate"><span class="pre">CPUUtilization.combined_n_threads</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.GPUUtilization"><code class="docutils literal notranslate"><span class="pre">GPUUtilization</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.GPUUtilization.system_gpu_count"><code class="docutils literal notranslate"><span class="pre">GPUUtilization.system_gpu_count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.GPUUtilization.n_expected_gpus"><code class="docutils literal notranslate"><span class="pre">GPUUtilization.n_expected_gpus</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.GPUUtilization.gpu_percentages"><code class="docutils literal notranslate"><span class="pre">GPUUtilization.gpu_percentages</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.GPUUtilization"><code class="docutils literal notranslate"><span class="pre">GPUUtilization</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.GPUUtilization.system_gpu_count"><code class="docutils literal notranslate"><span class="pre">GPUUtilization.system_gpu_count</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.GPUUtilization.n_expected_gpus"><code class="docutils literal notranslate"><span class="pre">GPUUtilization.n_expected_gpus</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.GPUUtilization.gpu_percentages"><code class="docutils literal notranslate"><span class="pre">GPUUtilization.gpu_percentages</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ComputeTime"><code class="docutils literal notranslate"><span class="pre">ComputeTime</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.ComputeTime.unit"><code class="docutils literal notranslate"><span class="pre">ComputeTime.unit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.ComputeTime.time"><code class="docutils literal notranslate"><span class="pre">ComputeTime.time</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.ComputeTime"><code class="docutils literal notranslate"><span class="pre">ComputeTime</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ComputeTime.unit"><code class="docutils literal notranslate"><span class="pre">ComputeTime.unit</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ComputeTime.time"><code class="docutils literal notranslate"><span class="pre">ComputeTime.time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ResourceUsage"><code class="docutils literal notranslate"><span class="pre">ResourceUsage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.ResourceUsage.max_ram"><code class="docutils literal notranslate"><span class="pre">ResourceUsage.max_ram</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.ResourceUsage.max_gpu_ram"><code class="docutils literal notranslate"><span class="pre">ResourceUsage.max_gpu_ram</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.ResourceUsage.cpu_utilization"><code class="docutils literal notranslate"><span class="pre">ResourceUsage.cpu_utilization</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.ResourceUsage.gpu_utilization"><code class="docutils literal notranslate"><span class="pre">ResourceUsage.gpu_utilization</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.tracker.ResourceUsage.compute_time"><code class="docutils literal notranslate"><span class="pre">ResourceUsage.compute_time</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#gpu_tracker.tracker.ResourceUsage"><code class="docutils literal notranslate"><span class="pre">ResourceUsage</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ResourceUsage.max_ram"><code class="docutils literal notranslate"><span class="pre">ResourceUsage.max_ram</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ResourceUsage.max_gpu_ram"><code class="docutils literal notranslate"><span class="pre">ResourceUsage.max_gpu_ram</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ResourceUsage.cpu_utilization"><code class="docutils literal notranslate"><span class="pre">ResourceUsage.cpu_utilization</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ResourceUsage.gpu_utilization"><code class="docutils literal notranslate"><span class="pre">ResourceUsage.gpu_utilization</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.tracker.ResourceUsage.compute_time"><code class="docutils literal notranslate"><span class="pre">ResourceUsage.compute_time</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-gpu_tracker.sub_tracker">gpu_tracker.sub_tracker</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTracker"><code class="docutils literal notranslate"><span class="pre">SubTracker</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.sub_tracker.sub_track"><code class="docutils literal notranslate"><span class="pre">sub_track()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer"><code class="docutils literal notranslate"><span class="pre">SubTrackingAnalyzer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.read_static_data"><code class="docutils literal notranslate"><span class="pre">SubTrackingAnalyzer.read_static_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_code_block_names"><code class="docutils literal notranslate"><span class="pre">SubTrackingAnalyzer.load_code_block_names()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.combine_sub_tracking_files"><code class="docutils literal notranslate"><span class="pre">SubTrackingAnalyzer.combine_sub_tracking_files()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_timestamp_pairs"><code class="docutils literal notranslate"><span class="pre">SubTrackingAnalyzer.load_timestamp_pairs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_timepoints"><code class="docutils literal notranslate"><span class="pre">SubTrackingAnalyzer.load_timepoints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.overall_timepoint_results"><code class="docutils literal notranslate"><span class="pre">SubTrackingAnalyzer.overall_timepoint_results()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.sub_tracking_results"><code class="docutils literal notranslate"><span class="pre">SubTrackingAnalyzer.sub_tracking_results()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.sub_tracker.TrackingComparison"><code class="docutils literal notranslate"><span class="pre">TrackingComparison</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.TrackingComparison.compare"><code class="docutils literal notranslate"><span class="pre">TrackingComparison.compare()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.sub_tracker.CodeBlockResults"><code class="docutils literal notranslate"><span class="pre">CodeBlockResults</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.CodeBlockResults.name"><code class="docutils literal notranslate"><span class="pre">CodeBlockResults.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.CodeBlockResults.num_timepoints"><code class="docutils literal notranslate"><span class="pre">CodeBlockResults.num_timepoints</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.CodeBlockResults.num_calls"><code class="docutils literal notranslate"><span class="pre">CodeBlockResults.num_calls</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.CodeBlockResults.num_non_empty_calls"><code class="docutils literal notranslate"><span class="pre">CodeBlockResults.num_non_empty_calls</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.CodeBlockResults.compute_time"><code class="docutils literal notranslate"><span class="pre">CodeBlockResults.compute_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.CodeBlockResults.resource_usage"><code class="docutils literal notranslate"><span class="pre">CodeBlockResults.resource_usage</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingResults"><code class="docutils literal notranslate"><span class="pre">SubTrackingResults</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingResults.overall"><code class="docutils literal notranslate"><span class="pre">SubTrackingResults.overall</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingResults.static_data"><code class="docutils literal notranslate"><span class="pre">SubTrackingResults.static_data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingResults.code_block_results"><code class="docutils literal notranslate"><span class="pre">SubTrackingResults.code_block_results</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingResults.to_json"><code class="docutils literal notranslate"><span class="pre">SubTrackingResults.to_json()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingResults.__str__"><code class="docutils literal notranslate"><span class="pre">SubTrackingResults.__str__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu_tracker.sub_tracker.ComparisonResults"><code class="docutils literal notranslate"><span class="pre">ComparisonResults</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.ComparisonResults.overall_resource_usage"><code class="docutils literal notranslate"><span class="pre">ComparisonResults.overall_resource_usage</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.ComparisonResults.code_block_resource_usage"><code class="docutils literal notranslate"><span class="pre">ComparisonResults.code_block_resource_usage</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.ComparisonResults.code_block_compute_time"><code class="docutils literal notranslate"><span class="pre">ComparisonResults.code_block_compute_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.ComparisonResults.to_json"><code class="docutils literal notranslate"><span class="pre">ComparisonResults.to_json()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu_tracker.sub_tracker.ComparisonResults.__str__"><code class="docutils literal notranslate"><span class="pre">ComparisonResults.__str__()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -152,9 +194,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-gpu_tracker">
-<span id="api"></span><h1>API<a class="headerlink" href="#module-gpu_tracker" title="Link to this heading"></a></h1>
-<p id="module-gpu_tracker.tracker">The <code class="docutils literal notranslate"><span class="pre">tracker</span></code> module contains the <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class which can alternatively be imported directly from the <code class="docutils literal notranslate"><span class="pre">gpu_tracker</span></code> package.</p>
+  <section id="api">
+<h1>API<a class="headerlink" href="#api" title="Link to this heading"></a></h1>
+<section id="module-gpu_tracker.tracker">
+<span id="gpu-tracker-tracker"></span><h2>gpu_tracker.tracker<a class="headerlink" href="#module-gpu_tracker.tracker" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">tracker</span></code> module contains the <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class which can alternatively be imported directly from the <code class="docutils literal notranslate"><span class="pre">gpu_tracker</span></code> package.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="gpu_tracker.tracker.Tracker">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.tracker.</span></span><span class="sig-name descname"><span class="pre">Tracker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sleep_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ram_unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gigabytes'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpu_ram_unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gigabytes'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'hours'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_expected_cores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpu_uuids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_logs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource_usage_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_join_attempts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">join_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpu_brand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tracking_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/tracker.html#Tracker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.tracker.Tracker" title="Link to this definition"></a></dt>
@@ -573,6 +617,368 @@ Hardware percentages are the summed percentages divided by the number of GPUs be
 
 </dd></dl>
 
+</section>
+<section id="module-gpu_tracker.sub_tracker">
+<span id="gpu-tracker-sub-tracker"></span><h2>gpu_tracker.sub_tracker<a class="headerlink" href="#module-gpu_tracker.sub_tracker" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">sub_tracker</span></code> module contains the <code class="docutils literal notranslate"><span class="pre">SubTracker</span></code> class which can alternatively be imported directly from the <code class="docutils literal notranslate"><span class="pre">gpu_tracker</span></code> package. Additionally, it contains the <code class="docutils literal notranslate"><span class="pre">SubTrackingAnalyzer</span></code> class which generates the <code class="docutils literal notranslate"><span class="pre">SubTrackingResults</span></code> from the data produced by the <code class="docutils literal notranslate"><span class="pre">SubTracker</span></code> and finally the <code class="docutils literal notranslate"><span class="pre">TrackingComparison</span></code> which generates the <code class="docutils literal notranslate"><span class="pre">ComparisonResults</span></code> comparing the <code class="docutils literal notranslate"><span class="pre">SubTrackingResults</span></code> of multiple tracking sessions.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTracker">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.sub_tracker.</span></span><span class="sig-name descname"><span class="pre">SubTracker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code_block_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code_block_attribute</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_tracking_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#SubTracker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTracker" title="Link to this definition"></a></dt>
+<dd><p>Context manager that logs to a file for the purposes of sub tracking a code block using the timestamps at which the codeblock begins and ends.
+Entering the context manager marks the beginning of the code block and exiting the context manager marks the end of the code block.
+At the beginning of the codeblock, the <code class="docutils literal notranslate"><span class="pre">SubTracker</span></code> logs a row to a tabular file (“.csv” or “.sqlite”) that includes the timestamp along with a name for the code block and an indication of whether it is the start or end of the code bock.
+This resulting file can be used alongside a tracking file created by a <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> object for more granular analysis of specific code blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>code_block_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The name of the code block being sub-tracked.</p></li>
+<li><p><strong>sub_tracking_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The path to the file where the sub-tracking info is logged.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>code_block_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – The name of the code block within a <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> context that is being sub-tracked. Defaults to the file path where the <code class="docutils literal notranslate"><span class="pre">SubTracker</span></code> context is started followed by a colon followed by the <code class="docutils literal notranslate"><span class="pre">code_block_attribute</span></code>.</p></li>
+<li><p><strong>code_block_attribute</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – Only used if <code class="docutils literal notranslate"><span class="pre">code_block_name</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>. Defaults to the line number where the <code class="docutils literal notranslate"><span class="pre">SubTracker</span></code> context is started.</p></li>
+<li><p><strong>sub_tracking_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – The path to the file to log the time stamps of the code block being sub-tracked. To avoid file lock errors when a sub-tracking file is created in multiple different processes (i.e. multiple processes attempting to access the same file at the same time), the sub-tracking file of each process must have a unique name. For example, the ID of the process where the SubTracker context is created. Defaults to this process ID as the file name and in CSV format. These files can be combined into one using the <code class="docutils literal notranslate"><span class="pre">Analyzer.combine_sub_tracking_files</span></code> function.</p></li>
+<li><p><strong>overwrite</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to overwrite the <code class="docutils literal notranslate"><span class="pre">sub_tracking_file</span></code> if it already existed before the beginning of this tracking session.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.sub_track">
+<span class="sig-prename descclassname"><span class="pre">gpu_tracker.sub_tracker.</span></span><span class="sig-name descname"><span class="pre">sub_track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code_block_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code_block_attribute</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_tracking_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#sub_track"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.sub_track" title="Link to this definition"></a></dt>
+<dd><p>Decorator for sub tracking calls to a specified function. Creates a <code class="docutils literal notranslate"><span class="pre">SubTracker</span></code> context that wraps the function call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>code_block_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – The <code class="docutils literal notranslate"><span class="pre">code_block_name</span></code> argument passed to the <code class="docutils literal notranslate"><span class="pre">SubTracker</span></code>. Defaults to the file path where the decorated function is defined followed by a colon followed by the <code class="docutils literal notranslate"><span class="pre">code_block_attribute</span></code>.</p></li>
+<li><p><strong>code_block_attribute</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – The <code class="docutils literal notranslate"><span class="pre">code_block_attribute</span></code> argument passed to the <code class="docutils literal notranslate"><span class="pre">SubTracker</span></code>. Defaults to the name of the decorated function.</p></li>
+<li><p><strong>sub_tracking_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – the <code class="docutils literal notranslate"><span class="pre">sub_tracking_file</span></code> argument passed to the <code class="docutils literal notranslate"><span class="pre">SubTracker</span></code>. Same default as the <code class="docutils literal notranslate"><span class="pre">SubTracker</span></code> constructor. If using the decorated function in multiprocessing, if you’d like to name it based on the ID of a child process for uniqueness, you may need to set the start method to “spawn” like so <code class="docutils literal notranslate"><span class="pre">multiprocessing.set_start_method('spawn')</span></code>.</p></li>
+<li><p><strong>overwrite</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – The <code class="docutils literal notranslate"><span class="pre">overwrite</span></code> argument passed to the <code class="docutils literal notranslate"><span class="pre">SubTracker</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingAnalyzer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.sub_tracker.</span></span><span class="sig-name descname"><span class="pre">SubTrackingAnalyzer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tracking_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_tracking_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#SubTrackingAnalyzer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer" title="Link to this definition"></a></dt>
+<dd><p>Analyzes the per-code block tracking data using a tracking file and sub tracking file in order to produce summary statistics of resource usage for each individual code block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tracking_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – Path to the file containing the resource usage at each timepoint collected by a <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> object.</p></li>
+<li><p><strong>sub_tracking_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Path to the file containing the start/stop timestamps of each call to a code block collected by a <code class="docutils literal notranslate"><span class="pre">SubTracker</span></code> object.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingAnalyzer.read_static_data">
+<span class="sig-name descname"><span class="pre">read_static_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span></span></span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#SubTrackingAnalyzer.read_static_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.read_static_data" title="Link to this definition"></a></dt>
+<dd><p>Reads the static data from the tracking file, including the resource units of measurement and system capacities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The static data.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Series</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_code_block_names">
+<span class="sig-name descname"><span class="pre">load_code_block_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#SubTrackingAnalyzer.load_code_block_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_code_block_names" title="Link to this definition"></a></dt>
+<dd><p>Loads the list of the names of the code blocks that were sub-tracked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The code block names.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingAnalyzer.combine_sub_tracking_files">
+<span class="sig-name descname"><span class="pre">combine_sub_tracking_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#SubTrackingAnalyzer.combine_sub_tracking_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.combine_sub_tracking_files" title="Link to this definition"></a></dt>
+<dd><p>Combines multiple sub-tracking files, perhaps that came from multiple processes running simultaneously, into a single sub-tracking file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>files</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>) – The list of sub-tracking files to combine. All must end in the same file extension i.e. either “.csv” or “.sqlite”.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_timestamp_pairs">
+<span class="sig-name descname"><span class="pre">load_timestamp_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code_block_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#SubTrackingAnalyzer.load_timestamp_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_timestamp_pairs" title="Link to this definition"></a></dt>
+<dd><p>Loads the pairs of start and stop timestamps for each call to a code block that was sub-tracked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>code_block_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The name of the code block to get timestamp pairs for.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of timestamp pairs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_timepoints">
+<span class="sig-name descname"><span class="pre">load_timepoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp_pairs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#SubTrackingAnalyzer.load_timepoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_timepoints" title="Link to this definition"></a></dt>
+<dd><p>Loads the resource usage measurements at each timepoint tracked within the timestamp pairs of a given code block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestamp_pairs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>]</em><em>]</em>) – The list of start and stop timestamp pairs of the code block.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The timepoint measurements.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>DataFrame</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingAnalyzer.overall_timepoint_results">
+<span class="sig-name descname"><span class="pre">overall_timepoint_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#SubTrackingAnalyzer.overall_timepoint_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.overall_timepoint_results" title="Link to this definition"></a></dt>
+<dd><p>Computes summary statistics for resource measurements across all tracked timepoints as compared to an individual sub-tracked code block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Summary statistics across all timepoints.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>DataFrame</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingAnalyzer.sub_tracking_results">
+<span class="sig-name descname"><span class="pre">sub_tracking_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingResults" title="gpu_tracker.sub_tracker.SubTrackingResults"><span class="pre">SubTrackingResults</span></a></span></span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#SubTrackingAnalyzer.sub_tracking_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingAnalyzer.sub_tracking_results" title="Link to this definition"></a></dt>
+<dd><p>Generates a detailed report including summary statistics for the overall resource usage across all timepoints as well as that of each code block that was sub-tracked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A data object containing the overall summary statistics, summary statistics for each code block, the static data, etc.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingResults" title="gpu_tracker.sub_tracker.SubTrackingResults"><em>SubTrackingResults</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.TrackingComparison">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.sub_tracker.</span></span><span class="sig-name descname"><span class="pre">TrackingComparison</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#TrackingComparison"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.TrackingComparison" title="Link to this definition"></a></dt>
+<dd><p>Compares multiple tracking sessions to determine differences in computational resource usage by loading sub-tracking results given their file paths.
+Sub-tracking results files must be in pickle format e.g. calling the <code class="docutils literal notranslate"><span class="pre">SubTrackingAnalyzer.compare</span></code> method and storing the returned <code class="docutils literal notranslate"><span class="pre">SubTrackingResults</span></code> in a pickle file.
+If code block results are not included in the sub-tracking files (i.e. no code blocks were sub-tracked), then only overall results are compared.
+Code blocks are compared by their name. If their name only differentiates by line number (i.e. their name is of the form &lt;file-path:line-number&gt;), then it’s assumed that the same order of the code blocks is used even if the line numbers are different.
+This is useful to determine how resource usage changes based on differences in implementation, input data, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>results_map</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference internal" href="#gpu_tracker.sub_tracker.SubTrackingResults" title="gpu_tracker.sub_tracker.SubTrackingResults"><em>SubTrackingResults</em></a><em>]</em>) – Mapping of the name of each tracking session to the <code class="docutils literal notranslate"><span class="pre">SubTrackingResults</span></code> of the corresponding tracking sessions. Can be used for a user-defined custom comparison.</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>file_path_map</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>) – Mapping of the name of each tracking session to the path of the pickle file containing the <code class="docutils literal notranslate"><span class="pre">SubTrackingResults</span></code> of the corresponding tracking sessions. Used to construct the <code class="docutils literal notranslate"><span class="pre">results_map</span></code> attribute.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – Raised if the code block results of each tracking session don’t match.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.TrackingComparison.compare">
+<span class="sig-name descname"><span class="pre">compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">statistic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#gpu_tracker.sub_tracker.ComparisonResults" title="gpu_tracker.sub_tracker.ComparisonResults"><span class="pre">ComparisonResults</span></a></span></span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#TrackingComparison.compare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.TrackingComparison.compare" title="Link to this definition"></a></dt>
+<dd><p>Performs the comparison between tracking sessions, comparing both the code block results and the overall results.
+:param statistic: The summary statistic of the measurements to compare. One of ‘min’, ‘max’, ‘mean’, or ‘std’.
+:return: The results of the comparison including the overall resource usage, the resource usage of the code blocks, and the compute time of the code blocks for each tracking session.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>statistic</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#gpu_tracker.sub_tracker.ComparisonResults" title="gpu_tracker.sub_tracker.ComparisonResults"><em>ComparisonResults</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.CodeBlockResults">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.sub_tracker.</span></span><span class="sig-name descname"><span class="pre">CodeBlockResults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timepoints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_calls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_non_empty_calls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource_usage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#CodeBlockResults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.CodeBlockResults" title="Link to this definition"></a></dt>
+<dd><p>Results of a particular code block that was sub-tracked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The name of the code block.</p></li>
+<li><p><strong>num_timepoints</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number of timepoints tracked across all calls to the code block.</p></li>
+<li><p><strong>num_calls</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number times the code block was called / executed.</p></li>
+<li><p><strong>num_non_empty_calls</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number code block calls with at least one timepoint tracked within the start / stop time.</p></li>
+<li><p><strong>compute_time</strong> (<em>Series</em>) – Compute time measurements for the code block including the total time spent running this code block, the average time between the start / stop time, etc.</p></li>
+<li><p><strong>resource_usage</strong> (<em>DataFrame</em>) – Summary statistics for the resource usage during the times the code block was called i.e. in between all its start / stop times</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.CodeBlockResults.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#gpu_tracker.sub_tracker.CodeBlockResults.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.CodeBlockResults.num_timepoints">
+<span class="sig-name descname"><span class="pre">num_timepoints</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#gpu_tracker.sub_tracker.CodeBlockResults.num_timepoints" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.CodeBlockResults.num_calls">
+<span class="sig-name descname"><span class="pre">num_calls</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#gpu_tracker.sub_tracker.CodeBlockResults.num_calls" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.CodeBlockResults.num_non_empty_calls">
+<span class="sig-name descname"><span class="pre">num_non_empty_calls</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#gpu_tracker.sub_tracker.CodeBlockResults.num_non_empty_calls" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.CodeBlockResults.compute_time">
+<span class="sig-name descname"><span class="pre">compute_time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#gpu_tracker.sub_tracker.CodeBlockResults.compute_time" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.CodeBlockResults.resource_usage">
+<span class="sig-name descname"><span class="pre">resource_usage</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span></em><a class="headerlink" href="#gpu_tracker.sub_tracker.CodeBlockResults.resource_usage" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingResults">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.sub_tracker.</span></span><span class="sig-name descname"><span class="pre">SubTrackingResults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overall</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">static_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code_block_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gpu_tracker.sub_tracker.CodeBlockResults" title="gpu_tracker.sub_tracker.CodeBlockResults"><span class="pre">CodeBlockResults</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#SubTrackingResults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingResults" title="Link to this definition"></a></dt>
+<dd><p>Comprehensive results for a tracking session including resource usage measurements for individual code blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>overall</strong> (<em>DataFrame</em>) – The overall summary statistics across all timepoints tracked.</p></li>
+<li><p><strong>static_data</strong> (<em>Series</em>) – The static data measured during a tracking session.</p></li>
+<li><p><strong>code_block_results</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference internal" href="#gpu_tracker.sub_tracker.CodeBlockResults" title="gpu_tracker.sub_tracker.CodeBlockResults"><em>CodeBlockResults</em></a><em>]</em>) – Results for individual code blocks including summary statistics for the timepoints within each code block.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingResults.overall">
+<span class="sig-name descname"><span class="pre">overall</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span></em><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingResults.overall" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingResults.static_data">
+<span class="sig-name descname"><span class="pre">static_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingResults.static_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingResults.code_block_results">
+<span class="sig-name descname"><span class="pre">code_block_results</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gpu_tracker.sub_tracker.CodeBlockResults" title="gpu_tracker.sub_tracker.CodeBlockResults"><span class="pre">CodeBlockResults</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingResults.code_block_results" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingResults.to_json">
+<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#SubTrackingResults.to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingResults.to_json" title="Link to this definition"></a></dt>
+<dd><p>Converts the sub-tracking results into JSON format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The JSON version of the sub-tracking results.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.SubTrackingResults.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#SubTrackingResults.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.SubTrackingResults.__str__" title="Link to this definition"></a></dt>
+<dd><p>Converts the sub-tracking results to text format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The string representation of the sub-tracking results.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.ComparisonResults">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gpu_tracker.sub_tracker.</span></span><span class="sig-name descname"><span class="pre">ComparisonResults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overall_resource_usage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code_block_resource_usage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code_block_compute_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#ComparisonResults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.ComparisonResults" title="Link to this definition"></a></dt>
+<dd><p>Contains the comparison of the measurements of multiple tracking sessions provided by the <code class="docutils literal notranslate"><span class="pre">TrackingComparison</span></code> class’s <code class="docutils literal notranslate"><span class="pre">compare</span></code> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>overall_resource_usage</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Series</em><em>]</em>) – For each measurement, compares the resource usage across tracking sessions.</p></li>
+<li><p><strong>code_block_resource_usage</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Series</em><em>]</em><em>]</em>) – For each measurement and for each code block, compares the resource usage of the code block across tracking sessions.</p></li>
+<li><p><strong>code_block_compute_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Series</em><em>]</em>) – For each code block, compares the compute time of the code block across tracking sessions.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.ComparisonResults.overall_resource_usage">
+<span class="sig-name descname"><span class="pre">overall_resource_usage</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#gpu_tracker.sub_tracker.ComparisonResults.overall_resource_usage" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.ComparisonResults.code_block_resource_usage">
+<span class="sig-name descname"><span class="pre">code_block_resource_usage</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#gpu_tracker.sub_tracker.ComparisonResults.code_block_resource_usage" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.ComparisonResults.code_block_compute_time">
+<span class="sig-name descname"><span class="pre">code_block_compute_time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#gpu_tracker.sub_tracker.ComparisonResults.code_block_compute_time" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.ComparisonResults.to_json">
+<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#ComparisonResults.to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.ComparisonResults.to_json" title="Link to this definition"></a></dt>
+<dd><p>Converts the tracking comparison results into JSON format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The JSON version of the comparison results.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gpu_tracker.sub_tracker.ComparisonResults.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/gpu_tracker/sub_tracker.html#ComparisonResults.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gpu_tracker.sub_tracker.ComparisonResults.__str__" title="Link to this definition"></a></dt>
+<dd><p>Converts the tracking comparison results to text format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The string representation of the comparison results.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 </section>
 
 

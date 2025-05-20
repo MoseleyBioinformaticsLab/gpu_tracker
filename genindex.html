@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; gpu_tracker 5.0.0 documentation</title>
+  <title>Index &mdash; gpu_tracker 5.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=ce74c6a2"></script>
+      <script src="_static/documentation_options.js?v=6a0c42bb"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -79,8 +79,10 @@
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
@@ -91,14 +93,30 @@
 <h2 id="_">_</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gpu_tracker.tracker.Tracker.__str__">__str__() (gpu_tracker.tracker.Tracker method)</a>
+      <li><a href="api.html#gpu_tracker.sub_tracker.ComparisonResults.__str__">__str__() (gpu_tracker.sub_tracker.ComparisonResults method)</a>
+
+      <ul>
+        <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingResults.__str__">(gpu_tracker.sub_tracker.SubTrackingResults method)</a>
 </li>
+        <li><a href="api.html#gpu_tracker.tracker.Tracker.__str__">(gpu_tracker.tracker.Tracker method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gpu_tracker.sub_tracker.ComparisonResults.code_block_compute_time">code_block_compute_time (gpu_tracker.sub_tracker.ComparisonResults attribute)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.ComparisonResults.code_block_resource_usage">code_block_resource_usage (gpu_tracker.sub_tracker.ComparisonResults attribute)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingResults.code_block_results">code_block_results (gpu_tracker.sub_tracker.SubTrackingResults attribute)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.CodeBlockResults">CodeBlockResults (class in gpu_tracker.sub_tracker)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.combine_sub_tracking_files">combine_sub_tracking_files() (gpu_tracker.sub_tracker.SubTrackingAnalyzer method)</a>
+</li>
       <li><a href="api.html#gpu_tracker.tracker.CPUUtilization.combined">combined (gpu_tracker.tracker.CPUUtilization attribute)</a>
 
       <ul>
@@ -107,12 +125,20 @@
         <li><a href="api.html#gpu_tracker.tracker.MaxRAM.combined">(gpu_tracker.tracker.MaxRAM attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#gpu_tracker.tracker.CPUUtilization.combined_n_threads">combined_n_threads (gpu_tracker.tracker.CPUUtilization attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gpu_tracker.tracker.ResourceUsage.compute_time">compute_time (gpu_tracker.tracker.ResourceUsage attribute)</a>
+      <li><a href="api.html#gpu_tracker.tracker.CPUUtilization.combined_n_threads">combined_n_threads (gpu_tracker.tracker.CPUUtilization attribute)</a>
 </li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.TrackingComparison.compare">compare() (gpu_tracker.sub_tracker.TrackingComparison method)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.ComparisonResults">ComparisonResults (class in gpu_tracker.sub_tracker)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.CodeBlockResults.compute_time">compute_time (gpu_tracker.sub_tracker.CodeBlockResults attribute)</a>
+
+      <ul>
+        <li><a href="api.html#gpu_tracker.tracker.ResourceUsage.compute_time">(gpu_tracker.tracker.ResourceUsage attribute)</a>
+</li>
+      </ul></li>
       <li><a href="api.html#gpu_tracker.tracker.ComputeTime">ComputeTime (class in gpu_tracker.tracker)</a>
 </li>
       <li><a href="api.html#gpu_tracker.tracker.ResourceUsage.cpu_utilization">cpu_utilization (gpu_tracker.tracker.ResourceUsage attribute)</a>
@@ -146,10 +172,10 @@
       <li><a href="api.html#gpu_tracker.tracker.GPUUtilization.gpu_percentages">gpu_percentages (gpu_tracker.tracker.GPUUtilization attribute)</a>
 </li>
       <li>
-    gpu_tracker
+    gpu_tracker.sub_tracker
 
       <ul>
-        <li><a href="api.html#module-gpu_tracker">module</a>
+        <li><a href="api.html#module-gpu_tracker.sub_tracker">module</a>
 </li>
       </ul></li>
   </ul></td>
@@ -164,6 +190,20 @@
       <li><a href="api.html#gpu_tracker.tracker.ResourceUsage.gpu_utilization">gpu_utilization (gpu_tracker.tracker.ResourceUsage attribute)</a>
 </li>
       <li><a href="api.html#gpu_tracker.tracker.GPUUtilization">GPUUtilization (class in gpu_tracker.tracker)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_code_block_names">load_code_block_names() (gpu_tracker.sub_tracker.SubTrackingAnalyzer method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_timepoints">load_timepoints() (gpu_tracker.sub_tracker.SubTrackingAnalyzer method)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_timestamp_pairs">load_timestamp_pairs() (gpu_tracker.sub_tracker.SubTrackingAnalyzer method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -203,7 +243,7 @@
     module
 
       <ul>
-        <li><a href="api.html#module-gpu_tracker">gpu_tracker</a>
+        <li><a href="api.html#module-gpu_tracker.sub_tracker">gpu_tracker.sub_tracker</a>
 </li>
         <li><a href="api.html#module-gpu_tracker.tracker">gpu_tracker.tracker</a>
 </li>
@@ -216,11 +256,33 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gpu_tracker.tracker.CPUUtilization.n_expected_cores">n_expected_cores (gpu_tracker.tracker.CPUUtilization attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gpu_tracker.tracker.GPUUtilization.n_expected_gpus">n_expected_gpus (gpu_tracker.tracker.GPUUtilization attribute)</a>
 </li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.CodeBlockResults.name">name (gpu_tracker.sub_tracker.CodeBlockResults attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gpu_tracker.tracker.Tracker.State.NEW">NEW (gpu_tracker.tracker.Tracker.State attribute)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.CodeBlockResults.num_calls">num_calls (gpu_tracker.sub_tracker.CodeBlockResults attribute)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.CodeBlockResults.num_non_empty_calls">num_non_empty_calls (gpu_tracker.sub_tracker.CodeBlockResults attribute)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.CodeBlockResults.num_timepoints">num_timepoints (gpu_tracker.sub_tracker.CodeBlockResults attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingResults.overall">overall (gpu_tracker.sub_tracker.SubTrackingResults attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gpu_tracker.sub_tracker.ComparisonResults.overall_resource_usage">overall_resource_usage (gpu_tracker.sub_tracker.ComparisonResults attribute)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.overall_timepoint_results">overall_timepoint_results() (gpu_tracker.sub_tracker.SubTrackingAnalyzer method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -240,10 +302,14 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gpu_tracker.tracker.ResourceUsage">ResourceUsage (class in gpu_tracker.tracker)</a>
+      <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.read_static_data">read_static_data() (gpu_tracker.sub_tracker.SubTrackingAnalyzer method)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.CodeBlockResults.resource_usage">resource_usage (gpu_tracker.sub_tracker.CodeBlockResults attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gpu_tracker.tracker.ResourceUsage">ResourceUsage (class in gpu_tracker.tracker)</a>
+</li>
       <li><a href="api.html#gpu_tracker.tracker.RSSValues">RSSValues (class in gpu_tracker.tracker)</a>
 </li>
   </ul></td>
@@ -258,9 +324,23 @@
 </li>
       <li><a href="api.html#gpu_tracker.tracker.Tracker.State.STARTED">STARTED (gpu_tracker.tracker.Tracker.State attribute)</a>
 </li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingResults.static_data">static_data (gpu_tracker.sub_tracker.SubTrackingResults attribute)</a>
+</li>
       <li><a href="api.html#gpu_tracker.tracker.Tracker.stop">stop() (gpu_tracker.tracker.Tracker method)</a>
 </li>
       <li><a href="api.html#gpu_tracker.tracker.Tracker.State.STOPPED">STOPPED (gpu_tracker.tracker.Tracker.State attribute)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.sub_track">sub_track() (in module gpu_tracker.sub_tracker)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.sub_tracking_results">sub_tracking_results() (gpu_tracker.sub_tracker.SubTrackingAnalyzer method)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.SubTracker">SubTracker (class in gpu_tracker.sub_tracker)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer">SubTrackingAnalyzer (class in gpu_tracker.sub_tracker)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingResults">SubTrackingResults (class in gpu_tracker.sub_tracker)</a>
 </li>
       <li><a href="api.html#gpu_tracker.tracker.CPUUtilization.system">system (gpu_tracker.tracker.CPUUtilization attribute)</a>
 
@@ -270,8 +350,6 @@
         <li><a href="api.html#gpu_tracker.tracker.MaxRAM.system">(gpu_tracker.tracker.MaxRAM attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gpu_tracker.tracker.MaxGPURAM.system_capacity">system_capacity (gpu_tracker.tracker.MaxGPURAM attribute)</a>
 
       <ul>
@@ -290,8 +368,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gpu_tracker.tracker.ComputeTime.time">time (gpu_tracker.tracker.ComputeTime attribute)</a>
 </li>
-      <li><a href="api.html#gpu_tracker.tracker.Tracker.to_json">to_json() (gpu_tracker.tracker.Tracker method)</a>
+      <li><a href="api.html#gpu_tracker.sub_tracker.ComparisonResults.to_json">to_json() (gpu_tracker.sub_tracker.ComparisonResults method)</a>
+
+      <ul>
+        <li><a href="api.html#gpu_tracker.sub_tracker.SubTrackingResults.to_json">(gpu_tracker.sub_tracker.SubTrackingResults method)</a>
 </li>
+        <li><a href="api.html#gpu_tracker.tracker.Tracker.to_json">(gpu_tracker.tracker.Tracker method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gpu_tracker.tracker.RSSValues.total_rss">total_rss (gpu_tracker.tracker.RSSValues attribute)</a>
@@ -299,6 +383,8 @@
       <li><a href="api.html#gpu_tracker.tracker.Tracker">Tracker (class in gpu_tracker.tracker)</a>
 </li>
       <li><a href="api.html#gpu_tracker.tracker.Tracker.State">Tracker.State (class in gpu_tracker.tracker)</a>
+</li>
+      <li><a href="api.html#gpu_tracker.sub_tracker.TrackingComparison">TrackingComparison (class in gpu_tracker.sub_tracker)</a>
 </li>
   </ul></td>
 </tr></table>

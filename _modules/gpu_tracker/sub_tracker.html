@@ -1,0 +1,626 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gpu_tracker.sub_tracker &mdash; gpu_tracker 5.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=6a0c42bb"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            gpu_tracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">gpu_tracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gpu_tracker.sub_tracker</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gpu_tracker.sub_tracker</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;The ``sub_tracker`` module contains the ``SubTracker`` class which can alternatively be imported directly from the ``gpu_tracker`` package. Additionally, it contains the ``SubTrackingAnalyzer`` class which generates the ``SubTrackingResults`` from the data produced by the ``SubTracker`` and finally the ``TrackingComparison`` which generates the ``ComparisonResults`` comparing the ``SubTrackingResults`` of multiple tracking sessions.&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dclass</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pkl</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">log</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">typ</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._helper_classes</span><span class="w"> </span><span class="kn">import</span> <span class="n">_DataProxy</span><span class="p">,</span> <span class="n">_SubTrackerLog</span><span class="p">,</span> <span class="n">_SUMMARY_STATS</span><span class="p">,</span> <span class="n">_summary_stats</span>
+
+
+<div class="viewcode-block" id="SubTracker">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.SubTracker">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SubTracker</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Context manager that logs to a file for the purposes of sub tracking a code block using the timestamps at which the codeblock begins and ends.</span>
+<span class="sd">    Entering the context manager marks the beginning of the code block and exiting the context manager marks the end of the code block.</span>
+<span class="sd">    At the beginning of the codeblock, the ``SubTracker`` logs a row to a tabular file (&quot;.csv&quot; or &quot;.sqlite&quot;) that includes the timestamp along with a name for the code block and an indication of whether it is the start or end of the code bock.</span>
+<span class="sd">    This resulting file can be used alongside a tracking file created by a ``Tracker`` object for more granular analysis of specific code blocks.</span>
+
+<span class="sd">    :ivar str code_block_name: The name of the code block being sub-tracked.</span>
+<span class="sd">    :ivar str sub_tracking_file: The path to the file where the sub-tracking info is logged.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">code_block_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">code_block_attribute</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sub_tracking_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param code_block_name: The name of the code block within a ``Tracker`` context that is being sub-tracked. Defaults to the file path where the ``SubTracker`` context is started followed by a colon followed by the ``code_block_attribute``.</span>
+<span class="sd">        :param code_block_attribute: Only used if ``code_block_name`` is ``None``. Defaults to the line number where the ``SubTracker`` context is started.</span>
+<span class="sd">        :param sub_tracking_file: The path to the file to log the time stamps of the code block being sub-tracked. To avoid file lock errors when a sub-tracking file is created in multiple different processes (i.e. multiple processes attempting to access the same file at the same time), the sub-tracking file of each process must have a unique name. For example, the ID of the process where the SubTracker context is created. Defaults to this process ID as the file name and in CSV format. These files can be combined into one using the ``Analyzer.combine_sub_tracking_files`` function.</span>
+<span class="sd">        :param overwrite: Whether to overwrite the ``sub_tracking_file`` if it already existed before the beginning of this tracking session.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">code_block_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">code_block_name</span> <span class="o">=</span> <span class="n">code_block_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stack</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span>
+            <span class="n">caller_frame</span> <span class="o">=</span> <span class="n">stack</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">caller_frame</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">code_block_attribute</span> <span class="o">=</span> <span class="n">caller_frame</span><span class="o">.</span><span class="n">lineno</span> <span class="k">if</span> <span class="n">code_block_attribute</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">code_block_attribute</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">code_block_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">code_block_attribute</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_id</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">sub_tracking_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sub_tracking_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">process_id</span><span class="si">}</span><span class="s1">.csv&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_tracking_file</span> <span class="o">=</span> <span class="n">sub_tracking_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_proxy</span> <span class="o">=</span> <span class="n">_DataProxy</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_tracking_file</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code_block_position</span><span class="p">:</span> <span class="n">_SubTrackerLog</span><span class="o">.</span><span class="n">CodeBlockPosition</span><span class="p">):</span>
+        <span class="n">sub_tracker_log</span> <span class="o">=</span> <span class="n">_SubTrackerLog</span><span class="p">(</span>
+            <span class="n">process_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">process_id</span><span class="p">,</span> <span class="n">code_block_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">code_block_name</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">code_block_position</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_proxy</span><span class="o">.</span><span class="n">write_data</span><span class="p">(</span><span class="n">sub_tracker_log</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="n">_SubTrackerLog</span><span class="o">.</span><span class="n">CodeBlockPosition</span><span class="o">.</span><span class="n">START</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="n">_SubTrackerLog</span><span class="o">.</span><span class="n">CodeBlockPosition</span><span class="o">.</span><span class="n">STOP</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="sub_track">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.sub_track">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sub_track</span><span class="p">(</span>
+        <span class="n">code_block_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">code_block_attribute</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sub_tracking_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decorator for sub tracking calls to a specified function. Creates a ``SubTracker`` context that wraps the function call.</span>
+
+<span class="sd">    :param code_block_name: The ``code_block_name`` argument passed to the ``SubTracker``. Defaults to the file path where the decorated function is defined followed by a colon followed by the ``code_block_attribute``.</span>
+<span class="sd">    :param code_block_attribute: The ``code_block_attribute`` argument passed to the ``SubTracker``. Defaults to the name of the decorated function.</span>
+<span class="sd">    :param sub_tracking_file: the ``sub_tracking_file`` argument passed to the ``SubTracker``. Same default as the ``SubTracker`` constructor. If using the decorated function in multiprocessing, if you&#39;d like to name it based on the ID of a child process for uniqueness, you may need to set the start method to &quot;spawn&quot; like so ``multiprocessing.set_start_method(&#39;spawn&#39;)``.</span>
+<span class="sd">    :param overwrite: The ``overwrite`` argument passed to the ``SubTracker``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="k">nonlocal</span> <span class="n">code_block_name</span><span class="p">,</span> <span class="n">code_block_attribute</span><span class="p">,</span> <span class="n">sub_tracking_file</span><span class="p">,</span> <span class="n">overwrite</span>
+        <span class="k">if</span> <span class="n">code_block_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stack</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span>
+            <span class="n">caller_frame</span> <span class="o">=</span> <span class="n">stack</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">caller_frame</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">code_block_attribute</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span> <span class="k">if</span> <span class="n">code_block_attribute</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">code_block_attribute</span>
+            <span class="n">code_block_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">code_block_attribute</span><span class="si">}</span><span class="s1">&#39;</span>
+
+        <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">nonlocal</span> <span class="n">sub_tracking_file</span><span class="p">,</span> <span class="n">overwrite</span>
+            <span class="k">with</span> <span class="n">SubTracker</span><span class="p">(</span>
+                    <span class="n">code_block_name</span><span class="o">=</span><span class="n">code_block_name</span><span class="p">,</span> <span class="n">code_block_attribute</span><span class="o">=</span><span class="n">code_block_attribute</span><span class="p">,</span> <span class="n">sub_tracking_file</span><span class="o">=</span><span class="n">sub_tracking_file</span><span class="p">,</span>
+                    <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">):</span>
+                <span class="n">return_value</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">return_value</span>
+        <span class="k">return</span> <span class="n">wrapper</span>
+    <span class="k">return</span> <span class="n">decorator</span></div>
+
+
+
+<div class="viewcode-block" id="SubTrackingAnalyzer">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SubTrackingAnalyzer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Analyzes the per-code block tracking data using a tracking file and sub tracking file in order to produce summary statistics of resource usage for each individual code block.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tracking_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sub_tracking_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param tracking_file: Path to the file containing the resource usage at each timepoint collected by a ``Tracker`` object.</span>
+<span class="sd">        :param sub_tracking_file: Path to the file containing the start/stop timestamps of each call to a code block collected by a ``SubTracker`` object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tracking_proxy</span> <span class="o">=</span> <span class="n">_DataProxy</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">tracking_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sub_tracking_proxy</span> <span class="o">=</span> <span class="n">_DataProxy</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">sub_tracking_file</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SubTrackingAnalyzer.read_static_data">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.read_static_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_static_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads the static data from the tracking file, including the resource units of measurement and system capacities.</span>
+
+<span class="sd">        :return: The static data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tracking_proxy</span><span class="o">.</span><span class="n">read_static_data</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SubTrackingAnalyzer.load_code_block_names">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_code_block_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_code_block_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the list of the names of the code blocks that were sub-tracked.</span>
+
+<span class="sd">        :return: The code block names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_tracking_proxy</span><span class="o">.</span><span class="n">load_code_block_names</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SubTrackingAnalyzer.combine_sub_tracking_files">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.combine_sub_tracking_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">combine_sub_tracking_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Combines multiple sub-tracking files, perhaps that came from multiple processes running simultaneously, into a single sub-tracking file.</span>
+
+<span class="sd">        :param files: The list of sub-tracking files to combine. All must end in the same file extension i.e. either &quot;.csv&quot; or &quot;.sqlite&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sub_tracking_proxy</span><span class="o">.</span><span class="n">combine_files</span><span class="p">(</span><span class="n">files</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SubTrackingAnalyzer.load_timestamp_pairs">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_timestamp_pairs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_timestamp_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code_block_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the pairs of start and stop timestamps for each call to a code block that was sub-tracked.</span>
+
+<span class="sd">        :param code_block_name: The name of the code block to get timestamp pairs for.</span>
+<span class="sd">        :return: List of timestamp pairs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_tracking_proxy</span><span class="o">.</span><span class="n">load_timestamp_pairs</span><span class="p">(</span><span class="n">code_block_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SubTrackingAnalyzer.load_timepoints">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.load_timepoints">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_timepoints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp_pairs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the resource usage measurements at each timepoint tracked within the timestamp pairs of a given code block.</span>
+
+<span class="sd">        :param timestamp_pairs: The list of start and stop timestamp pairs of the code block.</span>
+<span class="sd">        :return: The timepoint measurements.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tracking_proxy</span><span class="o">.</span><span class="n">load_timepoints</span><span class="p">(</span><span class="n">timestamp_pairs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SubTrackingAnalyzer.overall_timepoint_results">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.overall_timepoint_results">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">overall_timepoint_results</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes summary statistics for resource measurements across all tracked timepoints as compared to an individual sub-tracked code block.</span>
+
+<span class="sd">        :return: Summary statistics across all timepoints.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tracking_proxy</span><span class="o">.</span><span class="n">overall_timepoint_results</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SubTrackingAnalyzer.sub_tracking_results">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.SubTrackingAnalyzer.sub_tracking_results">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sub_tracking_results</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SubTrackingResults</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a detailed report including summary statistics for the overall resource usage across all timepoints as well as that of each code block that was sub-tracked.</span>
+
+<span class="sd">        :return: A data object containing the overall summary statistics, summary statistics for each code block, the static data, etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">overall_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overall_timepoint_results</span><span class="p">()</span>
+        <span class="n">code_block_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_code_block_names</span><span class="p">()</span>
+        <span class="n">static_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_static_data</span><span class="p">()</span>
+        <span class="n">code_block_results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">[</span><span class="n">CodeBlockResults</span><span class="p">]()</span>
+        <span class="k">for</span> <span class="n">code_block_name</span> <span class="ow">in</span> <span class="n">code_block_names</span><span class="p">:</span>
+            <span class="n">time_stamp_pairs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_timestamp_pairs</span><span class="p">(</span><span class="n">code_block_name</span><span class="p">)</span>
+            <span class="n">time_stamp_diffs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">start_time</span> <span class="k">for</span> <span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">)</span> <span class="ow">in</span> <span class="n">time_stamp_pairs</span><span class="p">])</span>
+            <span class="n">compute_time_results</span> <span class="o">=</span> <span class="n">_summary_stats</span><span class="p">(</span><span class="n">time_stamp_diffs</span><span class="p">)</span>
+            <span class="n">compute_time_results</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time_stamp_diffs</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">timepoints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_timepoints</span><span class="p">(</span><span class="n">time_stamp_pairs</span><span class="p">)</span>
+            <span class="n">num_non_empty_calls</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="nb">any</span><span class="p">(</span>
+                        <span class="p">(</span><span class="n">timepoints</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&gt;=</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">timepoints</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;=</span> <span class="n">stop_time</span><span class="p">)</span>
+                    <span class="p">)</span> <span class="k">for</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span> <span class="ow">in</span> <span class="n">time_stamp_pairs</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">timepoints</span> <span class="o">=</span> <span class="n">timepoints</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s1">&#39;timestamp&#39;</span><span class="p">)</span>
+            <span class="n">resource_usage</span> <span class="o">=</span> <span class="n">_summary_stats</span><span class="p">(</span><span class="n">timepoints</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">code_block_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">CodeBlockResults</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">code_block_name</span><span class="p">,</span> <span class="n">num_timepoints</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">timepoints</span><span class="p">),</span> <span class="n">num_calls</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">time_stamp_pairs</span><span class="p">),</span>
+                    <span class="n">num_non_empty_calls</span><span class="o">=</span><span class="n">num_non_empty_calls</span><span class="p">,</span> <span class="n">compute_time</span><span class="o">=</span><span class="n">compute_time_results</span><span class="p">,</span> <span class="n">resource_usage</span><span class="o">=</span><span class="n">resource_usage</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">SubTrackingResults</span><span class="p">(</span><span class="n">overall_results</span><span class="p">,</span> <span class="n">static_data</span><span class="p">,</span> <span class="n">code_block_results</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TrackingComparison">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.TrackingComparison">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TrackingComparison</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compares multiple tracking sessions to determine differences in computational resource usage by loading sub-tracking results given their file paths.</span>
+<span class="sd">    Sub-tracking results files must be in pickle format e.g. calling the ``SubTrackingAnalyzer.compare`` method and storing the returned ``SubTrackingResults`` in a pickle file.</span>
+<span class="sd">    If code block results are not included in the sub-tracking files (i.e. no code blocks were sub-tracked), then only overall results are compared.</span>
+<span class="sd">    Code blocks are compared by their name. If their name only differentiates by line number (i.e. their name is of the form &lt;file-path:line-number&gt;), then it&#39;s assumed that the same order of the code blocks is used even if the line numbers are different.</span>
+<span class="sd">    This is useful to determine how resource usage changes based on differences in implementation, input data, etc.</span>
+
+<span class="sd">    :ivar dict[str, SubTrackingResults] results_map: Mapping of the name of each tracking session to the ``SubTrackingResults`` of the corresponding tracking sessions. Can be used for a user-defined custom comparison.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param file_path_map: Mapping of the name of each tracking session to the path of the pickle file containing the ``SubTrackingResults`` of the corresponding tracking sessions. Used to construct the ``results_map`` attribute.</span>
+<span class="sd">        :raises ValueError: Raised if the code block results of each tracking session don&#39;t match.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_name1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">file_path_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())[:</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SubTrackingResults</span><span class="p">]()</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">file_path_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">results_map</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">pkl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="n">results1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_map</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_name1</span><span class="p">]</span>
+        <span class="n">code_block_results1</span> <span class="o">=</span> <span class="n">TrackingComparison</span><span class="o">.</span><span class="n">_sort_code_block_results</span><span class="p">(</span><span class="n">results1</span><span class="p">)</span>
+        <span class="n">results1</span><span class="o">.</span><span class="n">code_block_results</span> <span class="o">=</span> <span class="n">code_block_results1</span>
+        <span class="k">for</span> <span class="n">name2</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name2</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name1</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_map</span><span class="p">[</span><span class="n">name2</span><span class="p">]</span>
+            <span class="n">code_block_results2</span> <span class="o">=</span> <span class="n">TrackingComparison</span><span class="o">.</span><span class="n">_sort_code_block_results</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">code_block_results1</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">code_block_results2</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;All sub-tracking results must have the same number of code blocks. The first has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">code_block_results1</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39; code blocks but tracking session &quot;</span><span class="si">{</span><span class="n">name2</span><span class="si">}</span><span class="s1">&quot; has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">code_block_results2</span><span class="p">)</span><span class="si">}</span><span class="s1"> code blocks.&#39;</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">code_block_results1_</span><span class="p">,</span> <span class="n">code_block_results2_</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">code_block_results1</span><span class="p">,</span> <span class="n">code_block_results2</span><span class="p">):</span>
+                <span class="n">code_block_name1</span><span class="p">,</span> <span class="n">code_block_name2</span> <span class="o">=</span> <span class="n">code_block_results1_</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">code_block_results2_</span><span class="o">.</span><span class="n">name</span>
+                <span class="k">if</span> <span class="n">code_block_name1</span> <span class="o">!=</span> <span class="n">code_block_name2</span><span class="p">:</span>
+                    <span class="n">line_num1</span> <span class="o">=</span> <span class="n">TrackingComparison</span><span class="o">.</span><span class="n">_get_line_num</span><span class="p">(</span><span class="n">code_block_name1</span><span class="p">)</span>
+                    <span class="n">line_num2</span> <span class="o">=</span> <span class="n">TrackingComparison</span><span class="o">.</span><span class="n">_get_line_num</span><span class="p">(</span><span class="n">code_block_name2</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">line_num1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">line_num2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">code_block_name1</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">code_block_name2</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s1">&#39;Code block name &quot;</span><span class="si">{</span><span class="n">code_block_name1</span><span class="si">}</span><span class="s1">&quot; of tracking session &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name1</span><span class="si">}</span><span class="s1">&quot; matched with code&#39;</span>
+                                <span class="sa">f</span><span class="s1">&#39; block name &quot;</span><span class="si">{</span><span class="n">code_block_name2</span><span class="si">}</span><span class="s1">&quot; of tracking session &quot;</span><span class="si">{</span><span class="n">name2</span><span class="si">}</span><span class="s1">&quot; but they differ by &#39;</span>
+                                <span class="sa">f</span><span class="s1">&#39;line number. If these code blocks were not meant to match, their comparison will not&#39;</span>
+                                <span class="sa">f</span><span class="s1">&#39; be valid and their names must be disambiguated.&#39;</span>
+                            <span class="p">)</span>
+                            <span class="n">match</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">match</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">match</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">match</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;Code block name &quot;</span><span class="si">{</span><span class="n">code_block_name1</span><span class="si">}</span><span class="s1">&quot; of tracking session &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name1</span><span class="si">}</span><span class="s1">&quot; does not match code&#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39; block name &quot;</span><span class="si">{</span><span class="n">code_block_name2</span><span class="si">}</span><span class="s1">&quot; of tracking session &quot;</span><span class="si">{</span><span class="n">name2</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+                    <span class="p">)</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">code_block_results</span> <span class="o">=</span> <span class="n">code_block_results2</span>
+
+<div class="viewcode-block" id="TrackingComparison.compare">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.TrackingComparison.compare">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">statistic</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;mean&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ComparisonResults</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs the comparison between tracking sessions, comparing both the code block results and the overall results.</span>
+<span class="sd">        :param statistic: The summary statistic of the measurements to compare. One of &#39;min&#39;, &#39;max&#39;, &#39;mean&#39;, or &#39;std&#39;.</span>
+<span class="sd">        :return: The results of the comparison including the overall resource usage, the resource usage of the code blocks, and the compute time of the code blocks for each tracking session.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">statistic</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_SUMMARY_STATS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid summary statistic &#39;</span><span class="si">{</span><span class="n">statistic</span><span class="si">}</span><span class="s2">&#39;. Valid values are </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_SUMMARY_STATS</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">results1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_map</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_name1</span><span class="p">]</span>
+        <span class="n">overall_resource_usages</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]()</span>
+        <span class="n">code_block_resource_usages</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]]()</span>
+        <span class="k">for</span> <span class="n">measurement</span> <span class="ow">in</span> <span class="n">results1</span><span class="o">.</span><span class="n">overall</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="n">overall_comparison</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">results</span><span class="o">.</span><span class="n">overall</span><span class="p">[</span><span class="n">statistic</span><span class="p">][</span><span class="n">measurement</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">results</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_map</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="n">overall_resource_usages</span><span class="p">[</span><span class="n">measurement</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">overall_comparison</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">results1</span><span class="o">.</span><span class="n">code_block_results</span><span class="p">:</span>
+                <span class="n">code_block_resource_usages</span><span class="p">[</span><span class="n">measurement</span><span class="p">]</span> <span class="o">=</span> <span class="n">TrackingComparison</span><span class="o">.</span><span class="n">_get_code_block_comparisons</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">results_map</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">code_block_result</span><span class="p">:</span> <span class="n">code_block_result</span><span class="o">.</span><span class="n">resource_usage</span><span class="p">[</span><span class="n">statistic</span><span class="p">][</span><span class="n">measurement</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                <span class="p">)</span>
+        <span class="n">code_block_compute_times</span> <span class="o">=</span> <span class="n">TrackingComparison</span><span class="o">.</span><span class="n">_get_code_block_comparisons</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results_map</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">code_block_result</span><span class="p">:</span> <span class="n">code_block_result</span><span class="o">.</span><span class="n">compute_time</span><span class="p">[</span><span class="n">statistic</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="p">)</span> <span class="k">if</span> <span class="n">results1</span><span class="o">.</span><span class="n">code_block_results</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]()</span>
+        <span class="k">return</span> <span class="n">ComparisonResults</span><span class="p">(</span>
+            <span class="n">overall_resource_usage</span><span class="o">=</span><span class="n">overall_resource_usages</span><span class="p">,</span> <span class="n">code_block_resource_usage</span><span class="o">=</span><span class="n">code_block_resource_usages</span><span class="p">,</span>
+            <span class="n">code_block_compute_time</span><span class="o">=</span><span class="n">code_block_compute_times</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sort_code_block_results</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="n">SubTrackingResults</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">CodeBlockResults</span><span class="p">]:</span>
+        <span class="n">max_line_num_len</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">code_block_results</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">code_block_results</span><span class="p">:</span>
+            <span class="n">line_num</span> <span class="o">=</span> <span class="n">TrackingComparison</span><span class="o">.</span><span class="n">_get_line_num</span><span class="p">(</span><span class="n">code_block_results</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">line_num</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">max_line_num_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_line_num_len</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">line_num</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">code_block_results</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">TrackingComparison</span><span class="o">.</span><span class="n">_sort_code_block_name</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">max_line_num_len</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sort_code_block_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">max_line_num_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">line_num</span> <span class="o">=</span> <span class="n">TrackingComparison</span><span class="o">.</span><span class="n">_get_line_num</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">line_num</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">line_num</span> <span class="o">=</span> <span class="n">line_num</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">max_line_num_len</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;:&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">line_num</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">name</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_line_num</span><span class="p">(</span><span class="n">code_block_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;:&#39;</span> <span class="ow">in</span> <span class="n">code_block_name</span><span class="p">:</span>
+            <span class="n">line_num</span> <span class="o">=</span> <span class="n">code_block_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">line_num</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">line_num</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_code_block_comparisons</span><span class="p">(</span><span class="n">name_to_results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SubTrackingResults</span><span class="p">],</span> <span class="n">get_statistic</span><span class="p">:</span> <span class="n">typ</span><span class="o">.</span><span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]:</span>
+        <span class="n">code_block_comparisons</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]()</span>
+        <span class="k">for</span> <span class="n">matching_code_block_results</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="o">*</span><span class="p">[</span>
+                    <span class="p">[</span>
+                        <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">code_block_results</span><span class="p">)</span> <span class="k">for</span> <span class="n">code_block_results</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">code_block_results</span>
+                    <span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">results</span> <span class="ow">in</span> <span class="n">name_to_results</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">]</span>
+        <span class="p">):</span>
+            <span class="n">code_block_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="s2">&quot; -&gt; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">({</span><span class="n">code_block_results</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">code_block_results</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">matching_code_block_results</span><span class="p">}))</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="n">code_block_comparison</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">name</span><span class="p">:</span> <span class="n">get_statistic</span><span class="p">(</span><span class="n">code_block_results</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">code_block_results</span> <span class="ow">in</span> <span class="n">matching_code_block_results</span>
+            <span class="p">}</span>
+            <span class="n">code_block_comparison</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">code_block_comparison</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">code_block_comparisons</span><span class="p">[</span><span class="n">code_block_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">code_block_comparison</span>
+        <span class="k">return</span> <span class="n">code_block_comparisons</span></div>
+
+
+
+<div class="viewcode-block" id="CodeBlockResults">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.CodeBlockResults">[docs]</a>
+<span class="nd">@dclass</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CodeBlockResults</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Results of a particular code block that was sub-tracked.</span>
+
+<span class="sd">    :param name: The name of the code block.</span>
+<span class="sd">    :param num_timepoints: The number of timepoints tracked across all calls to the code block.</span>
+<span class="sd">    :param num_calls: The number times the code block was called / executed.</span>
+<span class="sd">    :param num_non_empty_calls: The number code block calls with at least one timepoint tracked within the start / stop time.</span>
+<span class="sd">    :param compute_time: Compute time measurements for the code block including the total time spent running this code block, the average time between the start / stop time, etc.</span>
+<span class="sd">    :param resource_usage: Summary statistics for the resource usage during the times the code block was called i.e. in between all its start / stop times</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">num_timepoints</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">num_calls</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">num_non_empty_calls</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">compute_time</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span>
+    <span class="n">resource_usage</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span></div>
+
+
+
+<div class="viewcode-block" id="SubTrackingResults">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.SubTrackingResults">[docs]</a>
+<span class="nd">@dclass</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SubTrackingResults</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Comprehensive results for a tracking session including resource usage measurements for individual code blocks.</span>
+
+<span class="sd">    :param overall: The overall summary statistics across all timepoints tracked.</span>
+<span class="sd">    :param static_data: The static data measured during a tracking session.</span>
+<span class="sd">    :param code_block_results: Results for individual code blocks including summary statistics for the timepoints within each code block.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">overall</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span>
+    <span class="n">static_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span>
+    <span class="n">code_block_results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">CodeBlockResults</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SubTrackingResults.to_json">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.SubTrackingResults.to_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the sub-tracking results into JSON format.</span>
+
+<span class="sd">        :return: The JSON version of the sub-tracking results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">dclass</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s1">&#39;overall&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_dataframe_to_json</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;overall&#39;</span><span class="p">])</span>
+        <span class="n">results</span><span class="p">[</span><span class="s1">&#39;static_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;static_data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">code_block_result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;code_block_results&#39;</span><span class="p">]:</span>
+            <span class="n">code_block_result</span><span class="p">[</span><span class="s1">&#39;compute_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">code_block_result</span><span class="p">[</span><span class="s1">&#39;compute_time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+            <span class="n">code_block_result</span><span class="p">[</span><span class="s1">&#39;resource_usage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_dataframe_to_json</span><span class="p">(</span><span class="n">code_block_result</span><span class="p">[</span><span class="s1">&#39;resource_usage&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">results</span></div>
+
+
+<div class="viewcode-block" id="SubTrackingResults.__str__">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.SubTrackingResults.__str__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the sub-tracking results to text format.</span>
+
+<span class="sd">        :return: The string representation of the sub-tracking results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">dclass</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_dict_to_str</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dataframe_to_json</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dict_to_str</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">indent</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">no_title_keys</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">indent_str</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="o">*</span> <span class="n">indent</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">indent_str</span><span class="si">}{</span><span class="n">key</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">no_title_keys</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="kc">None</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">no_title_keys</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">key</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">):</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="n">max_key_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="s1">&#39;&#39;</span><span class="p">})</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="n">_dict_to_str</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">indent</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">no_title_keys</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">option_context</span><span class="p">(</span>
+                    <span class="s1">&#39;display.max_rows&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;display.width&#39;</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="s1">&#39;display.float_format&#39;</span><span class="p">,</span>
+                    <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">.8f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">):</span>
+                <span class="n">df_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">df_str</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">indent_str</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">df_str</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="n">df_str</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+                <span class="n">string</span> <span class="o">=</span> <span class="n">_dict_to_str</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">indent</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">no_title_keys</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s1">.8f</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">float</span> <span class="k">else</span> <span class="n">value</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">max_key_len</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">))</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="k">return</span> <span class="n">string</span>
+
+
+<div class="viewcode-block" id="ComparisonResults">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.ComparisonResults">[docs]</a>
+<span class="nd">@dclass</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ComparisonResults</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Contains the comparison of the measurements of multiple tracking sessions provided by the ``TrackingComparison`` class&#39;s ``compare`` method.</span>
+
+<span class="sd">    :param overall_resource_usage: For each measurement, compares the resource usage across tracking sessions.</span>
+<span class="sd">    :param code_block_resource_usage: For each measurement and for each code block, compares the resource usage of the code block across tracking sessions.</span>
+<span class="sd">    :param code_block_compute_time: For each code block, compares the compute time of the code block across tracking sessions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">overall_resource_usage</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]</span>
+    <span class="n">code_block_resource_usage</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]]</span>
+    <span class="n">code_block_compute_time</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]</span>
+
+<div class="viewcode-block" id="ComparisonResults.to_json">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.ComparisonResults.to_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the tracking comparison results into JSON format.</span>
+
+<span class="sd">        :return: The JSON version of the comparison results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">dclass</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s1">&#39;overall_resource_usage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ComparisonResults</span><span class="o">.</span><span class="n">_comparisons_to_dict</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;overall_resource_usage&#39;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">measurement</span><span class="p">,</span> <span class="n">comparisons</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;code_block_resource_usage&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">results</span><span class="p">[</span><span class="s1">&#39;code_block_resource_usage&#39;</span><span class="p">][</span><span class="n">measurement</span><span class="p">]</span> <span class="o">=</span> <span class="n">ComparisonResults</span><span class="o">.</span><span class="n">_comparisons_to_dict</span><span class="p">(</span><span class="n">comparisons</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s1">&#39;code_block_compute_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ComparisonResults</span><span class="o">.</span><span class="n">_comparisons_to_dict</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;code_block_compute_time&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">results</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_comparisons_to_dict</span><span class="p">(</span><span class="n">comparisons</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">comparison</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">comparison</span> <span class="ow">in</span> <span class="n">comparisons</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<div class="viewcode-block" id="ComparisonResults.__str__">
+<a class="viewcode-back" href="../../api.html#gpu_tracker.sub_tracker.ComparisonResults.__str__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the tracking comparison results to text format.</span>
+
+<span class="sd">        :return: The string representation of the comparison results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">dclass</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_dict_to_str</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">no_title_keys</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">code_block_compute_time</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Erik D. Huckvale, Hunter N. B. Moseley.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
