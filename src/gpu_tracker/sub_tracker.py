@@ -1,4 +1,4 @@
-"""The ``sub_tracker`` module contains the ``SubTracker`` class which can alternatively be imported directly from the ``gpu_tracker`` package."""
+"""The ``sub_tracker`` module contains the ``SubTracker`` class which can alternatively be imported directly from the ``gpu_tracker`` package. Additionally, it contains the ``SubTrackingAnalyzer`` class which generates the ``SubTrackingResults`` from the data produced by the ``SubTracker`` and finally the ``TrackingComparison`` which generates the ``ComparisonResults`` comparing the ``SubTrackingResults`` of multiple tracking sessions."""
 from __future__ import annotations
 import inspect
 import os
