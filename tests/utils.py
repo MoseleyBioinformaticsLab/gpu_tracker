@@ -2,7 +2,7 @@ import pandas as pd
 import sqlalchemy as sqlalc
 import os
 # noinspection PyProtectedMember
-from gpu_tracker._helper_classes import _SQLiteWriter
+from gpu_tracker._helper_classes import _SQLiteDataProxy
 import gpu_tracker as gput
 
 
@@ -11,13 +11,23 @@ def assert_args_list(mock, expected_args_list: list[tuple | dict], use_kwargs: b
     assert actual_args_list == expected_args_list
 
 
+def _assert_warnings(caplog, expected_warnings: list[str]):
+    for expected_warning, record in zip(expected_warnings, caplog.records):
+        assert record.levelname == 'WARNING'
+        assert record.message == expected_warning
+
+
 def test_tracking_file(
-        actual_tracking_file: str, expected_tracking_file: str, excluded_col: str | None = None, excluded_col_test=None):
+        actual_tracking_file: str, expected_tracking_file: str, excluded_col: str | None = None, excluded_col_test=None,
+        is_sub_tracking: bool = False):
     if actual_tracking_file.endswith('.csv'):
-        actual_tracking_log = pd.read_csv(actual_tracking_file)
+        if is_sub_tracking:
+            actual_tracking_log = pd.read_csv(actual_tracking_file)
+        else:
+            actual_tracking_log = pd.read_csv(actual_tracking_file, skiprows=2)
     else:
         engine = sqlalc.create_engine(f'sqlite:///{actual_tracking_file}', poolclass=sqlalc.pool.NullPool)
-        actual_tracking_log = pd.read_sql_table(_SQLiteWriter._DATA_TABLE, engine)
+        actual_tracking_log = pd.read_sql_table(_SQLiteDataProxy._DATA_TABLE, engine)
     if excluded_col is not None:
         actual_tracking_log[excluded_col].apply(excluded_col_test)
         actual_tracking_log = actual_tracking_log[actual_tracking_log.columns.difference([excluded_col])]
