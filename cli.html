@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CLI &mdash; gpu_tracker 4.1.0 documentation</title>
+  <title>CLI &mdash; gpu_tracker 5.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=42d1b3bd"></script>
+      <script src="_static/documentation_options.js?v=ce74c6a2"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -84,14 +84,18 @@ See the CLI section of the <a class="reference internal" href="tutorial.html#tut
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Usage:
     gpu-tracker -h | --help
     gpu-tracker -v | --version
-    gpu-tracker --execute=&lt;command&gt; [--output=&lt;output&gt;] [--format=&lt;format&gt;] [--st=&lt;sleep-time&gt;] [--ru=&lt;ram-unit&gt;] [--gru=&lt;gpu-ram-unit&gt;] [--tu=&lt;time-unit&gt;] [--nec=&lt;num-cores&gt;] [--guuids=&lt;gpu-uuids&gt;] [--disable-logs] [--gb=&lt;gpu-brand&gt;]
+    gpu-tracker --execute=&lt;command&gt; [--output=&lt;output&gt;] [--format=&lt;format&gt;] [--tconfig=&lt;config-file&gt;] [--st=&lt;sleep-time&gt;] [--ru=&lt;ram-unit&gt;] [--gru=&lt;gpu-ram-unit&gt;] [--tu=&lt;time-unit&gt;] [--nec=&lt;num-cores&gt;] [--guuids=&lt;gpu-uuids&gt;] [--disable-logs] [--gb=&lt;gpu-brand&gt;] [--tf=&lt;tracking-file&gt;] [--overwrite]
+    gpu-tracker sub-track combine --stf=&lt;sub-track-file&gt; -p &lt;file-path&gt;...
+    gpu-tracker sub-track analyze --tf=&lt;tracking-file&gt; --stf=&lt;sub-track-file&gt; [--output=&lt;output&gt;] [--format=&lt;format&gt;]
+    gpu-tracker sub-track compare [--output=&lt;output&gt;] [--format=&lt;format&gt;] [--cconfig=&lt;config-file&gt;] [-m &lt;name&gt;=&lt;file-path&gt;...] [--stat=&lt;statistic&gt;]
 
 Options:
     -h --help               Show this help message and exit.
     -v --version            Show package version and exit.
     -e --execute=&lt;command&gt;  The command to run along with its arguments all within quotes e.g. &quot;ls -l -a&quot;.
-    -o --output=&lt;output&gt;    File path to store the computational-resource-usage measurements. If not set, prints measurements to the screen.
-    -f --format=&lt;format&gt;    File format of the output. Either &#39;json&#39; or &#39;text&#39;. Defaults to &#39;text&#39;.
+    -o --output=&lt;output&gt;    File path to store the computational-resource-usage measurements in the case of tracking or the analysis report in the case of sub-tracking. If not set, prints to the screen.
+    -f --format=&lt;format&gt;    File format of the output. Either &#39;json&#39;, &#39;text&#39;, or &#39;pickle&#39;. Defaults to &#39;text&#39;.
+    --tconfig=&lt;config-file&gt; JSON config file containing the key word arguments to the ``Tracker`` class (see API) to be optionally used instead of the corresponding commandline options. If any commandline options are set, they will override the corresponding arguments provided by the config file.
     --st=&lt;sleep-time&gt;       The number of seconds to sleep in between usage-collection iterations.
     --ru=&lt;ram-unit&gt;         One of &#39;bytes&#39;, &#39;kilobytes&#39;, &#39;megabytes&#39;, &#39;gigabytes&#39;, or &#39;terabytes&#39;.
     --gru=&lt;gpu-ram-unit&gt;    One of &#39;bytes&#39;, &#39;kilobytes&#39;, &#39;megabytes&#39;, &#39;gigabytes&#39;, or &#39;terabytes&#39;.
@@ -100,6 +104,17 @@ Options:
     --guuids=&lt;gpu-uuids&gt;    Comma separated list of the UUIDs of the GPUs for which to track utilization e.g. gpu-uuid1,gpu-uuid2,etc. Defaults to all the GPUs in the system.
     --disable-logs          If set, warnings are suppressed during tracking. Otherwise, the Tracker logs warnings as usual.
     --gb=&lt;gpu-brand&gt;        The brand of GPU to profile. Valid values are nvidia and amd. Defaults to the brand of GPU detected in the system, checking NVIDIA first.
+    --tf=&lt;tracking-file&gt;    If specified, stores the individual resource usage measurements at each iteration. Valid file formats are CSV (.csv) and SQLite (.sqlite) where the SQLite file format stores the data in a table called &quot;data&quot; and allows for more efficient querying.
+    --overwrite             Whether to overwrite the tracking file if it already existed before the beginning of this tracking session. Do not set if the data in the existing tracking file is still needed.
+    sub-track               Perform sub-tracking related commands.
+    combine                 Combines multiple sub-tracking files into one. This is usually a result of sub-tracking a code block that is called in multiple simultaneous processes.
+    --stf=&lt;sub-track-file&gt;  The path to the sub-tracking file used to specify the timestamps of specific code-blocks. If not generated by the gpu-tracker API, must be either a CSV or SQLite file (where the SQLite file contains a table called &quot;data&quot;) where the headers are precisely process_id, code_block_name, position, and timestamp. The process_id is the ID of the process where the code block is called. code_block_name is the name of the code block. position is whether it is the start or the stopping point of the code block where 0 represents start and 1 represents stop. And timestamp is the timestamp where the code block starts or where it stops.
+    -p &lt;file-path&gt;          Paths to the sub-tracking files to combine. Must all be the same file format and the same file format as the resulting sub-tracking file (either .csv or .sqlite). If only one path is provided, it is interpreted as a path to a directory and all the files in this directory are combined.
+    analyze                 Generate the sub-tracking analysis report using the tracking file and sub-tracking file for resource usage of specific code blocks.
+    compare                 Compares multiple tracking sessions to determine differences in computational resource usage by loading sub-tracking results given their file paths. Sub-tracking results files must be in pickle format e.g. running the ``sub-track analyze`` command and specifying a file path for ``--output`` and &#39;pickle&#39; for the ``--format`` option. If code block results are not included in the sub-tracking files (i.e. no code blocks were sub-tracked), then only overall results are compared.
+    --cconfig=&lt;config-file&gt; JSON config file containing the ``file_path_map`` argument for the ``TrackerComparison`` class and ``statistic`` argument for its ``compare`` method (see API) that can be used instead of the corresponding ``-m &lt;name&gt;=&lt;path&gt;`` and ``--stat=&lt;statistic&gt;`` commandline options respectively. If additional ``-m &lt;name&gt;=&lt;path&gt;`` options are added on the commandline in addition to a config file, they will be added to the ``file_path_map`` in the config file. If a ``--stat`` option is provided on the commandline, it will override the ``statistic`` in the config file.
+    -m &lt;name&gt;=&lt;file-path&gt;   Mapping of tracking session names to the path of the file containing the sub-tracking results of said tracking session. Must be in pickle format.
+    --stat=&lt;statistic&gt;      The summary statistic of the measurements to compare. One of &#39;min&#39;, &#39;max&#39;, &#39;mean&#39;, or &#39;std&#39;. Defaults to &#39;mean&#39;.
 </pre></div>
 </div>
 </section>
@@ -115,7 +130,7 @@ Options:
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Erik Huckvale, Hunter N. B. Moseley.</p>
+    <p>&#169; Copyright 2024, Erik D. Huckvale, Hunter N. B. Moseley.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

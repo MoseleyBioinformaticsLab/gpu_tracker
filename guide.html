@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>User Guide &mdash; gpu_tracker 4.1.0 documentation</title>
+  <title>User Guide &mdash; gpu_tracker 5.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=42d1b3bd"></script>
+      <script src="_static/documentation_options.js?v=ce74c6a2"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -98,7 +98,7 @@
 <h3>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">gpu_tracker</span></code> package provides a <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class and a commandline-interface that tracks (profiles) the usage of compute time, CPU utilization, maximum RAM, GPU utilization, and maximum GPU RAM.
 The compute time is a measurement of the real time taken by the task as opposed to the CPU-utilization time.
-The GPU tracking is for Nvidia GPUs and uses the <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code> command. If the Nvidia drivers have not been installed, then the max GPU RAM is not tracked and measurements are reported as 0.
+The GPU tracking is for both Nvidia and AMD GPUs and respectively uses the nvidia-smi and amd-smi command-line tools to pull GPU usage information. Also, if neither the appropriate Nvidia nor AMD driver is installed, then the GPU-related metrics are not tracked and are reported as 0.
 Computational resources are tracked throughout the duration of a context manager or the duration of explicit calls to the <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code> methods of the <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> class.
 The <code class="docutils literal notranslate"><span class="pre">gpu-tracker</span></code> command-line interface alternatively tracks the computational-resource-usage of an arbitrary shell command.</p>
 <p><strong>NOTE: The tracking occurs in a separate process. To maximize the accuracy of the reported resource usage, you may want to have a core available solely for the tracking process e.g. if your job uses 3 workers, you may want to allocate 4 cores.</strong></p>
@@ -150,7 +150,7 @@ The <code class="docutils literal notranslate"><span class="pre">gpu-tracker</sp
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Erik Huckvale, Hunter N. B. Moseley.</p>
+    <p>&#169; Copyright 2024, Erik D. Huckvale, Hunter N. B. Moseley.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
