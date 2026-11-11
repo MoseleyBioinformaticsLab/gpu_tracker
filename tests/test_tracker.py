@@ -402,3 +402,13 @@ def test_formatting_before_tracking_stops():
         'Cannot display the tracker in string or JSON format before tracking completes. Exit the content manager or call the stop() '
         'method before calling to_json() or str()'
     )
+
+
+def test_is_available_permission_error(mocker, caplog):
+    mocker.patch('gpu_tracker._helper_classes.subp.check_output', side_effect=PermissionError)
+    # noinspection PyProtectedMember
+    from gpu_tracker._helper_classes import _NvidiaQuerier
+    result = _NvidiaQuerier.is_available()
+    assert result is None
+    assert 'PermissionError' in caplog.text
+    assert 'nvidia-smi' in caplog.text

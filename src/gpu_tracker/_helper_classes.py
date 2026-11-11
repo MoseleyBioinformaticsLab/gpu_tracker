@@ -10,6 +10,7 @@ import sqlalchemy as sqlalc
 import sqlalchemy.orm as sqlorm
 import enum
 import tqdm
+import logging as log
 
 _SUMMARY_STATS = ['min', 'max', 'mean', 'std']
 
@@ -35,6 +36,12 @@ class _GPUQuerier(abc.ABC):
         except subp.CalledProcessError:
             return False
         except FileNotFoundError:
+            return None
+        except PermissionError:
+            log.warning(
+                f'gpu-tracker encountered a PermissionError when checking if "{cls.command}" is installed. '
+                'You might have a directory in your PATH environment variable that lacks execute permissions.'
+            )
             return None
 
     @classmethod
